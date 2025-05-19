@@ -2,34 +2,59 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 
 class ManagerController extends Controller
 {
-    //حساب ارباح مطعم معين
-    public function calculateRestaurantProfit($restaurant_id)
-   {
-     $branchIds = DB::table('branches')
-        ->where('Restaurant_id', $restaurant_id)
-        ->pluck('id');
-
-     $income = DB::table('orders')
-        ->whereIn('branch_id', $branchIds)
+   
+    public function getBranchProfit($branch_id)
+{
+    $income = DB::table('orders')
+        ->where('branch_id', $branch_id)
         ->where('status', 'delivered')
         ->sum('total_price');
 
-      $expenses = DB::table('expenses')
-        ->where('restaurant_id', $restaurant_id)
-        ->sum('amount');
 
-      $netProfit = $income - $expenses;
-
-      return response()->json([
-        'restaurant_id' => $restaurant_id,
-        'total_income' => $income,
-        'total_expenses' => $expenses,
-        'net_profit' => $netProfit,
-     ]);
+    return response()->json([
+        'branch_id' => $branch_id,
+        'income' => $income
+    ]);
     }
+    public function getLatestDeliveredOrdersForBranch($branch_id)
+{
+    // اجلب آخر 10 طلبات مكتملة من هذا الفرع
+    $orders = Order::where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->orderBy('created_at', 'desc')
+        ->take(10)
+        ->get();
+
+    $results = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $food = $detail->foodItem;
+
+            $ratingInfo = $food->feedbacks()
+                ->where('type', 'rating')
+                ->selectRaw('AVG(score) as average_rating, COUNT(*) as rating_count')
+                ->first();
+
+            $results[] = [
+                'order_id' => $order->Order_id,
+                'dishName' => $food->name,
+                'dishImage' => $food->image_url,
+                'dishRate' => round($ratingInfo->average_rating ?? 0, 1),
+                'number_of_ratings' => $ratingInfo->rating_count ?? 0,
+                'order_cost' => $order->total_price,
+            ];
+        }
+    }
+
+    return response()->json($results);
+}
+
+
 }

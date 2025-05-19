@@ -22,6 +22,16 @@ class User extends Authenticatable
     {
         return $this->belongsTo(Role::class);
     }
+    public function addresses()
+    {
+        return $this->hasMany(Address::class);
+    }
+
+    public function orders()
+    {
+        return $this->hasMany(Order::class);
+    }
+
 
     protected $casts = [
         'email_verified_at' => 'datetime',

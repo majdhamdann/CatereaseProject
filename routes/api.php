@@ -23,4 +23,4 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('login',[AuthController::class,'login']);
 
-Route::get('earnings/{restaurant_id}',[ManagerController::class,'calculateRestaurantProfit']);
+Route::get('earnings/{branch_id}',[ManagerController::class,'getBranchProfit']);
