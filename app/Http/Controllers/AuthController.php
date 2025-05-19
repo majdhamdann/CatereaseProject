@@ -8,7 +8,7 @@ use Illuminate\Support\Facades\Hash;
 
 class AuthController extends Controller
 {
-      public function login(Request $request){
+    public function login(Request $request){
         $loginUserData = $request->validate([
             'email'=>'required|string|email',
             'password'=>'required|min:8'
