@@ -10,21 +10,20 @@ class ManagerController extends Controller
 {
    
     public function getBranchProfit($branch_id)
-{
-    $income = DB::table('orders')
-        ->where('branch_id', $branch_id)
+   {
+      $income = Order::where('branch_id', $branch_id)
         ->where('status', 'delivered')
-        ->sum('total_price');
+        ->sum('total_price')
+        ->get();
 
 
-    return response()->json([
+      return response()->json([
         'branch_id' => $branch_id,
         'income' => $income
-    ]);
+      ]);
     }
     public function getLatestDeliveredOrdersForBranch($branch_id)
 {
-    // اجلب آخر 10 طلبات مكتملة من هذا الفرع
     $orders = Order::where('branch_id', $branch_id)
         ->where('status', 'delivered')
         ->orderBy('created_at', 'desc')
