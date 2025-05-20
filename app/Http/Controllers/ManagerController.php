@@ -9,6 +9,7 @@ use Illuminate\Support\Facades\DB;
 class ManagerController extends Controller
 {
    
+    //ارباح الطلبات
     public function getBranchProfit($branch_id)
    {
       $income = Order::where('branch_id', $branch_id)
@@ -22,7 +23,8 @@ class ManagerController extends Controller
         'income' => $income
       ]);
     }
-    public function getLatestDeliveredOrdersForBranch($branch_id)
+    //الاخيرة
+    public function getOrderBranch($branch_id)
 {
     $orders = Order::where('branch_id', $branch_id)
         ->where('status', 'delivered')
@@ -36,17 +38,17 @@ class ManagerController extends Controller
         foreach ($order->orderDetails as $detail) {
             $food = $detail->foodItem;
 
-            $ratingInfo = $food->feedbacks()
+            /*$ratingInfo = $food->feedbacks()
                 ->where('type', 'rating')
                 ->selectRaw('AVG(score) as average_rating, COUNT(*) as rating_count')
-                ->first();
+                ->first();*/
 
             $results[] = [
-                'order_id' => $order->Order_id,
+                'order_id' => $order->id,
                 'dishName' => $food->name,
                 'dishImage' => $food->image_url,
-                'dishRate' => round($ratingInfo->average_rating ?? 0, 1),
-                'number_of_ratings' => $ratingInfo->rating_count ?? 0,
+               // 'dishRate' => round($ratingInfo->average_rating ?? 0, 1),
+                //'number_of_ratings' => $ratingInfo->rating_count ?? 0,
                 'order_cost' => $order->total_price,
             ];
         }
