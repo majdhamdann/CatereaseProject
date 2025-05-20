@@ -3,6 +3,8 @@
 namespace Database\Seeders;
 
 // use Illuminate\Database\Console\Seeds\WithoutModelEvents;
+
+use App\Models\FoodItem;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
@@ -21,6 +23,16 @@ class DatabaseSeeder extends Seeder
         $this->call([
         RoleSeeder::class,
         UserSeeder::class,
+        resturantseeder::class,
+        BranchSeeder::class,
+        CategorySeeder::class,
+        FoodItemSeeder::class,
+        cityseeder::class,
+        AddressSeeder::class,
+        OrderSeeder::class,
+        OrderDetailSeeder::class,
+        FeedBackTypeSeeder::class,
+    
     ]);
     }
 }

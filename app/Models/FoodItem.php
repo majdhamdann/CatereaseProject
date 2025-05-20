@@ -23,5 +23,9 @@ class FoodItem extends Model
     {
         return $this->hasMany(OrderDetail::class, 'food_item_id');
     }
+     public function feedbacks()
+    {
+        return $this->hasMany(Feedback::class, 'food_item_id');
+    }
 
 }
