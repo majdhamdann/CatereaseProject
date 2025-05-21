@@ -23,9 +23,23 @@ class FoodItem extends Model
     {
         return $this->hasMany(OrderDetail::class, 'food_item_id');
     }
-     public function feedbacks()
-    {
-        return $this->hasMany(Feedback::class, 'food_item_id');
-    }
+    public function feedbackTypes()
+{
+    return $this->hasMany(FeedbackType::class, 'target_ref_id')
+                ->where('target_type', 'food_item');
+}
+
+public function feedbacks()
+{
+    return $this->hasManyThrough(
+        Feedback::class,
+        FeedbackType::class,
+        'target_ref_id',       // Foreign key on feedback_types
+        'FeedbackType_id',     // Foreign key on feedback
+        'id',                  // Local key on food_items
+        'id'                   // Local key on feedback_types
+    )->where('target_type', 'food_item');
+}
+
 
 }

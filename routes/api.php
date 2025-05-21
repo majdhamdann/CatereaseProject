@@ -25,3 +25,4 @@ Route::post('login',[AuthController::class,'login']);
 
 Route::get('earnings/{branch_id}',[ManagerController::class,'getBranchProfit']);
 Route::get('Order/{branch_id}',[ManagerController::class,'getOrderBranch']);
+Route::get('orders/{branch_id}/monthly-stats',[ManagerController::class,'getRestaurantMonthlyOrderStats']);
