@@ -79,7 +79,7 @@ class ManagerController extends Controller
          'total_orders' => $totalOrders
       ]);
    }
- 
+ //ارجاع الطلبات حسب حالتهم
    public function getNumberOrder($branch_id) {
     $orders = Order::where('branch_id', $branch_id);
 
@@ -90,8 +90,24 @@ class ManagerController extends Controller
         'orderdelivered'  => (clone $orders)->where('status', 'delivered')->count(),
         'ordercancelled'  => (clone $orders)->where('status', 'cancelled')->count(),
     ]);
-  }
+    }
+    public function getMonthlyOrderStats($branch_id)
+{
+    $monthlyStats = DB::table('orders')
+        ->select(
+            DB::raw('YEAR(created_at) as year'),
+            DB::raw('MONTH(created_at) as month'),
+            DB::raw("COUNT(CASE WHEN status = 'delivered' THEN 1 END) as delivered_count"),
+            DB::raw("COUNT(CASE WHEN status = 'cancelled' THEN 1 END) as cancelled_count")
+        )
+        ->where('branch_id', $branch_id)
+        ->groupBy(DB::raw('YEAR(created_at)'), DB::raw('MONTH(created_at)'))
+        ->orderBy(DB::raw('YEAR(created_at)'), 'desc')
+        ->orderBy(DB::raw('MONTH(created_at)'), 'desc')
+        ->get();
 
+    return response()->json($monthlyStats);
+}
 
 
 

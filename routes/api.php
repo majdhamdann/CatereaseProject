@@ -28,4 +28,5 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
   Route::get('Order/{branch_id}',[ManagerController::class,'getOrderBranch']);
   Route::get('orders/{branch_id}/monthly-stats',[ManagerController::class,'getRestaurantMonthlyOrderStats']);
   Route::get('orders/{branch_id}/numberallstatus',[ManagerController::class,'getNumberOrder']);
+  Route::get('orders/{branch_id}/everymonth',[ManagerController::class,'getMonthlyOrderStats']);
 });

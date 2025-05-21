@@ -14,11 +14,11 @@ class ManagerMiddlware
      * @param  \Closure(\Illuminate\Http\Request): (\Symfony\Component\HttpFoundation\Response)  $next
      */
     public function handle($request, Closure $next)
-{
-    if (auth()->check() && auth()->user()->role && auth()->user()->role->name === 'Manager') {
+   {
+      if (auth()->check() && auth()->user()->role && auth()->user()->role->name === 'Manager') {
         return $next($request);
-    }
+      }
 
     return response()->json(['message' => 'Unauthorized'], 403);
-}
+   }
 }
