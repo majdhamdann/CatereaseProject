@@ -63,8 +63,8 @@ class ManagerController extends Controller
     }
 
     public function getRestaurantMonthlyOrderStats($branch_id)
-{
-    $deliveredPerMonth = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
+   {
+      $deliveredPerMonth = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
         ->where('branch_id', $branch_id)
         ->where('status', 'delivered')
         ->whereYear('created_at', now()->year)
@@ -72,14 +72,25 @@ class ManagerController extends Controller
         ->orderBy('month')
         ->get();
 
-    $totalOrders = Order::where('branch_id', $branch_id)->count('id');
+      $totalOrders = Order::where('branch_id', $branch_id)->count('id');
+
+      return response()->json([
+         'delivered_orders_per_month' => $deliveredPerMonth,
+         'total_orders' => $totalOrders
+      ]);
+   }
+ 
+   public function getNumberOrder($branch_id) {
+    $orders = Order::where('branch_id', $branch_id);
 
     return response()->json([
-        'delivered_orders_per_month' => $deliveredPerMonth,
-        'total_orders' => $totalOrders
+        'orderspending'   => (clone $orders)->where('status', 'pending')->count(),
+        'orderconfirmed'  => (clone $orders)->where('status', 'confirmed')->count(),
+        'orderpreparing'  => (clone $orders)->where('status', 'preparing')->count(),
+        'orderdelivered'  => (clone $orders)->where('status', 'delivered')->count(),
+        'ordercancelled'  => (clone $orders)->where('status', 'cancelled')->count(),
     ]);
-}
-
+  }
 
 
 
