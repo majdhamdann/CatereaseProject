@@ -92,7 +92,7 @@ class ManagerController extends Controller
     ]);
     }
     public function getMonthlyOrderStats($branch_id)
-{
+    {
     $monthlyStats = DB::table('orders')
         ->select(
             DB::raw('YEAR(created_at) as year'),
@@ -107,7 +107,84 @@ class ManagerController extends Controller
         ->get();
 
     return response()->json($monthlyStats);
-}
+    }
+
+
+    public function getDeliveredOrderStats($branch_id)
+  {
+    $orders = Order::with([
+        'orderDetails.foodItem.category'
+    ])->where('status', 'delivered')
+       ->where('branch_id', $branch_id)->get();
+
+    $totalDeliveredItems = 0;
+    $categoryCounts = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $categoryName = $detail->foodItem->category->name ?? 'غير معروف';
+
+            $categoryCounts[$categoryName] = ($categoryCounts[$categoryName] ?? 0) + 1;
+            $totalDeliveredItems++;
+        }
+    }
+
+    $results = [];
+    foreach ($categoryCounts as $name => $count) {
+        $percentage = $totalDeliveredItems > 0
+            ? round(($count / $totalDeliveredItems) * 100, 1)
+            : 0;
+
+        $results[] = [
+            'category' => $name,
+            'count' => $count,
+            'percentage' => $percentage . '%',
+        ];
+    }
+
+    return response()->json([
+        'total_delivered_items' => $totalDeliveredItems,
+        'category_distribution' => $results,
+    ]);
+     }
+   
+
+
+    public function getPopularFoodCategories($branch_id)
+{
+    $orders = Order::with(['orderDetails.foodItem.category'])
+        ->where('branch_id', $branch_id)
+        ->get();
+
+    $categoryUserMap = [];
+
+    foreach ($orders as $order) {
+        $userId = $order->user_id;
+
+        foreach ($order->orderDetails as $detail) {
+            $categoryName = $detail->foodItem->category->name ?? 'غير معروف';
+
+            $categoryUserMap[$categoryName][$userId] = true;
+        }
+    }
+
+    $result = [];
+
+    foreach ($categoryUserMap as $category => $users) {
+        $result[] = [
+            'name' => $category,
+            'user_count' => count($users)
+        ];
+    }
+
+    usort($result, fn($a, $b) => $b['user_count'] <=> $a['user_count']);
+
+    return response()->json($result);
+    }
+
+
+
+
 
 
 
