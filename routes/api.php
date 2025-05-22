@@ -25,12 +25,12 @@ Route::post('login',[AuthController::class,'login']);
 
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
   Route::get('earnings/{branch_id}',[ManagerController::class,'getBranchProfit']);
-  Route::get('Order/{branch_id}',[ManagerController::class,'getOrderBranch']);
-  Route::get('orders/{branch_id}/monthly-stats',[ManagerController::class,'getRestaurantMonthlyOrderStats']);
-  Route::get('orders/{branch_id}/numberallstatus',[ManagerController::class,'getNumberOrder']);
-  Route::get('orders/{branch_id}/everymonth',[ManagerController::class,'getMonthlyOrderStats']);
-  Route::get('/orders/delivered-category-stats/{branch_id}', [ManagerController::class, 'getDeliveredOrderStats']);
-  Route::get('orders/statistics/popular-food-categories/{branch_id}', [ManagerController::class, 'getPopularFoodCategories']);
+  Route::get('Order/{branch_id}',[ManagerController::class,'getLatestDeliveredOrders']);
+  Route::get('orders/{branch_id}/monthly-stats',[ManagerController::class,'getMonthlyDeliveredOrders']);
+  Route::get('orders/{branch_id}/numberallstatus',[ManagerController::class,'getOrderStatusCounts']);
+  Route::get('orders/{branch_id}/everymonth',[ManagerController::class,'getMonthlyStatusBreakdown']);
+  Route::get('/orders/delivered-category-stats/{branch_id}', [ManagerController::class, 'getDeliveredCategoryStats']);
+  Route::get('orders/statistics/popular-food-categories/{branch_id}', [ManagerController::class, 'getPopularCategoriesByUsers']);
 
 
 });
