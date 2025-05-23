@@ -5,12 +5,21 @@ namespace App\Http\Controllers;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-
+use App\Services\BranchManagerService;
 class BranchManagementController extends Controller
 {
-   
+    protected $branchService;
 
-public function getAllBranchesWithDetails()
+    public function __construct(BranchManagerService $branchService)
+    {
+        $this->branchService = $branchService;
+    }
+    public function getAllBranchesWithDetails()
+    {
+        $results = $this->branchService->getAllBranchesWithDetails();
+        return response()->json($results, 200);
+    }
+public function getAllBranchesWithDetails1()
 {
     $branches = Branch::with([
         'restaurant:id,name,description',
@@ -19,7 +28,7 @@ public function getAllBranchesWithDetails()
     ])->get(['id', 'restaurant_id', 'logo_url', 'description']);
    
     $results = $branches->map(function ($branch) {
-        $totalRatings = 0;
+        $ratingCount = 0;
          $averageRating = 0;
         $restaurant = $branch->restaurant;
 
