@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BranchManagementController;
 use App\Http\Controllers\ManagerController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -34,3 +35,4 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 
 
 });
+  Route::get('/allbranch', [BranchManagementController::class, 'getAllBranchesWithDetails']);

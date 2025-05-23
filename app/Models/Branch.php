@@ -11,7 +11,7 @@ class Branch extends Model
     protected $guarded = ['id'];
     public function restaurant()
     {
-        return $this->belongsTo(Restaurant::class, 'Restaurant_id');
+        return $this->belongsTo(Restaurant::class);
     }
 
     public function manager()

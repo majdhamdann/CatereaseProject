@@ -34,10 +34,10 @@ public function feedbacks()
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',       // Foreign key on feedback_types
-        'FeedbackType_id',     // Foreign key on feedback
-        'id',                  // Local key on food_items
-        'id'                   // Local key on feedback_types
+        'target_ref_id',      
+        'FeedbackType_id',    
+        'id',                 
+        'id'                  
     )->where('target_type', 'food_item');
 }
 
