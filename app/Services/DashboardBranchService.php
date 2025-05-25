@@ -2,13 +2,20 @@
 
 namespace App\Services;
 
+use App\Models\Branch;
 use App\Models\Order;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class ManagerBranchService
+class DashboardBranchService
 {
     public function getBranchProfit($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         return Order::where('branch_id', $branch_id)
             ->where('status', 'delivered')
             ->sum('total_price');
@@ -16,6 +23,11 @@ class ManagerBranchService
 
     public function getLastDeliveredOrdersWithRatings($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         $orders = Order::where('branch_id', $branch_id)
             ->where('status', 'delivered')
             ->orderBy('created_at', 'desc')
@@ -49,6 +61,11 @@ class ManagerBranchService
 
     public function getMonthlyDeliveredStats($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         return Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')
             ->where('branch_id', $branch_id)
             ->where('status', 'delivered')
@@ -60,6 +77,11 @@ class ManagerBranchService
 
     public function getOrderStatusCounts($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled'];
         $response = [];
 
@@ -74,6 +96,11 @@ class ManagerBranchService
 
     public function getMonthlyOrderStatusBreakdown($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         return Order::select(
                 DB::raw('YEAR(created_at) as year'),
                 DB::raw('MONTH(created_at) as month'),
@@ -89,6 +116,11 @@ class ManagerBranchService
 
     public function getDeliveredItemsCategoryStats($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         $orders = Order::with(['orderDetails.foodItem.category'])
             ->where('status', 'delivered')
             ->where('branch_id', $branch_id)
@@ -125,6 +157,11 @@ class ManagerBranchService
 
     public function getPopularFoodCategories($branch_id)
     {
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+           abort(403, 'Unauthorized access'); 
+         }
         $orders = Order::with(['orderDetails.foodItem.category'])
             ->where('branch_id', $branch_id)
             ->get();

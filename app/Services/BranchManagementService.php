@@ -4,7 +4,7 @@ namespace App\Services;
 
 use App\Models\Branch;
 
-class BranchManagerService{
+class BranchManagementService{
      public function getAllBranchesWithDetails()
     {
         $branches = Branch::with([

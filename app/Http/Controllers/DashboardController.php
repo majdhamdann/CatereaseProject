@@ -8,15 +8,15 @@ use App\Models\FeedbackType;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
-use App\Services\ManagerBranchService;
-class ManagerController extends Controller
+use App\Services\DashboardBranchService;
+class DashboardController extends Controller
 {
 
 
 
     protected $analytics;
 
-    public function __construct(ManagerBranchService $analytics)
+    public function __construct(DashboardBranchService $analytics)
     {
         $this->analytics = $analytics;
     }
