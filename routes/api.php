@@ -23,6 +23,9 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 
 Route::post('login',[AuthController::class,'login']);
+Route::post('/register', [AuthController::class, 'register']);
+Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+
 
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
   Route::get('earnings/{branch_id}',[DashboardController::class,'getBranchProfit']);
