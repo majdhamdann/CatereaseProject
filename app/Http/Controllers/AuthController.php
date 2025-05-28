@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\LoginRequest;
 use App\Http\Requests\RegisterUserRequest;
+use App\Http\Requests\VerifyOtpRequest;
 use App\Mail\WelcomeEmail;
 use App\Models\Otp;
 use App\Models\User;
@@ -38,52 +39,16 @@ class AuthController extends Controller
 
         return response()->json($data);
     }
-    public function login1(Request $request){
-        $loginUserData = $request->validate([
-            'email'=>'required|string|email',
-            'password'=>'required|min:8'
-        ]);
-        $user = User::where('email',$loginUserData['email'])->first();
-        if(!$user || !Hash::check($loginUserData['password'],$user->password)){
-            return response()->json([
-                'message' => 'Invalid Credentials'
-            ],401);
+    public function verify(VerifyOtpRequest $request)
+    {
+        $result = $this->userService->verify($request->user_id, $request->otp);
+
+        if (!$result['status']) {
+            return response()->json(['message' => $result['message']], 400);
         }
-        $token = $user->createToken($user->name.'-AuthToken')->plainTextToken;
-        return response()->json([
-            'access_token' => $token,
-        ]);
+
+        return response()->json(['message' => $result['message']]);
     }
-
-
    
-
-    public function verifyOtp(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'otp' => 'required|string',
-    ]);
-
-    $otpRecord = Otp::where('identifier', $request->email)
-                    ->where('otp', $request->otp)
-                    ->where('expires_at', '>', now())
-                    ->first();
-
-    if (!$otpRecord) {
-        return response()->json(['message' => 'Invalid or expired OTP'], 400);
-    }
-
-    $user = User::where('email', $request->email)->first();
-    if ($user) {
-        $user->verified = true;
-        $user->save();
-    }
-
-    $otpRecord->delete();
-
-    return response()->json(['message' => 'OTP verified successfully']);
-}
-
 
 }

@@ -9,20 +9,17 @@ return new class extends Migration
     /**
      * Run the migrations.
      */
-    public function up()
-{
-    Schema::table('users', function (Blueprint $table) {
-        $table->string('otp_code')->nullable();
-    });
-}
-
-    /**
-     * Reverse the migrations.
-     */
-    public function down(): void
+   public function up()
     {
         Schema::table('users', function (Blueprint $table) {
-            //
+            $table->dropColumn('otp_code');
+        });
+    }
+
+    public function down()
+    {
+        Schema::table('users', function (Blueprint $table) {
+            $table->string('otp_code')->nullable();
         });
     }
 };

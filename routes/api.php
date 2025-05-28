@@ -24,7 +24,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 
 Route::post('login',[AuthController::class,'login']);
 Route::post('/register', [AuthController::class, 'register']);
-Route::post('/verify-otp', [AuthController::class, 'verifyOtp']);
+Route::post('/verify-otp', [AuthController::class, 'verify']);
 
 
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {

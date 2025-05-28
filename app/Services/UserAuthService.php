@@ -26,12 +26,12 @@ class UserAuthService
         ]);
         $otp = rand(100000, 999999);
 
-        Otp::where('identifier', $user->email)->delete();
+        Otp::where('user_id', $user->id)->delete();
 
         Otp::create([
-            'identifier' => $user->email,
+           'user_id' => $user->id,
             'otp' => $otp,
-            'expires_at' => Carbon::now()->addSeconds(50),
+            'expires_at' => Carbon::now()->addMinutes(50),
         ]);
 
         Mail::to($user->email)->send(new WelcomeEmail($user, $otp));
@@ -58,5 +58,26 @@ class UserAuthService
             'access_token' => $token,
             'user' => $user,
         ];
+    }
+    public function verify($userId, $otp)
+    {
+        $otpRecord = Otp::where('user_id', $userId)
+                        ->where('otp', $otp)
+                        ->where('expires_at', '>', Carbon::now())
+                        ->first();
+
+        if (!$otpRecord) {
+            return ['status' => false, 'message' => 'Invalid or expired OTP'];
+        }
+
+        $user = User::find($userId);
+        if ($user) {
+            $user->verified = true;
+            $user->save();
+        }
+
+        $otpRecord->delete();
+
+        return ['status' => true, 'message' => 'OTP verified successfully'];
     }
 }
