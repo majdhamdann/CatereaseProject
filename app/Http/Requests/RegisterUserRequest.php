@@ -27,7 +27,7 @@ class RegisterUserRequest extends FormRequest
         'password' => 'required|string|confirmed',
         'role_id' => 'required|exists:roles,id',
         'phone' => 'required|numeric',
-        'photo' => 'required|image|mimes:jpg,jpeg,png|max:2048',
+        'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         'gender' => 'required|in:f,m',
     ];
 }
