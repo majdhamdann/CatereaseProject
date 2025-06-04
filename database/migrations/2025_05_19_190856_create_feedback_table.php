@@ -17,8 +17,8 @@ return new class extends Migration
             $table->unsignedBigInteger('FeedbackType_id');
 
             $table->enum('type', ['rating', 'complaint']);
-            $table->decimal('score', 2, 1)->nullable(); 
-            $table->text('content')->nullable(); 
+            $table->decimal('score', 2, 1)->nullable();
+            $table->text('message')->nullable();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('FeedbackType_id')->references('id')->on('feedback_types')->onDelete('cascade');

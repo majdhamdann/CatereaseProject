@@ -11,7 +11,7 @@ class BranchManagementService{
             'restaurant:id,name,description',
             'categories:id,branch_id,name',
             'restaurant.feedbacks'
-        ])->get(['id', 'restaurant_id', 'logo_url', 'description']);
+        ])->get(['id', 'restaurant_id', 'photo', 'description']);
 
         return $branches->map(function ($branch) {
             $ratingCount = 0;
@@ -28,7 +28,7 @@ class BranchManagementService{
                 'branch_id' => $branch->id,
                 'descriptionBranch' => $branch->description ?? null,
                 'descriptionResraurant' => $restaurant->description ?? null,
-                'logo_url' => $branch->logo_url,
+                'photo' => $branch->photo,
                 'restaurant_name' => $restaurant->name ?? null,
                 'categories' => $branch->categories->pluck('name'),
                 'total_ratings' => $ratingCount,

@@ -14,19 +14,19 @@ class BranchSeeder extends Seeder
     public function run(): void
     {
         Branch::create([
-				
+
             'Restaurant_id' => '1',
 
-            'location' => 'اشهر المطاعم والذ الاطعمة ',
+            'location' => 'The most famous restaurants and the most delicious foods ',
 
             'description' =>' this branch is ...........',
-            'logo_url' =>'logBranch.png',
+            'photo' =>'logBranch.png',
             'Manager_id'=>1,
             'created_at'=>now(),
             'updated_at'=>now()
 
         ]);
-        
+
 
     }
 }

@@ -13,20 +13,22 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-       
 
-  
+
+
             Category::create([
                 'branch_id' => 1,
-                'name' => 'Fast Food',
-                'description' => 'Delicious fast food'
+                //'name' => 'Fast Food',
+                'food_category_id'=>1,
+                //'description' => 'Delicious fast food'
             ]);
 
             Category::create([
                 'branch_id' => 1,
-                'name' => 'Oriental',
-                'description' => 'Middle eastern cuisine'
+                'food_category_id'=>1,
+                //'name' => 'Oriental',
+                //'description' => 'Middle eastern cuisine'
             ]);
-       
+
     }
 }

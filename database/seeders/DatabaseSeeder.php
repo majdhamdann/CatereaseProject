@@ -25,6 +25,7 @@ class DatabaseSeeder extends Seeder
         UserSeeder::class,
         resturantseeder::class,
         BranchSeeder::class,
+        FoodCategorySeeder::class,
         CategorySeeder::class,
         FoodItemSeeder::class,
         cityseeder::class,
@@ -32,7 +33,7 @@ class DatabaseSeeder extends Seeder
         OrderSeeder::class,
         OrderDetailSeeder::class,
         FeedBackTypeSeeder::class,
-        CategoriesSeeder::class
+
 
     ]);
 

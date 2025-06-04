@@ -111,7 +111,7 @@ class DashboardController extends Controller
     $feedback->user_id = auth()->id();
     $feedback->type = $request->type;
     $feedback->score = $request->score;
-    $feedback->content = $request->content;
+    $feedback->message = $request->message;
     $feedback->save();
 
     return response()->json([

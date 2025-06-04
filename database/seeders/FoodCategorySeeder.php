@@ -12,15 +12,10 @@ class FoodCategorySeeder extends Seeder
      */
     public function run(): void
     {
-        $foodCategories = [
-            ['name' => 'Eastern'],
-            ['name' => 'Western'],
-            ['name' => 'Desserts'],
-            ['name' => 'Beverages'],
-        ];
 
-        foreach ($foodCategories as $category) {
-            FoodCategory::firstOrCreate(['name' => $category['name']], $category);
-        }
+        FoodCategory::create(['id' => 1, 'name' => 'Eastern']);
+        FoodCategory::create(['id' => 2, 'name' => 'Western']);
+        FoodCategory::create(['id' => 3, 'name' => 'Desserts']);
+        FoodCategory::create(['id' => 4, 'name' => 'Beverages']);
     }
 }

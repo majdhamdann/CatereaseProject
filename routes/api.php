@@ -5,6 +5,9 @@ use App\Http\Controllers\BranchManagementController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\RestaurantController;
+
+
 
 /*
 |--------------------------------------------------------------------------
@@ -39,3 +42,4 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 
 });
   Route::get('/allbranch', [BranchManagementController::class, 'getAllBranchesWithDetails']);
+Route::get('/restaurants', [RestaurantController::class, 'index']);
