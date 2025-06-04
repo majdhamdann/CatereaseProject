@@ -16,7 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('Restaurant_id');
             $table->string('location');
             $table->text('description')->nullable();
-            $table->longText('logo_url')->nullable();
+            $table->longText('photo')->nullable();
             $table->unsignedBigInteger('Manager_id')->nullable();
 
             $table->foreign('Restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
