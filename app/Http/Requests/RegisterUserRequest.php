@@ -25,7 +25,7 @@ class RegisterUserRequest extends FormRequest
         'Full_Name' => 'required|string',
         'email' => 'required|email|unique:users',
         'password' => 'required|string|confirmed',
-        'role_id' => 'required|exists:roles,id',
+       // 'role_id' => 'required|exists:roles,id',
         'phone' => 'required|numeric',
         'photo' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         'gender' => 'required|in:f,m',

@@ -18,7 +18,7 @@ class UserAuthService
             'Full_Name' => $data['Full_Name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
-            'role_id' => $data['role_id'],
+            'role_id' => 3,
             'phone' => $data['phone'],
             'photo' => $photoPath,
             'gender' => $data['gender'],
