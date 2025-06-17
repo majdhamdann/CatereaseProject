@@ -21,7 +21,7 @@ class Kernel extends HttpKernel
         \Illuminate\Foundation\Http\Middleware\ValidatePostSize::class,
         \App\Http\Middleware\TrimStrings::class,
         \Illuminate\Foundation\Http\Middleware\ConvertEmptyStringsToNull::class,
-        
+
     ];
 
     /**
@@ -67,5 +67,7 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         'manager' => \App\Http\Middleware\ManagerMiddlware::class,
+        'customer' => \App\Http\Middleware\EnsureUserIsCustomer::class,
+
     ];
 }
