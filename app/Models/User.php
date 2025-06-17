@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $Full_Name
@@ -59,16 +59,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
 
     protected $guarded = ['id'];
-    protected $fillable = [
-        'name',
-        'role_id',
-        'phone',
-        'photo',
-        'gender',
-        'email',
-        'password'
 
-    ];
 
     protected $hidden = [
         'password',
