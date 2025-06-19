@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchManagementController;
+use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -21,6 +22,10 @@ use App\Http\Controllers\UserManagementController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
+});
+// customer
+Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(function () {
+    Route::get('/profile', [CustomerController::class, 'show']);
 });
 
 
