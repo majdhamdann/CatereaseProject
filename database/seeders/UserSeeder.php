@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
              ],
              [
 
-                'Full_Name' => 'Admin User',
+                'name' => 'Admin User',
                 'role_id' => 1,
                 'phone' => 123456789,
                 'photo' => 'default.jpg',
