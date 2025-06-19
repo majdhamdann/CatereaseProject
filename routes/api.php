@@ -26,7 +26,8 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 });
 // customer
 Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(function () {
-    Route::get('/profile', [CustomerController::class, 'show']);
+    Route::get('/show', [CustomerController::class, 'show']);
+    Route::post('/update', [CustomerController::class, 'update']);
 });
 
 
@@ -48,3 +49,5 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 });
   Route::get('/allbranch', [BranchManagementController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurants', [RestaurantController::class, 'index']);
+Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
+

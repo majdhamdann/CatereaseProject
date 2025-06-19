@@ -22,7 +22,7 @@ class RegisterUserRequest extends FormRequest
    public function rules()
 {
     return [
-        'Full_Name' => 'required|string',
+        'name' => 'required|string',
         'email' => 'required|email|unique:users',
         'password' => 'required|string|confirmed',
        // 'role_id' => 'required|exists:roles,id',

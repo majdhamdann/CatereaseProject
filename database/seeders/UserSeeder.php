@@ -17,7 +17,7 @@ class UserSeeder extends Seeder
     {
          DB::table('users')->insert([
             [
-                'Full_Name' => 'Manager User',
+                'name' => 'Manager User',
                 'role_id' => 2,
                 'phone' => 123456789,
                 'photo' => 'default.jpg',
@@ -30,7 +30,7 @@ class UserSeeder extends Seeder
                 'updated_at' => now(),
             ],
              [
-                 'Full_Name' => 'Customer User',
+                 'name' => 'Customer User',
                  'role_id' => 3,
                  'phone' => 599123456,
                  'photo' => 'default.jpg',
