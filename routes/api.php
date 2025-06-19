@@ -27,6 +27,7 @@ Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
 Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(function () {
     Route::get('/show', [CustomerController::class, 'show']);
     Route::post('/update', [CustomerController::class, 'update']);
+    Route::post('/update-password', [CustomerController::class, 'updatePassword']);
 });
 
 

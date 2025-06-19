@@ -6,6 +6,7 @@ namespace App\Services;
 use App\Models\User;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 
 class CustomerService
 {
@@ -110,6 +111,56 @@ class CustomerService
                 'code' => 500,
                 'message' => 'Something went wrong while updating profile',
                 'error' => $e->getMessage()
+            ];
+        }
+    }
+
+    public function updatePassword($request)
+    {
+        try {
+            DB::beginTransaction();
+
+
+            $user = User::find(Auth::id());
+
+            if (!$user) {
+                DB::rollBack();
+                return [
+                    'status' => 'error',
+                    'code' => 401,
+                    'message' => 'Unauthorized. Please log in.',
+                ];
+            }
+
+
+            if (!Hash::check($request->input('current_password'), $user->password)) {
+                DB::rollBack();
+                return [
+                    'status' => 'error',
+                    'code' => 403,
+                    'message' => 'Current password is incorrect.',
+                ];
+            }
+
+
+            $user->password = Hash::make($request->input('new_password'));
+            $user->save();
+
+            DB::commit();
+
+            return [
+                'status' => 'success',
+                'code' => 200,
+                'message' => 'Password updated successfully.',
+            ];
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return [
+                'status' => 'error',
+                'code' => 500,
+                'message' => 'Something went wrong while updating password.',
+                'error' => $e->getMessage(),
             ];
         }
     }
