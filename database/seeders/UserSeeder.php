@@ -29,6 +29,19 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ], 
+            [
+                'Full_Name' => 'Admin User',
+                'role_id' => 1,
+                'phone' => 123456789,
+                'photo' => 'default.jpg', 
+                'gender' => 'm',
+                'email' => 'Admin@example.com',
+                'email_verified_at' => now(),
+                'password' => Hash::make('123456789'), 
+                'remember_token' => Str::random(10),
+                'created_at' => now(),
+                'updated_at' => now(),
+            ], 
         ]);
     }
 }
