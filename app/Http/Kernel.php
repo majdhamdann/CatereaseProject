@@ -68,5 +68,7 @@ class Kernel extends HttpKernel
         'auth:sanctum' => \Laravel\Sanctum\Http\Middleware\EnsureFrontendRequestsAreStateful::class,
         'manager' => \App\Http\Middleware\ManagerMiddlware::class,
         'is_admin' => \App\Http\Middleware\IsAdmin::class,
+        'customer' => \App\Http\Middleware\EnsureUserIsCustomer::class,
+
     ];
 }

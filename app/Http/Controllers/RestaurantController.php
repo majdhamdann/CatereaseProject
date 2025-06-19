@@ -38,7 +38,7 @@ class RestaurantController extends Controller
             return [
                 'restaurant_id' => $restaurant->id,
                 'name' => $restaurant->name,
-                'logo_url' => $restaurant->logo_url,
+                'photo' => $restaurant->photo,
                 'description' => $restaurant->description,
                 'rating' => $averageRating,
                 'total_ratings' => $ratingCount,
