@@ -8,6 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
+use App\Http\Controllers\CustomerAddressController;
 
 /*
 |--------------------------------------------------------------------------
@@ -28,6 +29,8 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
     Route::get('/show', [CustomerController::class, 'show']);
     Route::post('/update', [CustomerController::class, 'update']);
     Route::post('/update-password', [CustomerController::class, 'updatePassword']);
+    Route::post('/creat', [CustomerAddressController::class, 'store']);
+
 });
 
 
