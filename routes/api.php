@@ -30,6 +30,10 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
     Route::post('/update', [CustomerController::class, 'update']);
     Route::post('/update-password', [CustomerController::class, 'updatePassword']);
     Route::post('/creat', [CustomerAddressController::class, 'store']);
+    Route::get('/list-addresses', [CustomerAddressController::class, 'index']);
+    Route::post('/update_addresse/{id}', [CustomerAddressController::class, 'update']);
+    Route::delete('/delete_addresse/{id}', [CustomerAddressController::class, 'delete']);
+
 
 });
 

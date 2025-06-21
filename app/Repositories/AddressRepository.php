@@ -20,4 +20,20 @@ class AddressRepository implements AddressRepositoryInterface
     {
         return Address::destroy($id);
     }
+    public function update($id, array $data)
+    {
+        $address = Address::findOrFail($id);
+        $address->update($data);
+        return $address;
+    }
+
+    public function findByIdAndUser($id, $userId)
+    {
+        return Address::where('id', $id)
+            ->where('user_id', $userId)
+            ->first();
+    }
+
+
+
 }

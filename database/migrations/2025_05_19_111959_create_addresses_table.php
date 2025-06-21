@@ -19,7 +19,7 @@ return new class extends Migration
             $table->string('building')->nullable();
             $table->string('floor')->nullable();
             $table->string('apartment')->nullable();
-            $table->string('coordinate')->nullable(); 
+            $table->string('coordinate')->nullable();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
