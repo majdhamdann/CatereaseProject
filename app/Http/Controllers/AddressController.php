@@ -68,6 +68,19 @@ class AddressController extends Controller
         ], $result['code']);
     }
 
+    public function setDefault($id)
+    {
+        $result = $this->addressService->setDefault($id);
+
+        return response()->json([
+            'status' => $result['status'],
+            'message' => $result['message'],
+            'data' => $result['data'] ?? null,
+            'error' => $result['error'] ?? null,
+        ], $result['code']);
+    }
+
+
 
 
 }

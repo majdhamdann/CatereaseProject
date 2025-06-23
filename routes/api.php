@@ -33,6 +33,8 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
     Route::get('/list-addresses', [AddressController::class, 'index']);
     Route::post('/update_addresse/{id}', [AddressController::class, 'update']);
     Route::delete('/delete_addresse/{id}', [AddressController::class, 'delete']);
+    Route::post('/addresses/{id}/default', [AddressController::class, 'setDefault']);
+
 
 
 });

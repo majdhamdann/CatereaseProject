@@ -165,6 +165,48 @@ class AddressService
             ];
         }
     }
+    public function setDefault($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $userId = Auth::id();
+            $address = $this->addressRepository->findByIdAndUser($id, $userId);
+
+            if (!$address) {
+                DB::rollBack();
+                return [
+                    'status' => 'error',
+                    'code' => 404,
+                    'message' => 'Address not found or unauthorized'
+                ];
+            }
+
+
+            $this->addressRepository->unsetDefaultForUser($userId);
+            $address->update(['is_default' => true]);
+
+            DB::commit();
+
+            return [
+                'status' => 'success',
+                'code' => 200,
+                'message' => 'Default address set successfully',
+                'data' => $address
+            ];
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            return [
+                'status' => 'error',
+                'code' => 500,
+                'message' => 'Failed to set default address',
+                'error' => $e->getMessage()
+            ];
+        }
+    }
+
 
 
 

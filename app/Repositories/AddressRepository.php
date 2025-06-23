@@ -34,6 +34,11 @@ class AddressRepository implements AddressRepositoryInterface
             ->first();
     }
 
+    public function unsetDefaultForUser($userId)
+    {
+        return Address::where('user_id', $userId)
+            ->update(['is_default' => false]);
+    }
 
 
 }

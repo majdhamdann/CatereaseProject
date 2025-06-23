@@ -10,6 +10,8 @@ interface AddressRepositoryInterface
     public function delete($id);
     public function update($id, array $data);
     public function findByIdAndUser($id, $userId);
+    public function unsetDefaultForUser($userId);
+
 
 
 }
