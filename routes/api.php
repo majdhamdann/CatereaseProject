@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
-use App\Http\Controllers\CustomerAddressController;
+use App\Http\Controllers\AddressController;
 
 /*
 |--------------------------------------------------------------------------
@@ -29,10 +29,10 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
     Route::get('/show', [CustomerController::class, 'show']);
     Route::post('/update', [CustomerController::class, 'update']);
     Route::post('/update-password', [CustomerController::class, 'updatePassword']);
-    Route::post('/creat', [CustomerAddressController::class, 'store']);
-    Route::get('/list-addresses', [CustomerAddressController::class, 'index']);
-    Route::post('/update_addresse/{id}', [CustomerAddressController::class, 'update']);
-    Route::delete('/delete_addresse/{id}', [CustomerAddressController::class, 'delete']);
+    Route::post('/creat', [AddressController::class, 'store']);
+    Route::get('/list-addresses', [AddressController::class, 'index']);
+    Route::post('/update_addresse/{id}', [AddressController::class, 'update']);
+    Route::delete('/delete_addresse/{id}', [AddressController::class, 'delete']);
 
 
 });

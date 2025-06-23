@@ -3,12 +3,11 @@
 
 namespace App\Services;
 
-namespace App\Services;
 use App\Repositories\Contracts\AddressRepositoryInterface;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 
-class CustomerAddressService
+class AddressService
 {
     protected $addressRepository;
 
@@ -23,7 +22,7 @@ class CustomerAddressService
             DB::beginTransaction();
 
             $data = $request->only([
-                'city_id', 'street', 'building', 'floor', 'apartment', 'coordinate'
+                'city_id', 'street', 'building', 'floor', 'apartment', 'latitude', 'longitude'
             ]);
             $data['user_id'] = Auth::id();
 
@@ -69,7 +68,9 @@ class CustomerAddressService
                         'building'   => $address->building,
                         'floor'      => $address->floor,
                         'apartment'  => $address->apartment,
-                        'coordinate' => $address->coordinate,
+                        'latitude'   => $address->latitude,
+                        'longitude'  => $address->longitude,
+                        'is_default' => $address->is_default,
                     ];
                 }),
             ];
@@ -102,7 +103,7 @@ class CustomerAddressService
             }
 
             $data = $request->only([
-                'city_id', 'street', 'building', 'floor', 'apartment', 'coordinate'
+                'city_id', 'street', 'building', 'floor', 'apartment', 'latitude', 'longitude'
             ]);
 
             $updated = $this->addressRepository->update($id, $data);

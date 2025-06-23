@@ -9,14 +9,14 @@ use App\Http\Requests\UpdateAddressRequest;
 use App\Models\Address;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
-use App\Services\CustomerAddressService;
+use App\Services\AddressService;
 
-class CustomerAddressController extends Controller
+class AddressController extends Controller
 {
 
     protected $addressService;
 
-    public function __construct(CustomerAddressService $addressService)
+    public function __construct(AddressService $addressService)
     {
         $this->addressService = $addressService;
     }

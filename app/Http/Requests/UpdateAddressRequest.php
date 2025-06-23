@@ -27,7 +27,9 @@ class UpdateAddressRequest extends FormRequest
             'building'   => 'nullable|string',
             'floor'      => 'nullable|string',
             'apartment'  => 'nullable|string',
-            'coordinate' => 'nullable|string',
+            'latitude' => 'nullable|numeric|between:-90,90',
+            'longitude' => 'nullable|numeric|between:-180,180',
+
         ];
     }
 }
