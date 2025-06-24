@@ -9,6 +9,9 @@ use App\Models\User;
 use App\Models\City;
 use Faker\Factory as Faker;
 
+
+
+
 class AddressSeeder extends Seeder
 {
     /**
@@ -29,7 +32,8 @@ class AddressSeeder extends Seeder
                 'building'   => 'B' . $faker->numberBetween(1, 50),
                 'floor'      => $faker->numberBetween(1, 10),
                 'apartment'  => $faker->numberBetween(1, 100),
-                'coordinate' => $faker->latitude . ',' . $faker->longitude,
+                'latitude' => $faker->latitude,
+                'longitude' => $faker->longitude,
                 'created_at' => now(),
                 'updated_at' => now(),
             ]);

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+
 /**
  * 
  *
@@ -35,12 +37,20 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Address whereStreet($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Address whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Address whereUserId($value)
+ * @property string|null $latitude
+ * @property string|null $longitude
+ * @property int $is_default
+ * @method static \Illuminate\Database\Eloquent\Builder|Address whereIsDefault($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Address whereLatitude($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Address whereLongitude($value)
  * @mixin \Eloquent
  */
 class Address extends Model
 {
     use HasFactory;
+
     protected $guarded = ['id'];
+
     public function user()
     {
         return $this->belongsTo(User::class);

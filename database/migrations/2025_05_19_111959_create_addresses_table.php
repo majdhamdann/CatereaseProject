@@ -19,7 +19,13 @@ return new class extends Migration
             $table->string('building')->nullable();
             $table->string('floor')->nullable();
             $table->string('apartment')->nullable();
-            $table->string('coordinate')->nullable(); 
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
+            $table->boolean('is_default')->default(false);
+
+
+
+
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
