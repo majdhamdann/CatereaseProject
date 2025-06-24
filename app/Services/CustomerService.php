@@ -36,7 +36,7 @@ class CustomerService
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'phone' => $user->phone,
+                    'phone' => (string)$user->phone,
                     'gender' => $user->gender,
                     'photo_url' => $user->photo,
                     'role' => optional($user->role)->name,
