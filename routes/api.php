@@ -1,7 +1,7 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BranchManagementController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use Illuminate\Http\Request;
@@ -37,6 +37,10 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
 
 
 
+});
+//Branch
+Route::prefix('branches')->group(function () {
+    Route::get('/nearby', [BranchController::class, 'getNearby']);
 });
 
 

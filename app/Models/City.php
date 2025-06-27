@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -29,8 +29,14 @@ class City extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
+
     public function addresses()
     {
         return $this->hasMany(Address::class, 'city_id');
+    }
+    public function branches()
+    {
+        return $this->hasMany(Branch::class, 'city_id');
     }
 }
