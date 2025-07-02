@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $Restaurant_id
@@ -47,6 +47,11 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Branch whereLatitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Branch whereLocationNote($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Branch whereLongitude($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Category> $branch
+ * @property-read int|null $branch_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchServiceType> $branchServiceTypes
+ * @property-read int|null $branch_service_types_count
+ * @property-read \App\Models\City|null $city
  * @mixin \Eloquent
  */
 class Branch extends Model
@@ -87,5 +92,13 @@ class Branch extends Model
     public function city()
     {
         return $this->belongsTo(City::class, 'city_id');
+    }
+    public function branch ()
+    {
+        return $this->hasMany(Category::class, 'branch_id');
+    }
+    public function branchServiceTypes()
+    {
+        return $this->hasMany(BranchServiceType::class, 'branch_id');
     }
 }

@@ -49,6 +49,18 @@ class BranchSeeder extends Seeder
                 'updated_at' => now(),
             ],
             [
+                'restaurant_id' => 2,
+                'manager_id' => 1,
+                'city_id' => 1,
+                'description' => 'Shami Taste Mezzeh',
+                'photo' => 'https://example.com/images/shami_branch.png',
+                'location_note' => 'Near Mezzeh Autostrad',
+                'latitude' => 33.5020,
+                'longitude' => 36.2850,
+                'created_at' => now(),
+                'updated_at' => now(),
+            ],
+            [
 
                 'restaurant_id' => 2,
                 'manager_id' => 5,

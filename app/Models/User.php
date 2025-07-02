@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property string $Full_Name
@@ -51,6 +51,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereRoleId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|User whereVerified($value)
+ * @property string $name
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements MustVerifyEmail

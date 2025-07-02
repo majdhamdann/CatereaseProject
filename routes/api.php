@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
@@ -63,7 +64,10 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('users', UserManagementController::class);
 });
-  Route::get('/allbranch', [BranchManagementController::class, 'getAllBranchesWithDetails']);
+  Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
+
+Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
+
 

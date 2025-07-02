@@ -6,6 +6,7 @@ use App\Models\FoodItem;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
 use Faker\Factory as Faker;
+
 class FoodItemSeeder extends Seeder
 {
     /**
@@ -25,9 +26,10 @@ class FoodItemSeeder extends Seeder
                     'description' => $faker->sentence,
                     'price' => $faker->randomFloat(2, 10, 100),
                     'discount_price' => $faker->randomFloat(2, 5, 90),
-                    'image_url' => 'food.jpg',
+                    'photo' => 'food.jpg',
                     'available' => true,
                     'calories' => $faker->numberBetween(100, 900),
+                    'type' => $faker->randomElement([ 'veg', 'non_veg']),
                 ]);
             }
         }

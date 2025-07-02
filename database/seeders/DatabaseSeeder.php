@@ -36,7 +36,9 @@ class DatabaseSeeder extends Seeder
         OrderDetailSeeder::class,
         FeedBackTypeSeeder::class,
 
-
+        ServiceTypeSeeder::class,
+        BranchServiceTypeSeeder::class,
+        OrderServiceTypeSeeder::class,
     ]);
 
     }
