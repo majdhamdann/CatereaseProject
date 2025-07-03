@@ -109,9 +109,92 @@ class BranchController extends Controller
 //        ]);
 //    }
 
+//    public function getBranchesByCategoryName($categoryName)
+//    {
+//        $user = Auth::user();
+//        if (!$user) {
+//            return response()->json([
+//                'status' => 'error',
+//                'message' => 'Unauthenticated. Please log in.'
+//            ], 401);
+//        }
+//
+//        $foodCategory = FoodCategory::where('name', $categoryName)->first();
+//
+//        if (!$foodCategory) {
+//            return response()->json([
+//                'status' => 'error',
+//                'message' => 'Category not found'
+//            ], 404);
+//        }
+//
+//        $defaultAddress = $user->addresses()->where('is_default', true)->first();
+//
+//
+//        if (!$defaultAddress || !$defaultAddress->latitude || !$defaultAddress->longitude) {
+//            $branches = Branch::whereHas('categories', function ($q) use ($foodCategory) {
+//                $q->where('food_category_id', $foodCategory->id);
+//            })
+//                ->with(['restaurant:id,name', 'categories.foodCategory:id,name'])
+//                ->get();
+//
+//            return response()->json([
+//                'status' => 'success',
+//                'category' => $foodCategory->name,
+//                'user_location' => null,
+//                'data' => $branches->map(function ($branch) {
+//                    return [
+//                        'branch_id' => $branch->id,
+//                        'restaurant' => $branch->restaurant->name ?? null,
+//                        'description' => $branch->description,
+//                        'location_note' => $branch->location_note,
+//                        'latitude' => $branch->latitude,
+//                        'longitude' => $branch->longitude,
+//                        'distance_km' => null,
+//                        'categories' => $branch->categories->map(fn ($cat) => $cat->foodCategory->name)->unique()->values()
+//                    ];
+//                }),
+//            ]);
+//        }
+//
+//
+//        $branches = Branch::select('branches.*')
+//            ->selectRaw(
+//                '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
+//                [$defaultAddress->latitude, $defaultAddress->longitude, $defaultAddress->latitude]
+//            )
+//            ->whereHas('categories', function ($q) use ($foodCategory) {
+//                $q->where('food_category_id', $foodCategory->id);
+//            })
+//            ->with(['restaurant:id,name', 'categories.foodCategory:id,name'])
+//            ->orderBy('distance')
+//            ->get();
+//
+//        return response()->json([
+//            'status' => 'success',
+//            'category' => $foodCategory->name,
+//            'user_location' => [
+//                'latitude' => $defaultAddress->latitude,
+//                'longitude' => $defaultAddress->longitude
+//            ],
+//            'data' => $branches->map(function ($branch) {
+//                return [
+//                    'branch_id' => $branch->id,
+//                    'restaurant' => $branch->restaurant->name ?? null,
+//                    'description' => $branch->description,
+//                    'location_note' => $branch->location_note,
+//                    'latitude' => $branch->latitude,
+//                    'longitude' => $branch->longitude,
+//                    'distance_km' => round($branch->distance, 2),
+//                    'categories' => $branch->categories->map(fn ($cat) => $cat->foodCategory->name)->unique()->values()
+//                ];
+//            }),
+//        ]);
+//    }
     public function getBranchesByCategoryName($categoryName)
     {
-        $user = Auth::user();
+
+        $user = Auth::guard('sanctum')->user();
         if (!$user) {
             return response()->json([
                 'status' => 'error',
@@ -119,8 +202,8 @@ class BranchController extends Controller
             ], 401);
         }
 
-        $foodCategory = FoodCategory::where('name', $categoryName)->first();
 
+        $foodCategory = FoodCategory::where('name', $categoryName)->first();
         if (!$foodCategory) {
             return response()->json([
                 'status' => 'error',
@@ -128,32 +211,21 @@ class BranchController extends Controller
             ], 404);
         }
 
-        $defaultAddress = $user->addresses()->where('is_default', true)->first();
+
+        $lastAddress = $user->addresses()
+            ->whereNotNull('latitude')
+            ->whereNotNull('longitude')
+            ->latest()
+            ->first();
 
 
-        if (!$defaultAddress || !$defaultAddress->latitude || !$defaultAddress->longitude) {
-            $branches = Branch::whereHas('categories', function ($q) use ($foodCategory) {
-                $q->where('food_category_id', $foodCategory->id);
-            })
-                ->with(['restaurant:id,name', 'categories.foodCategory:id,name'])
-                ->get();
-
+        if (!$lastAddress) {
+            $branches = $this->getBranchesWithoutLocation($foodCategory);
             return response()->json([
                 'status' => 'success',
+                'message' => 'Showing all branches as no valid location found',
                 'category' => $foodCategory->name,
-                'user_location' => null,
-                'data' => $branches->map(function ($branch) {
-                    return [
-                        'branch_id' => $branch->id,
-                        'restaurant' => $branch->restaurant->name ?? null,
-                        'description' => $branch->description,
-                        'location_note' => $branch->location_note,
-                        'latitude' => $branch->latitude,
-                        'longitude' => $branch->longitude,
-                        'distance_km' => null,
-                        'categories' => $branch->categories->map(fn ($cat) => $cat->foodCategory->name)->unique()->values()
-                    ];
-                }),
+                'data' => $branches
             ]);
         }
 
@@ -161,7 +233,7 @@ class BranchController extends Controller
         $branches = Branch::select('branches.*')
             ->selectRaw(
                 '(6371 * acos(cos(radians(?)) * cos(radians(latitude)) * cos(radians(longitude) - radians(?)) + sin(radians(?)) * sin(radians(latitude)))) AS distance',
-                [$defaultAddress->latitude, $defaultAddress->longitude, $defaultAddress->latitude]
+                [$lastAddress->latitude, $lastAddress->longitude, $lastAddress->latitude]
             )
             ->whereHas('categories', function ($q) use ($foodCategory) {
                 $q->where('food_category_id', $foodCategory->id);
@@ -173,9 +245,11 @@ class BranchController extends Controller
         return response()->json([
             'status' => 'success',
             'category' => $foodCategory->name,
+            'location_source' => 'last_used_address',
             'user_location' => [
-                'latitude' => $defaultAddress->latitude,
-                'longitude' => $defaultAddress->longitude
+                'latitude' => $lastAddress->latitude,
+                'longitude' => $lastAddress->longitude,
+                'address_id' => $lastAddress->id
             ],
             'data' => $branches->map(function ($branch) {
                 return [
@@ -185,12 +259,33 @@ class BranchController extends Controller
                     'location_note' => $branch->location_note,
                     'latitude' => $branch->latitude,
                     'longitude' => $branch->longitude,
-                    'distance_km' => round($branch->distance, 2),
+                    'distance_km' => isset($branch->distance) ? round($branch->distance, 2) : null,
                     'categories' => $branch->categories->map(fn ($cat) => $cat->foodCategory->name)->unique()->values()
                 ];
             }),
         ]);
     }
 
+
+    protected function getBranchesWithoutLocation($foodCategory)
+    {
+        return Branch::whereHas('categories', function ($q) use ($foodCategory) {
+            $q->where('food_category_id', $foodCategory->id);
+        })
+            ->with(['restaurant:id,name', 'categories.foodCategory:id,name'])
+            ->get()
+            ->map(function ($branch) {
+                return [
+                    'branch_id' => $branch->id,
+                    'restaurant' => $branch->restaurant->name ?? null,
+                    'description' => $branch->description,
+                    'location_note' => $branch->location_note,
+                    'latitude' => $branch->latitude,
+                    'longitude' => $branch->longitude,
+                    'distance_km' => null,
+                    'categories' => $branch->categories->map(fn ($cat) => $cat->foodCategory->name)->unique()->values()
+                ];
+            });
+    }
 
 }
