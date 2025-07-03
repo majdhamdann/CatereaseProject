@@ -66,8 +66,11 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
 });
   Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurants', [RestaurantController::class, 'index']);
-Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
+//Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
 
 Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
 
-
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
+});
+//Route::get('/restaurants/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
