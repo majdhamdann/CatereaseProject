@@ -72,5 +72,9 @@ Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
+    Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
+
+
 });
 //Route::get('/restaurants/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
+

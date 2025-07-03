@@ -9,4 +9,7 @@ interface BranchRepositoryInterface
     public function getNearby($lat, $lng);
 
     public function getByCityId($cityId);
+
+    public function getAvailableItemsByBranch($branchId);
+
 }

@@ -6,6 +6,7 @@ use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Repositories\Contracts\BranchRepositoryInterface;
+use Illuminate\Support\Facades\Log;
 
 class BranchService{
      public function getAllBranchesWithDetails()
@@ -39,39 +40,7 @@ class BranchService{
             ];
         });
     }
-//
-//
-//     public function getNearbyBranches(Request $request)
-//    {
-//        $lat = $request->query('lat');
-//        $lng = $request->query('lng');
-//        $cityId = $request->query('city_id');
-//
-//        if ($lat && $lng) {
-//            return Branch::select('*', DB::raw("
-//            (6371 * acos(
-//                cos(radians(?)) *
-//                cos(radians(latitude)) *
-//                cos(radians(longitude) - radians(?)) +
-//                sin(radians(?)) *
-//                sin(radians(latitude))
-//            )) AS distance
-//        "))
-//                ->setBindings([$lat, $lng, $lat])
-//                ->with('restaurant', 'city')
-//                ->orderBy('distance')
-//                ->limit(10)
-//                ->get();
-//
-//        } elseif ($cityId) {
-//            return Branch::where('city_id', $cityId)
-//                ->with('restaurant', 'city')
-//                ->limit(10)
-//                ->get();
-//        }
-//
-//        return null;
-//    }
+
 
     protected $branchRepository;
 
@@ -80,10 +49,7 @@ class BranchService{
         $this->branchRepository = $branchRepository;
     }
 
-//    public function getAllBranchesWithDetails()
-//    {
-//        return $this->branchRepository->getAllWithRelations();
-//    }
+
 
     public function getNearbyBranches(Request $request)
     {
@@ -99,4 +65,66 @@ class BranchService{
 
         return null;
     }
+
+
+
+    public function getBranchItems(int $branchId): array
+    {
+        try {
+            DB::beginTransaction();
+
+            $branch = $this->branchRepository->getAvailableItemsByBranch($branchId);
+
+            if (!$branch) {
+                DB::rollBack();
+                return [
+                    'status' => 'error',
+                    'code' => 404,
+                    'message' => 'Branch not found.'
+                ];
+            }
+
+            DB::commit();
+
+            return [
+                'status' => 'success',
+                'code' => 200,
+                'data' => [
+                    'branch_id' => $branch->id,
+                    'branch_name' => $branch->description,
+                    'items' => $branch->foodItems->map([$this, 'formatFoodItem']),
+                ]
+            ];
+        } catch (\Exception $e) {
+            DB::rollBack();
+
+            Log::error('Branch item fetch failed', [
+                'branch_id' => $branchId,
+                'error' => $e->getMessage()
+            ]);
+
+            return [
+                'status' => 'error',
+                'code' => 500,
+                'message' => 'Internal Server Error'
+            ];
+        }
+    }
+
+    public function formatFoodItem($item): array
+    {
+        return [
+            'id' => $item->id,
+            'name' => $item->name,
+            'description' => $item->description,
+            'price' => $item->price,
+            'discount_price' => $item->discount_price,
+            'type' => $item->type,
+            'photo' => $item->photo,
+            'calories' => $item->calories,
+            'category' => $item->category?->foodCategory?->name,
+        ];
+    }
+
+
 }

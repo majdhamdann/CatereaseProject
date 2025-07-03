@@ -38,4 +38,15 @@ class BranchRepository implements BranchRepositoryInterface
             ->limit(10)
             ->get();
     }
+
+    public function getAvailableItemsByBranch($branchId)
+    {
+        return Branch::with([
+            'foodItems' => fn($q) => $q->where('available', true),
+            'foodItems.category.foodCategory'
+        ])->find($branchId);
+    }
+
+
+
 }
