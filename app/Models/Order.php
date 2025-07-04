@@ -38,6 +38,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereTotalPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUserId($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderServiceType> $orderServiceTypes
+ * @property-read int|null $order_service_types_count
  * @mixin \Eloquent
  */
 class Order extends Model
@@ -62,5 +64,9 @@ class Order extends Model
     public function address()
     {
         return $this->belongsTo(Address::class, 'address_id');
+    }
+    public function orderServiceTypes()
+    {
+        return $this->hasMany(OrderServiceType::class, 'order_id');
     }
 }

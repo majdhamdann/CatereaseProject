@@ -13,15 +13,22 @@ return new class extends Migration
     {
         Schema::create('branches', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('Restaurant_id');
-            $table->string('location');
+            $table->unsignedBigInteger('restaurant_id');
+            $table->unsignedBigInteger('manager_id')->nullable();
+            $table->unsignedBigInteger('city_id')->nullable();
+
             $table->text('description')->nullable();
             $table->longText('photo')->nullable();
-            $table->unsignedBigInteger('Manager_id')->nullable();
-
-            $table->foreign('Restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
-             $table->foreign('Manager_id')->references('id')->on('users')->onDelete('set null');
+            $table->string('location_note')->nullable();
+            $table->decimal('latitude', 10, 7)->nullable();
+            $table->decimal('longitude', 10, 7)->nullable();
             $table->timestamps();
+
+            // Foreign keys
+            $table->foreign('restaurant_id')->references('id')->on('restaurants')->onDelete('cascade');
+            $table->foreign('manager_id')->references('id')->on('users')->onDelete('set null');
+            $table->foreign('city_id')->references('id')->on('cities')->onDelete('set null');
+
         });
     }
 

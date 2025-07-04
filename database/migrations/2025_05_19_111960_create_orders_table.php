@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('branch_id');
             $table->unsignedBigInteger('delivery_id')->nullable();
+
             $table->enum('status', ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled']);
             $table->unsignedBigInteger('promo_code_id')->nullable();
             $table->decimal('total_price', 10, 2);

@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+
+
 /**
  * 
  *
@@ -35,12 +37,33 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Branch wherePhoto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Branch whereRestaurantId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Branch whereUpdatedAt($value)
+ * @property int $restaurant_id
+ * @property int|null $manager_id
+ * @property int|null $city_id
+ * @property string|null $location_note
+ * @property string|null $latitude
+ * @property string|null $longitude
+ * @method static \Illuminate\Database\Eloquent\Builder|Branch whereCityId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Branch whereLatitude($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Branch whereLocationNote($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Branch whereLongitude($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Category> $branch
+ * @property-read int|null $branch_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchServiceType> $branchServiceTypes
+ * @property-read int|null $branch_service_types_count
+ * @property-read \App\Models\City|null $city
  * @mixin \Eloquent
  */
 class Branch extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
+
+
+
+
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
@@ -48,7 +71,7 @@ class Branch extends Model
 
     public function manager()
     {
-        return $this->belongsTo(User::class, 'Manager_id');
+        return $this->belongsTo(User::class, 'manager_id');
     }
 
     public function foodItems()
@@ -64,5 +87,18 @@ class Branch extends Model
     public function orders()
     {
         return $this->hasMany(Order::class, 'branch_id');
+    }
+
+    public function city()
+    {
+        return $this->belongsTo(City::class, 'city_id');
+    }
+    public function branch ()
+    {
+        return $this->hasMany(Category::class, 'branch_id');
+    }
+    public function branchServiceTypes()
+    {
+        return $this->hasMany(BranchServiceType::class, 'branch_id');
     }
 }

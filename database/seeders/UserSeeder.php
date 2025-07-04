@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+
 class UserSeeder extends Seeder
 {
     /**
@@ -58,7 +59,51 @@ class UserSeeder extends Seeder
                 'created_at' => now(),
                 'updated_at' => now(),
             ],
+             [
+
+                 'name' => 'Manager Damascus',
+                 'role_id' => 2,
+                 'phone' => 599123455,
+                 'photo' => 'default.jpg',
+                 'gender' => 'm',
+                 'email' => 'damascus.manager@example.com',
+                 'email_verified_at' => now(),
+                 'password' =>  Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+             [
+
+                 'name' => 'Manager Aleppo',
+                 'role_id' => 2,
+                 'phone' => 599123457,
+                 'photo' => 'default.jpg',
+                 'gender' => 'm',
+                 'email' => 'aleppo.manager@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+             [
+
+                 'name' => 'Manager Latakia',
+                 'role_id' => 2,
+                 'phone' => 599123459,
+                 'photo' => 'default.jpg',
+                 'gender' => 'f',
+                 'email' => 'latakia.manager@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+
 
         ]);
+
     }
 }

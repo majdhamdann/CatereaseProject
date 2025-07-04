@@ -24,11 +24,23 @@ class CategorySeeder extends Seeder
             ]);
 
             Category::create([
-                'branch_id' => 1,
+                'branch_id' => 2,
                 'food_category_id'=>1,
                 //'name' => 'Oriental',
                 //'description' => 'Middle eastern cuisine'
             ]);
+        Category::create([
+            'branch_id' => 3,
+            'food_category_id'=>1,
+            //'name' => 'Oriental',
+            //'description' => 'Middle eastern cuisine'
+        ]);
+        Category::create([
+            'branch_id' => 4,
+            'food_category_id'=>1,
+            //'name' => 'Oriental',
+            //'description' => 'Middle eastern cuisine'
+        ]);
 
     }
 }
