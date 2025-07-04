@@ -23,14 +23,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|City whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|City whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|City whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Branch> $branches
+ * @property-read int|null $branches_count
  * @mixin \Eloquent
  */
 class City extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
+
     public function addresses()
     {
         return $this->hasMany(Address::class, 'city_id');
+    }
+    public function branches()
+    {
+        return $this->hasMany(Branch::class, 'city_id');
     }
 }

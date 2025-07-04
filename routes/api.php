@@ -1,9 +1,10 @@
 <?php
 
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\BranchManagementController;
+use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\MenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
@@ -38,6 +39,10 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
 
 
 });
+//Branch
+Route::prefix('branches')->group(function () {
+    Route::get('/nearby', [BranchController::class, 'getNearby']);
+});
 
 
 Route::post('login',[AuthController::class,'login']);
@@ -59,7 +64,17 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('users', UserManagementController::class);
 });
-  Route::get('/allbranch', [BranchManagementController::class, 'getAllBranchesWithDetails']);
+  Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurants', [RestaurantController::class, 'index']);
-Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
+//Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
+
+Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
+    Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
+
+
+});
+//Route::get('/restaurants/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
 

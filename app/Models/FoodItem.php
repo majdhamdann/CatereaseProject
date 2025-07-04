@@ -43,6 +43,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|FoodItem whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FoodItem wherePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FoodItem whereUpdatedAt($value)
+ * @property string|null $photo
+ * @property string|null $type
+ * @method static \Illuminate\Database\Eloquent\Builder|FoodItem wherePhoto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FoodItem whereType($value)
  * @mixin \Eloquent
  */
 class FoodItem extends Model
