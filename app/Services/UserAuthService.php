@@ -15,7 +15,7 @@ class UserAuthService
     {
         $photoPath = $data['photo']->store('photos', 'public');
         $user = User::create([
-            'Full_Name' => $data['Full_Name'],
+            'name' => $data['name'],
             'email' => $data['email'],
             'password' => Hash::make($data['password']),
             'role_id' => 3,

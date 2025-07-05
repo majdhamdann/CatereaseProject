@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 
+
 class UserSeeder extends Seeder
 {
     /**
@@ -17,7 +18,7 @@ class UserSeeder extends Seeder
     {
          DB::table('users')->insert([
             [
-                'Full_Name' => 'Manager User',
+                'name' => 'Manager User',
                 'role_id' => 2,
                 'phone' => 123456789,
                 'photo' => 'default.jpg',
@@ -28,9 +29,25 @@ class UserSeeder extends Seeder
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ], 
+            ],
+
              [
-                'Full_Name' => 'Admin User',
+
+                 'name' => 'Customer User',
+                 'role_id' => 3,
+                 'phone' => 599123456,
+                 'photo' => 'default.jpg',
+                 'gender' => 'f',
+                 'email' => 'customer@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('123456789'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+             [
+
+                'name' => 'Admin User',
                 'role_id' => 1,
                 'phone' => 123456789,
                 'photo' => 'default.jpg',
@@ -41,7 +58,52 @@ class UserSeeder extends Seeder
                 'remember_token' => Str::random(10),
                 'created_at' => now(),
                 'updated_at' => now(),
-            ], 
+            ],
+             [
+
+                 'name' => 'Manager Damascus',
+                 'role_id' => 2,
+                 'phone' => 599123455,
+                 'photo' => 'default.jpg',
+                 'gender' => 'm',
+                 'email' => 'damascus.manager@example.com',
+                 'email_verified_at' => now(),
+                 'password' =>  Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+             [
+
+                 'name' => 'Manager Aleppo',
+                 'role_id' => 2,
+                 'phone' => 599123457,
+                 'photo' => 'default.jpg',
+                 'gender' => 'm',
+                 'email' => 'aleppo.manager@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+             [
+
+                 'name' => 'Manager Latakia',
+                 'role_id' => 2,
+                 'phone' => 599123459,
+                 'photo' => 'default.jpg',
+                 'gender' => 'f',
+                 'email' => 'latakia.manager@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+
+
         ]);
+
     }
 }

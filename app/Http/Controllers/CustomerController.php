@@ -7,6 +7,8 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use App\Services\CustomerService;
+use App\Http\Requests\UpdateCustomerProfileRequest;
+use App\Http\Requests\UpdatePasswordRequest;
 
 class CustomerController extends Controller
 {
@@ -25,6 +27,31 @@ class CustomerController extends Controller
             'status' => $result['status'],
             'message' => $result['message'],
             'data' => $result['data'] ?? null,
+            'error' => $result['error'] ?? null,
+
+        ], $result['code']);
+    }
+
+    public function update(UpdateCustomerProfileRequest $request)
+    {
+        $result = $this->customerService->updateProfile($request);
+
+        return response()->json([
+            'status' => $result['status'],
+            'message' => $result['message'],
+            'data' => $result['data'] ?? null,
+            'error' => $result['error'] ?? null,
+           // 'request_data' => $request->all()
+        ], $result['code']);
+    }
+
+    public function updatePassword(UpdatePasswordRequest $request)
+    {
+        $result = $this->customerService->updatePassword($request);
+
+        return response()->json([
+            'status' => $result['status'],
+            'message' => $result['message'],
             'error' => $result['error'] ?? null,
         ], $result['code']);
     }
