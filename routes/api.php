@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchManagementController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\FoodManagementController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
@@ -43,8 +44,9 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
   Route::get('/orders/delivered-category-stats/{branch_id}', [DashboardController::class, 'getDeliveredCategoryStats']);
   Route::get('orders/statistics/popular-food-categories/{branch_id}', [DashboardController::class, 'getPopularCategoriesByUsers']);
 
-
 });
+Route::apiResource('food-items', FoodManagementController::class)->middleware('auth:sanctum');
+
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('users', UserManagementController::class);
 });

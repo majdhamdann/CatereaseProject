@@ -78,6 +78,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Order::class);
     }
+    public function managedBranch()
+    {
+       return $this->hasOne(\App\Models\Branch::class, 'Manager_id');
+    }
 
 
     protected $casts = [
