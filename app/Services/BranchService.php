@@ -92,6 +92,7 @@ class BranchService{
                 'data' => [
                     'branch_id' => $branch->id,
                     'branch_name' => $branch->description,
+                    'photo'=>$branch->photo,
                     'items' => $branch->foodItems->map([$this, 'formatFoodItem']),
                 ]
             ];

@@ -4,6 +4,7 @@ use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\MenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -61,20 +62,23 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 
 
 });
-Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
-    Route::apiResource('users', UserManagementController::class);
+  Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
+      Route::apiResource('users', UserManagementController::class);
 });
   Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
-Route::get('/restaurants', [RestaurantController::class, 'index']);
+  Route::get('/restaurants', [RestaurantController::class, 'index']);
 //Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
 
-Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
+  Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
-    Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
+  Route::middleware('auth:sanctum')->group(function () {
+      Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
+      Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
 
+});
 
+Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
+    Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
 });
 //Route::get('/restaurants/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
 

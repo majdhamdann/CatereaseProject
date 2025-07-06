@@ -20,7 +20,7 @@ return new class extends Migration
             $table->text('description')->nullable();
             $table->decimal('price', 10, 2);
             $table->decimal('discount_price', 10, 2)->nullable();
-            $table->string('photo')->nullable();
+            $table->longText('photo')->nullable();
             $table->boolean('available')->default(true);
             //$table->enum('type', ['veg', 'non_veg'])->default('non_veg');
             $table->integer('calories')->nullable();

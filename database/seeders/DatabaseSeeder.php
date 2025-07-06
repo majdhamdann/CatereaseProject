@@ -39,6 +39,10 @@ class DatabaseSeeder extends Seeder
         ServiceTypeSeeder::class,
         BranchServiceTypeSeeder::class,
         OrderServiceTypeSeeder::class,
+
+        DeliveryPersonSeeder::class,
+        DeliverySeeder::class,
+        DeliveryTrackingSeeder::class,
     ]);
 
     }
