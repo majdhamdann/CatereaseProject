@@ -101,6 +101,34 @@ class UserSeeder extends Seeder
                  'created_at' => now(),
                  'updated_at' => now(),
              ],
+             [
+
+                 'name' => 'DeliveryStaff Latakia',
+                 'role_id' => 5,
+                 'phone' => 599123450,
+                 'photo' => 'default.jpg',
+                 'gender' => 'f',
+                 'email' => 'latakia.DeliveryStaff@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
+             [
+
+                 'name' => 'DeliveryStaff ',
+                 'role_id' => 5,
+                 'phone' => 599123454,
+                 'photo' => 'default.jpg',
+                 'gender' => 'f',
+                 'email' => 'o.DeliveryStaff@example.com',
+                 'email_verified_at' => now(),
+                 'password' => Hash::make('12345678'),
+                 'remember_token' => Str::random(10),
+                 'created_at' => now(),
+                 'updated_at' => now(),
+             ],
 
 
         ]);

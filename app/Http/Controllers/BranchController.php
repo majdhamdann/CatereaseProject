@@ -43,7 +43,16 @@ class BranchController extends Controller
             'data' => $branches
         ]);
     }
+    public function getItems($branchId)
+    {
+        $response = $this->branchService->getBranchItems($branchId);
 
+        return response()->json([
+            'status' => $response['status'],
+            'message' => $response['message'] ?? 'Items fetched successfully.',
+            'data' => $response['data'] ?? null,
+        ], $response['code']);
+    }
 
 
 
@@ -111,6 +120,7 @@ class BranchController extends Controller
                 return [
                     'branch_id' => $branch->id,
                     'restaurant' => $branch->restaurant->name ?? null,
+                    'photo'=>$branch->photo,
                     'description' => $branch->description,
                     'location_note' => $branch->location_note,
                     'latitude' => $branch->latitude,
@@ -134,6 +144,7 @@ class BranchController extends Controller
                 return [
                     'branch_id' => $branch->id,
                     'restaurant' => $branch->restaurant->name ?? null,
+                    'photo'=>$branch->photo,
                     'description' => $branch->description,
                     'location_note' => $branch->location_note,
                     'latitude' => $branch->latitude,
@@ -145,15 +156,6 @@ class BranchController extends Controller
     }
 
 
-    public function getItems($branchId)
-    {
-        $response = $this->branchService->getBranchItems($branchId);
 
-        return response()->json([
-            'status' => $response['status'],
-            'message' => $response['message'] ?? 'Items fetched successfully.',
-            'data' => $response['data'] ?? null,
-        ], $response['code']);
-    }
 
 }

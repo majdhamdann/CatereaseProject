@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $Full_Name
@@ -53,13 +53,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereVerified($value)
  * @property string $name
  * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
+ * @property-read \App\Models\DeliveryPerson|null $deliveryPerson
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements MustVerifyEmail
 {
     use HasApiTokens, HasFactory, Notifiable;
 
-   
+
     protected $guarded = ['id'];
     protected $fillable = [
         'name',
@@ -76,6 +77,10 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'remember_token',
     ];
+    public function deliveryPerson()
+    {
+        return $this->hasOne(DeliveryPerson::class,'user_id');
+    }
     public function role()
     {
         return $this->belongsTo(Role::class);
@@ -116,4 +121,6 @@ class User extends Authenticatable implements MustVerifyEmail
         'email_verified_at' => 'datetime',
         'password' => 'hashed',
     ];
+
+
 }
