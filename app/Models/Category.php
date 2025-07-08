@@ -37,13 +37,17 @@ class Category extends Model
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
-    public function foodItems()
-    {
-        return $this->hasMany(FoodItem::class, 'category_id');
-    }
+   
     public function foodCategory()
     {
         return $this->belongsTo(FoodCategory::class, 'food_category_id');
+    }
+    public function foodItems() {
+        return $this->hasMany(FoodItem::class, 'category_id');
+    }
+
+    public function packages() {
+        return $this->belongsToMany(Package::class, 'package_categories', 'category_id', 'package_id');
     }
 
 }

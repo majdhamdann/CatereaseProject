@@ -11,14 +11,15 @@ return new class extends Migration
      */
     public function up(): void
     {
-        if (!Schema::hasTable('cities')) {
-        Schema::create('cities', function (Blueprint $table) {
+        Schema::create('delivery_persons', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->string('country');
+           $table->unsignedBigInteger('user_id');
+            $table->string('vehicle_type');
+            $table->boolean('is_available')->default(true);
             $table->timestamps();
+
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
-    }
     }
 
     /**
@@ -26,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('cities');
+        Schema::dropIfExists('delivery_persons');
     }
 };

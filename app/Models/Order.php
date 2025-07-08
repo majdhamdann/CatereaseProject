@@ -55,6 +55,10 @@ class Order extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
+    public function delivery() {
+        return $this->hasOne(Delivery::class);
+    }
+
 
     public function orderDetails()
     {
@@ -68,5 +72,20 @@ class Order extends Model
     public function orderServiceTypes()
     {
         return $this->hasMany(OrderServiceType::class, 'order_id');
+    }
+    public function services() {
+        return $this->hasMany(OrderServiceType::class);
+    }
+
+    public function bill() {
+        return $this->hasOne(Bill::class);
+    }
+
+    public function cart() {
+        return $this->belongsTo(Cart::class, 'cart_id');
+    }
+
+    public function promoCode() {
+        return $this->belongsTo(PromoCode::class, 'promo_code_id');
     }
 }

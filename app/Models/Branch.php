@@ -101,4 +101,8 @@ class Branch extends Model
     {
         return $this->hasMany(BranchServiceType::class, 'branch_id');
     }
+     public function workingDays() {
+        return $this->hasMany(WorkingDay::class);
+    }
+
 }

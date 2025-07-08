@@ -94,7 +94,24 @@ class User extends Authenticatable implements MustVerifyEmail
        return $this->hasOne(\App\Models\Branch::class, 'Manager_id');
     }
 
+     public function cart() {
+        return $this->hasOne(Cart::class);
+    }
+    public function feedbacks() {
+        return $this->hasMany(Feedback::class);
+    }
 
+    public function deliveryPerson() {
+        return $this->hasOne(DeliveryPerson::class);
+    }
+
+    public function payments() {
+        return $this->hasMany(Payment::class);
+    }
+
+    public function bills() {
+        return $this->hasMany(Bill::class);
+    }
     protected $casts = [
         'email_verified_at' => 'datetime',
         'password' => 'hashed',

@@ -78,5 +78,4 @@ Route::middleware('auth:sanctum')->group(function () {
 
 
 });
-//Route::get('/restaurants/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
-
+ 
