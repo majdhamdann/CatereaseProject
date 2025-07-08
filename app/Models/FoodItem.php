@@ -47,6 +47,9 @@ use Illuminate\Database\Eloquent\Model;
  * @property string|null $type
  * @method static \Illuminate\Database\Eloquent\Builder|FoodItem wherePhoto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FoodItem whereType($value)
+ * @property int $food_category_id
+ * @property-read \App\Models\FoodCategory $foodCategory
+ * @method static \Illuminate\Database\Eloquent\Builder|FoodItem whereFoodCategoryId($value)
  * @mixin \Eloquent
  */
 class FoodItem extends Model
@@ -58,9 +61,9 @@ class FoodItem extends Model
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
-    public function category()
+    public function foodCategory()
     {
-        return $this->belongsTo(Category::class, 'category_id');
+        return $this->belongsTo(FoodCategory::class, 'food_category_id');
     }
 
     public function orderDetails()
@@ -78,10 +81,10 @@ public function feedbacks()
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',      
-        'FeedbackType_id',    
-        'id',                 
-        'id'                  
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('target_type', 'food_item');
 }
 

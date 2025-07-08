@@ -25,6 +25,14 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereFoodCategoryId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereUpdatedAt($value)
+ * @property string $name
+ * @property string|null $description
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
+ * @property-read int|null $packages_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Category whereName($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FoodCategory> $foodCategories
+ * @property-read int|null $food_categories_count
  * @mixin \Eloquent
  */
 class Category extends Model
@@ -32,18 +40,10 @@ class Category extends Model
     use HasFactory;
     protected $guarded = ['id'];
 
-    public function branch()
-    {
-        return $this->belongsTo(Branch::class, 'branch_id');
-    }
 
-   
-    public function foodCategory()
+    public function foodCategories()
     {
-        return $this->belongsTo(FoodCategory::class, 'food_category_id');
-    }
-    public function foodItems() {
-        return $this->hasMany(FoodItem::class, 'category_id');
+        return $this->hasMany(FoodCategory::class);
     }
 
     public function packages() {

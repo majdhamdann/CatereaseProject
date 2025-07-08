@@ -5,6 +5,52 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
+/**
+ * 
+ *
+ * @property int $id
+ * @property int $branch_id
+ * @property int|null $category_id
+ * @property int|null $service_type_id
+ * @property int|null $occasion_type_id
+ * @property string $name
+ * @property string|null $description
+ * @property string|null $photo
+ * @property string $base_price
+ * @property string|null $cancellation_policy
+ * @property int $prepayment_required
+ * @property string|null $prepayment_amount
+ * @property int $is_active
+ * @property string|null $notes
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Category> $categories
+ * @property-read int|null $categories_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageExtra> $extras
+ * @property-read int|null $extras_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageItem> $items
+ * @property-read int|null $items_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Package newModelQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Package newQuery()
+ * @method static \Illuminate\Database\Eloquent\Builder|Package query()
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereBasePrice($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereBranchId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereCancellationPolicy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereCategoryId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereCreatedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereDescription($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereIsActive($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereName($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereOccasionTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package wherePhoto($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package wherePrepaymentAmount($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package wherePrepaymentRequired($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereServiceTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereUpdatedAt($value)
+ * @mixin \Eloquent
+ */
 class Package extends Model
 {
     use HasFactory;

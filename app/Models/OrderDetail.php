@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereUnitPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereUpdatedAt($value)
+ * @property int $package_id
+ * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail wherePackageId($value)
  * @mixin \Eloquent
  */
 class OrderDetail extends Model
