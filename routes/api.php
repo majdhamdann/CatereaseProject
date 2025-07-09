@@ -40,6 +40,10 @@ Route::prefix('branches')->group(function () {
 Route::post('login',[AuthController::class,'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verify']);
+Route::post('/forgot-password/send-otp', [AuthController::class, 'sendResetOtp']);
+
+Route::post('/forgot-password/reset', [AuthController::class, 'resetPasswordAfterVerification']);
+
 Route::get('/categories', [MenuManagementController::class, 'allCategory']);
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/mybranch',[DashboardController::class,'getMyBranch']);

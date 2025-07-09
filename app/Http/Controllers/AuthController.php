@@ -49,6 +49,56 @@ class AuthController extends Controller
 
         return response()->json(['message' => $result['message']]);
     }
+  public function sendResetOtp(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    $email = $request->input('email');
+
+    $user = User::where('email', $email)->first();
+
+    $otp = rand(100000, 999999);
+
+    Otp::where('user_id', $user->id)->delete();
+
+    Otp::create([
+        'user_id' => $user->id,
+        'otp' => $otp,
+        'expires_at' => now()->addMinutes(30),
+    ]);
+
+    Mail::to($user->email)->send(new WelcomeEmail($user, $otp));
+
+    return response()->json(['status' => true, 'message' => 'OTP sent to your email']);
+}
+
+public function resetPasswordAfterVerification(Request $request)
+{
+    $request->validate([
+        'otp' => 'required|string',
+        'newPassword' => 'required|string|min:8',
+    ]);
+
+    $otpRecord = Otp::where('otp', $request->otp)
+                    ->first();
+
+    if (!$otpRecord) {
+        return response()->json(['status' => false, 'message' => 'Invalid or expired reset token'], 403);
+    }
+
+    $user = User::find($otpRecord->user_id);
+
+    $user->password = Hash::make($request->newPassword);
+    $user->save();
+    $otpRecord->delete();
+
+    return response()->json(['status' => true, 'message' => 'Password reset successfully']);
+}
+
+
+
 
 
 }
