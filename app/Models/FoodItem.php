@@ -66,10 +66,10 @@ class FoodItem extends Model
         return $this->belongsTo(FoodCategory::class, 'food_category_id');
     }
 
-    public function orderDetails()
-    {
-        return $this->hasMany(OrderDetail::class, 'food_item_id');
-    }
+//    public function orderDetails()
+//    {
+//        return $this->hasMany(OrderDetail::class, 'food_item_id');
+//    }
     public function feedbackTypes()
 {
     return $this->hasMany(FeedbackType::class, 'target_ref_id')

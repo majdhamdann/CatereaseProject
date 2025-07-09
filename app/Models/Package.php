@@ -49,6 +49,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Package wherePrepaymentRequired($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Package whereServiceTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Package whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderDetail> $orderDetails
+ * @property-read int|null $order_details_count
  * @mixin \Eloquent
  */
 class Package extends Model
@@ -66,4 +68,10 @@ class Package extends Model
     public function categories() {
         return $this->belongsToMany(Category::class, 'package_categories', 'package_id', 'category_id');
     }
+    public function orderDetails()
+    {
+        return $this->hasMany(OrderDetail::class);
+    }
+
+
 }

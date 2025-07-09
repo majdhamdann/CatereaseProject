@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $Restaurant_id
@@ -112,5 +112,10 @@ class Branch extends Model
      public function workingDays() {
         return $this->hasMany(WorkingDay::class);
     }
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'branch_id');
+    }
+
 
 }

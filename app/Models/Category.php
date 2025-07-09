@@ -33,6 +33,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Category whereName($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FoodCategory> $foodCategories
  * @property-read int|null $food_categories_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, Category> $packageCategories
+ * @property-read int|null $package_categories_count
  * @mixin \Eloquent
  */
 class Category extends Model
@@ -48,6 +50,10 @@ class Category extends Model
 
     public function packages() {
         return $this->belongsToMany(Package::class, 'package_categories', 'category_id', 'package_id');
+    }
+    public function packageCategories()
+    {
+        return $this->hasMany(Category::class);
     }
 
 }

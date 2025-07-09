@@ -7,6 +7,7 @@ use Illuminate\Database\Seeder;
 use App\Models\Order;
 use App\Models\FoodItem;
 use App\Models\OrderDetail;
+use App\Models\Package;
 use Faker\Factory as Faker;
 class OrderDetailSeeder extends Seeder
 {
@@ -18,23 +19,23 @@ class OrderDetailSeeder extends Seeder
        $faker = Faker::create();
 
         $orders = Order::pluck('id');
-        $foodItems = FoodItem::all();
-
+        //$foodItems = FoodItem::all();
+        $packages = Package::all();
         foreach ($orders as $orderId) {
-            // لكل طلب، نضيف 1 إلى 3 أصناف طعام عشوائية
-            $items = $foodItems->random($faker->numberBetween(1, 3));
 
-            foreach ($items as $item) {
+            $selectedPackages = $packages->random($faker->numberBetween(1, 3));
+
+            foreach ($selectedPackages as $package) {
                 OrderDetail::create([
                     'order_id'    => $orderId,
-                    'food_item_id'=> $item->id,
+                    'package_id'=> $package->id,
                     'quantity'    => $faker->numberBetween(1, 4),
-                    'unit_price'  => $item->price,
+                    'unit_price'  => $package->base_price,
                     'created_at'  => now(),
                     'updated_at'  => now(),
                 ]);
             }
         }
-    
+
     }
 }
