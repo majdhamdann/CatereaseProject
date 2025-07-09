@@ -14,12 +14,12 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AddressController;
 
-use App\Http\Controllers\BranchPackageController;
+use App\Http\Controllers\PackageController;
 
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
->>>>>>> 68f537f5184d372688a26176c35d10de2d6b1a16
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -94,4 +94,8 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
     Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
 });
-Route::get('/branches/{branch}/packages', [BranchPackageController::class, 'index']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
+});
+
