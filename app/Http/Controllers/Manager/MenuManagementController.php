@@ -10,8 +10,8 @@ use Illuminate\Support\Facades\Auth;
 
 class MenuManagementController extends Controller
 {
-public function indexForManager()
-{
+   public function indexForManager()
+   {
        $branch = Branch::where('manager_id', Auth::id())->first();
 
     if (!$branch) {
@@ -21,11 +21,11 @@ public function indexForManager()
     $categories = $branch->categories;
  
    return response()->json($categories);
-}
-public function allCategory()
+   }
+   public function allCategory()
 {
        $category=Category::all();
         return response()->json($category);
-}
+   }
 
 }
