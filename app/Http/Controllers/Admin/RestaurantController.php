@@ -85,6 +85,31 @@ class RestaurantController extends Controller
         if ($request->hasFile('photo')) {
             $restaurant->photo = $request->file('photo')->store('restaurant_photos', 'public');
         }
+        elseif ($request->filled('photo') && is_string($request->photo)) {
+        $photoData = $request->photo;
+
+        if (preg_match('/^data:image\/(\w+);base64,/', $photoData, $type)) {
+            $photoData = substr($photoData, strpos($photoData, ',') + 1);
+            $extension = strtolower($type[1]);
+
+            if (!in_array($extension, ['jpg', 'jpeg', 'png', 'gif', 'webp'])) {
+                return response()->json(['message' => 'Invalid image format'], 422);
+            }
+
+            $photoData = base64_decode($photoData);
+            if ($photoData === false) {
+                return response()->json(['message' => 'Base64 decode failed'], 422);
+            }
+
+            $fileName = Str::uuid() . '.' . $extension;
+            $path = 'restaurant_photos/' . $fileName;
+            Storage::disk('public')->put($path, $photoData);
+
+            $restaurant->photo = $path;
+        } else {
+            return response()->json(['message' => 'Invalid base64 image format'], 422);
+        }
+    }
 
         $restaurant->update($request->only(['name', 'description','is_active','photo' ]));
         return response()->json($restaurant);

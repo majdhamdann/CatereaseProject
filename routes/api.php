@@ -6,6 +6,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FoodManagementController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\Manager\FoodItemController;
 use App\Http\Controllers\MenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -48,15 +49,18 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('orders/{branch_id}/everymonth',[DashboardController::class,'getMonthlyStatusBreakdown']);
     Route::get('/orders/delivered-category-stats/{branch_id}', [DashboardController::class, 'getDeliveredCategoryStats']);
     Route::get('orders/statistics/popular-food-categories/{branch_id}', [DashboardController::class, 'getPopularCategoriesByUsers']);
+   // Route::apiResource('food-items', FoodItemController::class);
+      Route::apiResource('food-items', FoodManagementController::class);
+
 });
 
 // 👇 تم دمج السطرين بنجاح هنا
-Route::apiResource('food-items', FoodManagementController::class)->middleware('auth:sanctum');
 
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('users', UserManagementController::class);
     Route::get('/role', [UserManagementController::class, 'allRole']);
     Route::apiResource('restaurants', AdminRestaurantController::class);
+    Route::apiResource('complaints', \App\Http\Controllers\Admin\ComplaintController::class);
 
 });
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
