@@ -122,9 +122,6 @@ class Branch extends Model
         return $this->hasMany(Package::class, 'branch_id');
     }
 
-{
-    return $this->belongsToMany(Category::class, 'food_categories', 'branch_id', 'category_id');
-}
 
 
 
