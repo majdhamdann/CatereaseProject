@@ -14,12 +14,12 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
 });
 
-// customer
 Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(function () {
     Route::get('/show', [CustomerController::class, 'show']);
     Route::post('/update', [CustomerController::class, 'update']);
@@ -54,7 +54,6 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 
 });
 
-// 👇 تم دمج السطرين بنجاح هنا
 
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('users', UserManagementController::class);
@@ -63,6 +62,10 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('complaints', \App\Http\Controllers\Admin\ComplaintController::class);
 
 });
+Route::middleware(['auth:sanctum'])->prefix('owner')->group(function () {
+    Route::apiResource('/branches', OwnerBranchController::class);
+});
+
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurant', [RestaurantController::class, 'index']);
 //Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
