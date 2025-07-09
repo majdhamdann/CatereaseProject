@@ -49,6 +49,53 @@ class AuthController extends Controller
 
         return response()->json(['message' => $result['message']]);
     }
+  public function sendResetOtp(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+    ]);
+
+    $email = $request->input('email');
+
+    $user = User::where('email', $email)->first();
+
+    $otp = rand(100000, 999999);
+
+    Otp::where('user_id', $user->id)->delete();
+
+    Otp::create([
+        'user_id' => $user->id,
+        'otp' => $otp,
+        'expires_at' => now()->addMinutes(30),
+    ]);
+
+    Mail::to($user->email)->send(new WelcomeEmail($user, $otp));
+
+    return response()->json(['status' => true, 'message' => 'OTP sent to your email', 'user_id' => $user->id,]);
+}
+
+public function resetPasswordAfterVerification(Request $request)
+{
+    $request->validate([
+        'email' => 'required|email|exists:users,email',
+        'newPassword' => 'required|string|min:8|confirmed',
+    ]);
+
+    $user = User::where('email', $request->email)->first();
+
+    if (!$user) {
+        return response()->json(['status' => false, 'message' => 'User not found'], 404);
+    }
+
+    $user->password = Hash::make($request->newPassword);
+    $user->save();
+
+    return response()->json(['status' => true, 'message' => 'Password reset successfully']);
+}
+
+
+
+
 
 
 }

@@ -113,6 +113,7 @@ class Branch extends Model
         return $this->hasMany(WorkingDay::class);
     }
     public function categories()
+
     {
         return $this->hasMany(Category::class, 'branch_id');
     }
@@ -120,6 +121,11 @@ class Branch extends Model
     {
         return $this->hasMany(Package::class, 'branch_id');
     }
+
+{
+    return $this->belongsToMany(Category::class, 'food_categories', 'branch_id', 'category_id');
+}
+
 
 
 

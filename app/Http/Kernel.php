@@ -70,6 +70,7 @@ class Kernel extends HttpKernel
         'is_admin' => \App\Http\Middleware\IsAdmin::class,
         'customer' => \App\Http\Middleware\EnsureUserIsCustomer::class,
         'delivery' => \App\Http\Middleware\EnsureUserIsDelivery::class,
+        'owner' => \App\Http\Middleware\EnsureUserIsOwner::class,
 
 
     ];

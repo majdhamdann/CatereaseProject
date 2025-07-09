@@ -22,14 +22,16 @@ class StoreFoodItemRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'category_id' => 'required|integer',
-            'name' => 'required|string',
-            'description' => 'nullable|string',
-            'price' => 'required|numeric',
-            'discount_price' => 'nullable|numeric',
-            'image_url' => 'required|string',
-            'available' => 'required|boolean',
-            'calories' => 'nullable|integer',
-        ];
+         'branch_id' => 'required|exists:branches,id',
+        'category_id' => 'required|exists:categories,id',
+        'name' => 'required|string|max:255',
+       'description' => 'nullable|string',
+       'price' => 'required|numeric',
+       'discount_price' => 'nullable|numeric',
+       'photo' => 'nullable|string', // base64 image string
+       'available' => 'required|boolean',
+       'type' => 'nullable|in:veg,non_veg',
+      ];
+
     }
 }

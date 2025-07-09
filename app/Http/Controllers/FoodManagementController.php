@@ -47,9 +47,6 @@ class FoodManagementController extends Controller
     {
         $user = Auth::user();
 
-        if ($user->role->name === 'manager' ) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
         $validated = $request->validated();
 
         $managedBranch = $user->managedBranch;
@@ -103,17 +100,16 @@ class FoodManagementController extends Controller
      * Remove the specified resource from storage.
      */
     public function destroy(string $id)
-    {
-       $user = Auth::user();
-        $item = FoodItem::findOrFail($id);
-
-        if ($user->role->name === 'Manager' && $item->branch_id !== $user->branch_id) {
-            return response()->json(['error' => 'Unauthorized'], 403);
-        }
-
-        $item->delete();
-
-        return response()->json(['message' => 'Food item deleted']);
-    
+{
+    $user = Auth::user();
+    $item = FoodItem::findOrFail($id);
+    $managedBranch = $user->managedBranch;
+    if (!$managedBranch || $item->branch_id !== $managedBranch->id) {
+        return response()->json(['error' => 'Unauthorized. You do not manage this branch'], 403);
     }
+    $item->delete();
+
+    return response()->json(['message' => 'Food item deleted']);
+}
+
 }

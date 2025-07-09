@@ -113,11 +113,15 @@ class User extends Authenticatable implements MustVerifyEmail
     public function feedbacks() {
         return $this->hasMany(Feedback::class);
     }
-
+    
 
 
     public function payments() {
         return $this->hasMany(Payment::class);
+    }
+    public function restaurant()
+    {
+      return $this->hasOne(Restaurant::class, 'owner_id');
     }
 
     public function bills() {
