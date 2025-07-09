@@ -14,6 +14,7 @@ use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
@@ -39,7 +40,7 @@ Route::prefix('branches')->group(function () {
 Route::post('login',[AuthController::class,'login']);
 Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verify']);
-
+Route::get('/categories', [MenuManagementController::class, 'allCategory']);
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/mybranch',[DashboardController::class,'getMyBranch']);
     Route::get('earnings/{branch_id}',[DashboardController::class,'getBranchProfit']);
@@ -51,6 +52,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('orders/statistics/popular-food-categories/{branch_id}', [DashboardController::class, 'getPopularCategoriesByUsers']);
    // Route::apiResource('food-items', FoodItemController::class);
       Route::apiResource('food-items', FoodManagementController::class);
+      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
+
 
 });
 
@@ -65,6 +68,8 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
     Route::apiResource('/branches', OwnerBranchController::class);
     Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
+    Route::post('/branches/{branch}/categories', [OwnerBranchController::class, 'addCategoriesToBranch']);
+
 });
 
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);

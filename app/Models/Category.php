@@ -55,5 +55,10 @@ class Category extends Model
     {
         return $this->hasMany(Category::class);
     }
+    public function branches()
+{
+    return $this->belongsToMany(Branch::class, 'food_categories', 'category_id', 'branch_id');
+}
+
 
 }

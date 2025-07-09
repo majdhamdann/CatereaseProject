@@ -88,6 +88,30 @@ public function index()
 
         return response()->json(['message' => 'Branch created', 'branch' => $branch]);
     }
+  public function addCategoriesToBranch(Request $request, $branchId)
+{
+    $user = Auth::user();
+    $this->ensureIsRestaurantOwner($user);
+
+    $branch = Branch::where('id', $branchId)
+        ->where('restaurant_id', $user->restaurant->id)
+        ->first();
+
+    if (!$branch) {
+        return response()->json(['error' => 'Branch not found or unauthorized'], 404);
+    }
+
+    $data = $request->validate([
+        'category_ids' => 'required|array',
+        'category_ids.*' => 'exists:categories,id',
+    ]);
+    $branch->categories()->syncWithoutDetaching($data['category_ids']);
+
+    return response()->json([
+        'message' => 'Categories linked to branch successfully',
+        'branch' => $branch->load('categories')
+    ]);
+}
 
     public function show($id)
     {
