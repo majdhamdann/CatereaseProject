@@ -62,8 +62,9 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('complaints', \App\Http\Controllers\Admin\ComplaintController::class);
 
 });
-Route::middleware(['auth:sanctum'])->prefix('owner')->group(function () {
+Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
     Route::apiResource('/branches', OwnerBranchController::class);
+    Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
 });
 
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
