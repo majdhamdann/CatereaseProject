@@ -39,6 +39,7 @@ Route::post('/register', [AuthController::class, 'register']);
 Route::post('/verify-otp', [AuthController::class, 'verify']);
 
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
+     Route::get('/mybranch',[DashboardController::class,'getMyBranch']);
     Route::get('earnings/{branch_id}',[DashboardController::class,'getBranchProfit']);
     Route::get('Order/{branch_id}',[DashboardController::class,'getLatestDeliveredOrders']);
     Route::get('orders/{branch_id}/monthly-stats',[DashboardController::class,'getMonthlyDeliveredOrders']);
@@ -53,8 +54,9 @@ Route::apiResource('food-items', FoodManagementController::class)->middleware('a
 
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::apiResource('users', UserManagementController::class);
-});
+    Route::get('/role', [UserManagementController::class, 'allRole']);
 
+});
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurants', [RestaurantController::class, 'index']);
 //Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);

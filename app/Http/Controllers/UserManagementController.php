@@ -25,11 +25,15 @@ class UserManagementController extends Controller
         $users = $this->userService->getAllUsers();
         return response()->json($users);
     }
+    public function allRole(){
+        $role=Role::get(['name','id']);
+        return response()->json($role);
+    }
 
     public function store(Request $request)
     {
         $request->validate([
-            'Full_Name' => 'required|string|max:255',
+            'name' => 'required|string|max:255',
             'role_id' => 'required|exists:roles,id',
             'phone' => 'required|numeric',
             'gender' => ['required', Rule::in(['m', 'f'])],

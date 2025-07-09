@@ -13,19 +13,33 @@ class DashboardBranchService
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         return Order::where('branch_id', $branch_id)
             ->where('status', 'delivered')
             ->sum('total_price');
     }
+       public function getMyBranch()
+   {
+         $user = auth()->user();
+
+         $branch = \App\Models\Branch::where('manager_id', $user->id)->first();
+
+         if (!$branch) {
+            return response()->json(['message' => 'No branch found for this manager'], 404);
+          }
+
+         return response()->json([
+           'branch' => $branch
+        ]);
+    }
 
     public function getLastDeliveredOrdersWithRatings($branch_id)
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         $orders = Order::where('branch_id', $branch_id)
@@ -79,7 +93,7 @@ class DashboardBranchService
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled'];
@@ -98,7 +112,7 @@ class DashboardBranchService
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         return Order::select(
@@ -118,7 +132,7 @@ class DashboardBranchService
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         $orders = Order::with(['orderDetails.foodItem.category'])
@@ -159,7 +173,7 @@ class DashboardBranchService
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         $orders = Order::with(['orderDetails.foodItem.category'])

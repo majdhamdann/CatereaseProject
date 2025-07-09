@@ -20,6 +20,15 @@ class DashboardController extends Controller
     {
         $this->analytics = $analytics;
     }
+    public function getMyBranch()
+{
+     $branch = $this->analytics->getMyBranch();
+
+        return response()->json([
+            'branch' => $branch
+        ]);
+}
+
 
     // أرباح الطلبات
     public function getBranchProfit($branch_id)
