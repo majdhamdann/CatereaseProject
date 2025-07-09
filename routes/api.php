@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AddressController;
+use App\Http\Controllers\BranchPackageController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -69,3 +70,4 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
     Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
 });
+Route::get('/branches/{branch}/packages', [BranchPackageController::class, 'index']);

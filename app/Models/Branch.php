@@ -116,6 +116,11 @@ class Branch extends Model
     {
         return $this->hasMany(Category::class, 'branch_id');
     }
+    public function packages()
+    {
+        return $this->hasMany(Package::class, 'branch_id');
+    }
+
 
 
 }

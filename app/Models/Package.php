@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $branch_id
@@ -71,6 +71,14 @@ class Package extends Model
     public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class);
+    }
+    public function serviceType()
+    {
+        return $this->belongsTo(ServiceType::class);
+    }
+    public function occasionType()
+    {
+        return $this->belongsTo(OccasionType::class);
     }
 
 
