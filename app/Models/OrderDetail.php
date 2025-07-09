@@ -27,6 +27,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereUnitPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereUpdatedAt($value)
+ * @property int $package_id
+ * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail wherePackageId($value)
+ * @property-read \App\Models\Package $package
  * @mixin \Eloquent
  */
 class OrderDetail extends Model
@@ -38,8 +41,12 @@ class OrderDetail extends Model
         return $this->belongsTo(Order::class, 'order_id');
     }
 
-    public function foodItem()
+//    public function foodItem()
+//    {
+//        return $this->belongsTo(FoodItem::class, 'food_item_id');
+//    }
+    public function package()
     {
-        return $this->belongsTo(FoodItem::class, 'food_item_id');
+        return $this->belongsTo(Package::class);
     }
 }

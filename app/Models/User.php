@@ -10,7 +10,7 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property string $Full_Name
@@ -54,6 +54,14 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @property string $name
  * @method static \Illuminate\Database\Eloquent\Builder|User whereName($value)
  * @property-read \App\Models\DeliveryPerson|null $deliveryPerson
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Bill> $bills
+ * @property-read int|null $bills_count
+ * @property-read \App\Models\Cart|null $cart
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
+ * @property-read int|null $feedbacks_count
+ * @property-read \App\Models\Branch|null $managedBranch
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $payments
+ * @property-read int|null $payments_count
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements MustVerifyEmail
@@ -105,8 +113,8 @@ class User extends Authenticatable implements MustVerifyEmail
     public function feedbacks() {
         return $this->hasMany(Feedback::class);
     }
-
     
+
 
     public function payments() {
         return $this->hasMany(Payment::class);

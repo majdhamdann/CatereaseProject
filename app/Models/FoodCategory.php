@@ -23,6 +23,14 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|FoodCategory whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FoodCategory whereName($value)
  * @method static \Illuminate\Database\Eloquent\Builder|FoodCategory whereUpdatedAt($value)
+ * @property int $branch_id
+ * @property int $category_id
+ * @method static \Illuminate\Database\Eloquent\Builder|FoodCategory whereBranchId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|FoodCategory whereCategoryId($value)
+ * @property-read \App\Models\Branch $branch
+ * @property-read \App\Models\Category $category
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FoodItem> $foodItems
+ * @property-read int|null $food_items_count
  * @mixin \Eloquent
  */
 class FoodCategory extends Model
@@ -30,8 +38,22 @@ class FoodCategory extends Model
     use HasFactory;
     protected $guarded = [];
 
-    public function categories()
+
+    public function category()
     {
-        return $this->hasMany(Category::class, 'food_category_id');
+        return $this->belongsTo(Category::class);
     }
+
+
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
+    }
+    public function foodItems() {
+        return $this->hasMany(FoodItem::class);
+    }
+
+
+
+
 }

@@ -40,6 +40,22 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereUserId($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderServiceType> $orderServiceTypes
  * @property-read int|null $order_service_types_count
+ * @property int $is_approved
+ * @property string|null $approved_at
+ * @property string|null $rejection_reason
+ * @property string|null $approval_deadline
+ * @property int|null $approved_by
+ * @property-read \App\Models\Bill|null $bill
+ * @property-read \App\Models\Cart|null $cart
+ * @property-read \App\Models\Delivery|null $delivery
+ * @property-read \App\Models\PromoCode|null $promoCode
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderServiceType> $services
+ * @property-read int|null $services_count
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereApprovalDeadline($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereApprovedAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereApprovedBy($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereIsApproved($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereRejectionReason($value)
  * @mixin \Eloquent
  */
 class Order extends Model

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $Restaurant_id
@@ -52,6 +52,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchServiceType> $branchServiceTypes
  * @property-read int|null $branch_service_types_count
  * @property-read \App\Models\City|null $city
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\WorkingDay> $workingDays
+ * @property-read int|null $working_days_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FoodCategory> $foodCategories
+ * @property-read int|null $food_categories_count
  * @mixin \Eloquent
  */
 class Branch extends Model
@@ -79,9 +83,13 @@ class Branch extends Model
         return $this->hasMany(FoodItem::class, 'branch_id');
     }
 
-    public function categories()
+//    public function categories()
+//    {
+//        return $this->hasMany(Category::class, 'branch_id');
+//    }
+    public function foodCategories()
     {
-        return $this->hasMany(Category::class, 'branch_id');
+        return $this->hasMany(FoodCategory::class);
     }
 
     public function orders()
@@ -104,5 +112,10 @@ class Branch extends Model
      public function workingDays() {
         return $this->hasMany(WorkingDay::class);
     }
+    public function categories()
+    {
+        return $this->hasMany(Category::class, 'branch_id');
+    }
+
 
 }

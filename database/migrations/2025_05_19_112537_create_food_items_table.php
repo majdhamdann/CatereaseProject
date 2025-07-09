@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('food_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('branch_id');
-            $table->unsignedBigInteger('category_id');
+            $table->unsignedBigInteger('food_category_id');
 
             $table->string('name');
             $table->text('description')->nullable();
@@ -23,12 +23,12 @@ return new class extends Migration
             $table->longText('photo')->nullable();
             $table->boolean('available')->default(true);
             //$table->enum('type', ['veg', 'non_veg'])->default('non_veg');
-            $table->integer('calories')->nullable();
+           // $table->integer('calories')->nullable();
             $table->enum('type', ['veg', 'non_veg'])->nullable()->default(null);
 
 
             $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
-            $table->foreign('category_id')->references('id')->on('categories')->onDelete('cascade');
+            $table->foreign('food_category_id')->references('id')->on('food_categories')->onDelete('cascade');
             $table->timestamps();
         });
     }
