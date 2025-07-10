@@ -51,6 +51,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Package whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderDetail> $orderDetails
  * @property-read int|null $order_details_count
+ * @property-read \App\Models\OccasionType|null $occasionType
+ * @property-read \App\Models\ServiceType|null $serviceType
  * @mixin \Eloquent
  */
 class Package extends Model
@@ -79,6 +81,10 @@ class Package extends Model
     public function occasionType()
     {
         return $this->belongsTo(OccasionType::class);
+    }
+    public function branch()
+    {
+        return $this->belongsTo(Branch::class);
     }
 
 

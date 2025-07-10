@@ -49,6 +49,7 @@ Route::post('/forgot-password/send-otp', [AuthController::class, 'sendResetOtp']
 Route::post('/forgot-password/reset', [AuthController::class, 'resetPasswordAfterVerification']);
 
 Route::get('/categories', [MenuManagementController::class, 'allCategory']);
+
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/mybranch',[DashboardController::class,'getMyBranch']);
     Route::get('earnings/{branch_id}',[DashboardController::class,'getBranchProfit']);
@@ -97,5 +98,9 @@ Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(funct
 
 Route::middleware('auth:sanctum')->group(function () {
     Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
+    Route::get('packages/{id}', [PackageController::class, 'show']);
+    Route::get('/packages', [PackageController::class, 'listPackages']);
 });
+
+
 

@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $Restaurant_id
@@ -56,6 +56,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $working_days_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FoodCategory> $foodCategories
  * @property-read int|null $food_categories_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
+ * @property-read int|null $packages_count
  * @mixin \Eloquent
  */
 class Branch extends Model

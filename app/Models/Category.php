@@ -35,6 +35,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $food_categories_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, Category> $packageCategories
  * @property-read int|null $package_categories_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Branch> $branches
+ * @property-read int|null $branches_count
  * @mixin \Eloquent
  */
 class Category extends Model
