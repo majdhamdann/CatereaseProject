@@ -62,6 +62,7 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @property-read \App\Models\Branch|null $managedBranch
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Payment> $payments
  * @property-read int|null $payments_count
+ * @property-read \App\Models\Restaurant|null $restaurant
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements MustVerifyEmail

@@ -12,18 +12,14 @@ use Faker\Factory as Faker;
 
 class PackageSeeder extends Seeder
 {
-    /**
-     * Run the database seeds.
-     */
     public function run()
     {
         $faker = Faker::create();
 
-        $branches = Branch::pluck('id');
+        $branches = Branch::all();
         $serviceTypes = ServiceType::pluck('id');
         $occasionTypes = OccasionType::pluck('id');
         $categories = Category::pluck('id');
-
 
         $packageTypes = [
             [
@@ -55,30 +51,42 @@ class PackageSeeder extends Seeder
             ]
         ];
 
-        foreach ($packageTypes as $packageData) {
-            Package::create([
-                'branch_id' => $branches->random(),
-                'service_type_id' => $serviceTypes->random(),
-                'occasion_type_id' => $occasionTypes->random(),
-                'category_id' => $categories->random(),
-                'name' => $packageData['name'],
-                'description' => $packageData['description'],
-                'photo' => 'packages' ,
-                'base_price' => $packageData['base_price'],
-                'cancellation_policy' => $faker->randomElement([
-                    'Cancelable up to 24 hours in advance',
-                    'Non-refundable',
-                    '50% refund if canceled 48 hours before'
-                ]),
-                'prepayment_required' => $packageData['prepayment_required'] ?? false,
-                'prepayment_amount' => $packageData['prepayment_amount'] ?? 0,
-                'is_active' => true,
-                'notes' => $faker->sentence(),
-                'created_at' => now(),
-                'updated_at' => now()
-            ]);
+
+        foreach ($branches as $branch) {
+
+            $packagesPerBranch = rand(2, 4);
+
+            for ($i = 0; $i < $packagesPerBranch; $i++) {
+                $packageData = $packageTypes[array_rand($packageTypes)];
+                $serviceTypeId = $serviceTypes->random();
+                $occasionTypeId = $occasionTypes->random();
+                $randomCategories = $categories->random(rand(1, 2));
+
+                $package = Package::create([
+                    'branch_id' => $branch->id,
+                    'service_type_id' => $serviceTypeId,
+                    'occasion_type_id' => $occasionTypeId,
+                    'name' => $packageData['name'] . ' ' . ($i + 1),
+                    'description' => $packageData['description'],
+                    'photo' => 'packages',
+                    'base_price' => $packageData['base_price'],
+                    'cancellation_policy' => $faker->randomElement([
+                        'Cancelable up to 24 hours in advance',
+                        'Non-refundable',
+                        '50% refund if canceled 48 hours before'
+                    ]),
+                    'prepayment_required' => $packageData['prepayment_required'] ?? false,
+                    'prepayment_amount' => $packageData['prepayment_amount'] ?? 0,
+                    'is_active' => true,
+                    'notes' => $faker->sentence(),
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]);
+
+                $package->categories()->attach($randomCategories);
+            }
         }
 
-//        $this->command->info(count($packageTypes) . ' packages created successfully!');
+        // $this->command->info(count($branches) * $packagesPerBranch . ' packages created successfully!');
     }
 }

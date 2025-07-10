@@ -17,12 +17,12 @@ return new class extends Migration
         $table->unsignedBigInteger('category_id')->nullable();
         $table->unsignedBigInteger('service_type_id')->nullable();
         $table->unsignedBigInteger('occasion_type_id')->nullable();
-        
+
         $table->string('name');
         $table->text('description')->nullable();
         $table->longText('photo')->nullable();
         $table->decimal('base_price', 10, 2)->default(0.00);
-        
+
         $table->text('cancellation_policy')->nullable();
         $table->boolean('prepayment_required')->default(false);
         $table->decimal('prepayment_amount', 10, 2)->nullable();
@@ -31,7 +31,7 @@ return new class extends Migration
 
         $table->timestamps();
 
-        // العلاقات
+
         $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
         $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
         $table->foreign('service_type_id')->references('id')->on('service_types')->nullOnDelete();

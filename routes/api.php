@@ -13,10 +13,14 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AddressController;
+
+use App\Http\Controllers\PackageController;
+
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\WorkingDayController;
+
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -46,6 +50,7 @@ Route::post('/forgot-password/send-otp', [AuthController::class, 'sendResetOtp']
 Route::post('/forgot-password/reset', [AuthController::class, 'resetPasswordAfterVerification']);
 
 Route::get('/categories', [MenuManagementController::class, 'allCategory']);
+
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/mybranch',[DashboardController::class,'getMyBranch']);
     Route::get('earnings/{branch_id}',[DashboardController::class,'getBranchProfit']);
@@ -97,3 +102,12 @@ Route::middleware('auth:sanctum')->group(function () {
 Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
     Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
 });
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
+    Route::get('packages/{id}', [PackageController::class, 'show']);
+    Route::get('/packages', [PackageController::class, 'listPackages']);
+});
+
+
+

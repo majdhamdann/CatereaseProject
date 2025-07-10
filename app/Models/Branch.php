@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $Restaurant_id
@@ -56,6 +56,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $working_days_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\FoodCategory> $foodCategories
  * @property-read int|null $food_categories_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
+ * @property-read int|null $packages_count
  * @mixin \Eloquent
  */
 class Branch extends Model
@@ -113,9 +115,16 @@ class Branch extends Model
         return $this->hasMany(WorkingDay::class);
     }
     public function categories()
-{
-    return $this->belongsToMany(Category::class, 'food_categories', 'branch_id', 'category_id');
-}
+
+    {
+        return $this->hasMany(Category::class, 'branch_id');
+    }
+    public function packages()
+    {
+        return $this->hasMany(Package::class, 'branch_id');
+    }
+
+
 
 
 
