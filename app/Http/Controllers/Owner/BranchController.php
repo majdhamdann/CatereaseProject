@@ -6,7 +6,6 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Storage;
 
 class BranchController extends Controller
 {
@@ -51,57 +50,36 @@ class BranchController extends Controller
         }
     }
 
-    private function handleBase64Image($base64Image, $path = 'branch_photos')
+    public function store(Request $request)
     {
-        if (preg_match('/^data:image\/(\w+);base64,/', $base64Image, $type)) {
-            $image = substr($base64Image, strpos($base64Image, ',') + 1);
-            $image = base64_decode($image);
-            $extension = strtolower($type[1]);
+        $user = Auth::user();
+        $this->ensureIsRestaurantOwner($user);
 
-            $filename = $path . '/' . uniqid() . '.' . $extension;
-            Storage::disk('public')->put($filename, $image);
+        $role = $user->role->name ?? null;
 
-            return $filename;
+        $validationRules = [
+            'description' => 'nullable|string',
+            'location_note' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+            'city_id' => 'nullable|exists:cities,id',
+            'manager_id' => 'nullable|exists:users,id',
+        ];
+
+        if ($role === 'Admin') {
+            $validationRules['restaurant_id'] = 'required|exists:restaurants,id';
         }
 
-        return null;
+        $data = $request->validate($validationRules);
+
+        if ($role !== 'Admin') {
+            $data['restaurant_id'] = $user->restaurant->id;
+        }
+
+        $branch = Branch::create($data);
+
+        return response()->json(['message' => 'Branch created', 'branch' => $branch]);
     }
-
-   public function store(Request $request)
-{
-    $user = Auth::user();
-    $this->ensureIsRestaurantOwner($user);
-
-    $role = $user->role->name ?? null;
-
-    $validationRules = [
-        'description' => 'nullable|string',
-        'photo' => 'nullable|string',
-        'location_note' => 'nullable|string',
-        'latitude' => 'nullable|numeric',
-        'longitude' => 'nullable|numeric',
-        'city_id' => 'nullable|exists:cities,id',
-        'manager_id' => 'nullable|exists:users,id',
-    ];
-
-    if ($role === 'Admin') {
-        $validationRules['restaurant_id'] = 'required|exists:restaurants,id';
-    }
-
-    $data = $request->validate($validationRules);
-
-    if (isset($data['photo'])) {
-        $data['photo'] = $this->handleBase64Image($data['photo']);
-    }
-
-    if ($role !== 'Admin') {
-        $data['restaurant_id'] = $user->restaurant->id;
-    }
-
-    $branch = Branch::create($data);
-
-    return response()->json(['message' => 'Branch created', 'branch' => $branch]);
-}
 
     public function addCategoriesToBranch(Request $request, $branchId)
     {
@@ -150,41 +128,36 @@ class BranchController extends Controller
     }
 
     public function update(Request $request, $id)
-{
-    $user = Auth::user();
-    $this->ensureIsRestaurantOwner($user);
+    {
+        $user = Auth::user();
+        $this->ensureIsRestaurantOwner($user);
 
-    $role = $user->role->name ?? null;
+        $role = $user->role->name ?? null;
 
-    $branch = $role === 'Admin'
-        ? Branch::findOrFail($id)
-        : Branch::where('id', $id)
-            ->where('restaurant_id', $user->restaurant->id)
-            ->firstOrFail();
+        $branch = $role === 'Admin'
+            ? Branch::findOrFail($id)
+            : Branch::where('id', $id)
+                ->where('restaurant_id', $user->restaurant->id)
+                ->firstOrFail();
 
-    $rules = [
-        'description' => 'nullable|string',
-        'manager_id' => 'nullable|exists:users,id',
-        'location_note' => 'nullable|string',
-        'latitude' => 'nullable|numeric',
-        'longitude' => 'nullable|numeric',
-        'photo' => 'nullable|string',
-    ];
+        $rules = [
+            'description' => 'nullable|string',
+            'manager_id' => 'nullable|exists:users,id',
+            'location_note' => 'nullable|string',
+            'latitude' => 'nullable|numeric',
+            'longitude' => 'nullable|numeric',
+        ];
 
-    if ($role === 'Admin') {
-        $rules['restaurant_id'] = 'sometimes|exists:restaurants,id';
+        if ($role === 'Admin') {
+            $rules['restaurant_id'] = 'sometimes|exists:restaurants,id';
+        }
+
+        $data = $request->validate($rules);
+
+        $branch->update($data);
+
+        return response()->json(['message' => 'Branch updated', 'branch' => $branch]);
     }
-
-    $data = $request->validate($rules);
-
-    if (isset($data['photo'])) {
-        $data['photo'] = $this->handleBase64Image($data['photo']);
-    }
-
-    $branch->update($data);
-
-    return response()->json(['message' => 'Branch updated', 'branch' => $branch]);
-}
 
     public function destroy($id)
     {
