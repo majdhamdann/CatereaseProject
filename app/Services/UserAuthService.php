@@ -12,34 +12,34 @@ use App\Mail\WelcomeEmail;
 class UserAuthService
 {
     public function registerUser(array $data)
-    {
-        $photoPath = $data['photo']->store('photos', 'public');
-        $user = User::create([
-            'name' => $data['name'],
-            'email' => $data['email'],
-            'password' => Hash::make($data['password']),
-            'role_id' => 3,
-            'phone' => $data['phone'],
-            'photo' => $photoPath,
-            'gender' => $data['gender'],
-            'verified' => false,
-        ]);
-        $otp = rand(100000, 999999);
+{
+    
+    $user = User::create([
+        'name' => $data['name'],
+        'email' => $data['email'],
+        'password' => Hash::make($data['password']),
+        'role_id' => 3,
+        'phone' => $data['phone'],
+        'gender' => $data['gender'],
+        'verified' => false,
+       // 'photo' => $photoPath, // تأكد أن هذا الحقل موجود في جدول المستخدمين
+    ]);
 
-        Otp::where('user_id', $user->id)->delete();
+    $otp = rand(100000, 999999);
 
-        Otp::create([
-           'user_id' => $user->id,
-            'otp' => $otp,
-            'expires_at' => Carbon::now()->addMinutes(50),
-        ]);
+    Otp::where('user_id', $user->id)->delete();
 
-        Mail::to($user->email)->send(new WelcomeEmail($user, $otp));
+    Otp::create([
+       'user_id' => $user->id,
+        'otp' => $otp,
+        'expires_at' => Carbon::now()->addMinutes(50),
+    ]);
 
-        $user->photo = asset('storage/' . $user->photo);
+    Mail::to($user->email)->send(new WelcomeEmail($user, $otp));
 
-        return $user;
-    }
+    return $user;
+}
+
      public function login(array $credentials)
     {
         $user = User::where('email', $credentials['email'])->first();
