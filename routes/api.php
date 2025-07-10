@@ -16,6 +16,7 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
+use App\Http\Controllers\Owner\WorkingDayController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -60,17 +61,23 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
 
 
 });
+Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
+   Route::apiResource('users', UserManagementController::class);
+    Route::apiResource('/branches', OwnerBranchController::class);
+    Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
+    Route::post('/branches/{branchId}/working-days', [WorkingDayController::class, 'store']);
+    Route::put('/working-days/{id}', [WorkingDayController::class, 'update']);
+    Route::delete('/working-days/{id}', [WorkingDayController::class, 'destroy']);
+});
 
 
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
-    Route::apiResource('users', UserManagementController::class);
     Route::get('/role', [UserManagementController::class, 'allRole']);
     Route::apiResource('restaurants', AdminRestaurantController::class);
     Route::apiResource('complaints', \App\Http\Controllers\Admin\ComplaintController::class);
 
 });
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
-    Route::apiResource('/branches', OwnerBranchController::class);
     Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
     Route::post('/branches/{branch}/categories', [OwnerBranchController::class, 'addCategoriesToBranch']);
 
