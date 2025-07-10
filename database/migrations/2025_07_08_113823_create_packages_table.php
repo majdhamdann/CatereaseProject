@@ -14,7 +14,7 @@ return new class extends Migration
     Schema::create('packages', function (Blueprint $table) {
         $table->id();
         $table->unsignedBigInteger('branch_id');
-        $table->unsignedBigInteger('category_id')->nullable();
+       // $table->unsignedBigInteger('category_id')->nullable();
         $table->unsignedBigInteger('service_type_id')->nullable();
         $table->unsignedBigInteger('occasion_type_id')->nullable();
 
@@ -22,6 +22,7 @@ return new class extends Migration
         $table->text('description')->nullable();
         $table->longText('photo')->nullable();
         $table->decimal('base_price', 10, 2)->default(0.00);
+        $table->integer('serves_count')->default(0);
 
         $table->text('cancellation_policy')->nullable();
         $table->boolean('prepayment_required')->default(false);
@@ -33,7 +34,7 @@ return new class extends Migration
 
 
         $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
-        $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
+       // $table->foreign('category_id')->references('id')->on('categories')->nullOnDelete();
         $table->foreign('service_type_id')->references('id')->on('service_types')->nullOnDelete();
         $table->foreign('occasion_type_id')->references('id')->on('occasion_types')->nullOnDelete();
     });

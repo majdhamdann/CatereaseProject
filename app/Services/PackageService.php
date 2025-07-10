@@ -31,6 +31,8 @@ class PackageService
                 'name' => $package->name,
                 'photo' => $package->photo,
                 'description' => $package->description,
+                'serves_count' => $package->serves_count,
+                'base_price' => $package->base_price,
             ];
         });
 
@@ -72,6 +74,7 @@ class PackageService
                 'id' => $package->id,
                 'name' => $package->name,
                 'description' => $package->description,
+                'serves_count' => $package->serves_count,
                 'photo' => $package->photo,
                 'base_price' => $package->base_price,
                 'prepayment_required' => $package->prepayment_required,
@@ -110,7 +113,7 @@ class PackageService
         DB::beginTransaction();
 
         try {
-            $packages = Package::select('id', 'name', 'photo', 'description')
+            $packages = Package::select('id', 'name', 'photo', 'description','serves_count','base_price')
                 ->where('is_active', true)
                 ->get();
 

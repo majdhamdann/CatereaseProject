@@ -14,33 +14,36 @@ class CategorySeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('categories')->insert([
-            [
-                'name' => 'المشروبات',
-                'description' => 'عصائر، مياه، مشروبات غازية',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'المقبلات',
-                'description' => 'مقبلات باردة وساخنة',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'الأطباق الرئيسية',
-                'description' => 'أرز، لحوم، دجاج، مأكولات بحرية',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'name' => 'الحلويات',
-                'description' => 'كعك، فواكه، حلويات شرقية وغربية',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-        ]);
-
+//        DB::table('categories')->insert([
+//            [
+//                'name' => 'المشروبات',
+//                'description' => 'عصائر، مياه، مشروبات غازية',
+//                'created_at' => now(),
+//                'updated_at' => now(),
+//            ],
+//            [
+//                'name' => 'المقبلات',
+//                'description' => 'مقبلات باردة وساخنة',
+//                'created_at' => now(),
+//                'updated_at' => now(),
+//            ],
+//            [
+//                'name' => 'الأطباق الرئيسية',
+//                'description' => 'أرز، لحوم، دجاج، مأكولات بحرية',
+//                'created_at' => now(),
+//                'updated_at' => now(),
+//            ],
+//            [
+//                'name' => 'الحلويات',
+//                'description' => 'كعك، فواكه، حلويات شرقية وغربية',
+//                'created_at' => now(),
+//                'updated_at' => now(),
+//            ],
+//        ]);
+        Category::create(['id' => 1, 'name' => 'Eastern']);
+        Category::create(['id' => 2, 'name' => 'Western']);
+        Category::create(['id' => 3, 'name' => 'Desserts']);
+        Category::create(['id' => 4, 'name' => 'Soft Drinks']);
 
 //            Category::create([
 //                'branch_id' => 1,
