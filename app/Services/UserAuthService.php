@@ -22,7 +22,6 @@ class UserAuthService
         'phone' => $data['phone'],
         'gender' => $data['gender'],
         'verified' => false,
-       // 'photo' => $photoPath, // تأكد أن هذا الحقل موجود في جدول المستخدمين
     ]);
 
     $otp = rand(100000, 999999);
