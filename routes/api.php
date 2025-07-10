@@ -7,6 +7,7 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FoodManagementController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\Manager\FoodItemController;
+use App\Http\Controllers\Manager\PackagemanagementController;
 use App\Http\Controllers\MenuController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
@@ -63,7 +64,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
    // Route::apiResource('food-items', FoodItemController::class);
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-
+     Route::apiResource('packages', PackagemanagementController::class);
 
 });
 Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
