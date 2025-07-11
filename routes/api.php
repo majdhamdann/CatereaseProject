@@ -117,6 +117,3 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('packages/{id}', [PackageController::class, 'show']);
     Route::get('/packages', [PackageController::class, 'listPackages']);
 });
-
-
-

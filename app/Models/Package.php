@@ -66,6 +66,11 @@ class Package extends Model
     public function extras() {
         return $this->hasMany(PackageExtra::class);
     }
+    public function branchServiceType()
+    {
+        return $this->belongsTo(BranchServiceType::class);
+    }
+
 
     public function categories() {
         return $this->belongsToMany(Category::class, 'package_categories', 'package_id', 'category_id');

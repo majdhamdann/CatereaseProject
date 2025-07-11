@@ -38,4 +38,8 @@ class CartItem extends Model
     public function package() {
         return $this->belongsTo(Package::class);
     }
+    public function packageExtras()
+    {
+        return $this->hasMany(CartPackageExtra::class);
+    }
 }

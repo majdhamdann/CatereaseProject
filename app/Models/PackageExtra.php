@@ -35,4 +35,17 @@ class PackageExtra extends Model
      public function package() {
         return $this->belongsTo(Package::class);
     }
+    public function foodItem()
+    {
+        return $this->belongsTo(FoodItem::class);
+    }
+
+    public function branchServiceType()
+    {
+        return $this->belongsTo(BranchServiceType::class);
+    }
+    public function cartPackageExtras()
+    {
+        return $this->hasMany(CartPackageExtra::class, 'extra_id');
+    }
 }
