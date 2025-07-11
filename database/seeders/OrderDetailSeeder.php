@@ -16,26 +16,30 @@ class OrderDetailSeeder extends Seeder
      */
     public function run(): void
     {
-       $faker = Faker::create();
+        $faker = Faker::create();
 
         $orders = Order::pluck('id');
-        //$foodItems = FoodItem::all();
         $packages = Package::all();
-        foreach ($orders as $orderId) {
 
-            $selectedPackages = $packages->random($faker->numberBetween(1, 3));
+        if ($packages->isEmpty()) {
+            return;
+        }
+
+        foreach ($orders as $orderId) {
+            $max = min(3, $packages->count());
+            $selectedPackages = $packages->random($faker->numberBetween(1, $max));
 
             foreach ($selectedPackages as $package) {
                 OrderDetail::create([
-                    'order_id'    => $orderId,
-                    'package_id'=> $package->id,
-                    'quantity'    => $faker->numberBetween(1, 4),
-                    'unit_price'  => $package->base_price,
-                    'created_at'  => now(),
-                    'updated_at'  => now(),
+                    'order_id'   => $orderId,
+                    'package_id' => $package->id,
+                    'quantity'   => $faker->numberBetween(1, 4),
+                    'unit_price' => $package->base_price,
+                    'created_at' => now(),
+                    'updated_at' => now(),
                 ]);
             }
         }
-
     }
+
 }
