@@ -19,6 +19,8 @@ use App\Http\Controllers\PackageController;
 
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Manager\MenuManagementController;
+use App\Http\Controllers\Manager\PackageExtraManagementController;
+use App\Http\Controllers\Manager\PackageItemManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\WorkingDayController;
 
@@ -64,7 +66,13 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
    // Route::apiResource('food-items', FoodItemController::class);
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-     Route::apiResource('packages', PackagemanagementController::class);
+      Route::apiResource('packages', PackagemanagementController::class);
+      Route::apiResource('packageItem', PackageItemManagementController::class);
+      Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
+      Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
+      Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
+      Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
+      Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
 
 });
 Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {

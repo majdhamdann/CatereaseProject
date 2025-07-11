@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('package_items', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('package_id');
-            $table->unsignedBigInteger('food_item_id');
+            $table->unsignedBigInteger(column: 'food_item_id');
             $table->integer('quantity')->default(1);
             $table->boolean('is_optional')->default(false);
             $table->timestamps();
