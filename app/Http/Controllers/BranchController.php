@@ -137,7 +137,7 @@ class BranchController extends Controller
         return Branch::whereHas('foodCategories.category', function($q) use ($category) {
             $q->where('categories.id', $category->id);
         })
-            ->with(['restaurant:id,name', 'foodCategories' => function($query) {
+            ->with(['restaurant:id,name,photo', 'foodCategories' => function($query) {
                 $query->with('category:id,name');
             }])
             ->get()
@@ -145,7 +145,8 @@ class BranchController extends Controller
                 return [
                     'branch_id' => $branch->id,
                     'restaurant' => $branch->restaurant->name ?? null,
-                    'photo' => $branch->photo,
+                   // 'photo' => $branch->photo,
+                    'photo' => $branch->restaurant->photo ?? null,
                     'description' => $branch->description,
                     'location_note' => $branch->location_note,
                     'latitude' => $branch->latitude,
