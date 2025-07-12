@@ -49,6 +49,7 @@ class PackageService
         ];
     }
 
+
     public function getPackageById($id)
     {
         try {
@@ -56,9 +57,10 @@ class PackageService
 
             $package = Package::with([
                 'items.foodItem',
-                'extras',
+                'extras.foodItem',
+                'extras.branchServiceType.serviceType',
                 'categories',
-                'serviceType',
+                'branchServiceType.serviceType',
                 'occasionType',
                 'branch.restaurant'
             ])->find($id);
@@ -81,9 +83,11 @@ class PackageService
                 'prepayment_amount' => $package->prepayment_amount,
                 'branch_id' => $package->branch->id ?? null,
                 'branch_name' => $package->branch->name ?? ($package->branch->restaurant->name ?? 'Unknown'),
-                'service_type' => $package->serviceType->name ?? null,
+                'service_type' => $package->branchServiceType->serviceType->name ?? null,
                 'occasion_type' => $package->occasionType->name ?? null,
                 'categories' => $package->categories->pluck('name'),
+                'max_extra_persons' => $package->max_extra_persons,
+                'price_per_extra_person' => $package->price_per_extra_person,
                 'items' => $package->items->map(function ($item) {
                     return [
                         'food_item_id' => $item->food_item_id,
@@ -93,8 +97,18 @@ class PackageService
                     ];
                 }),
                 'extras' => $package->extras->map(function ($extra) {
+                    $extraName = $extra->name;
+
+                    if ($extra->type === 'food_item' && $extra->foodItem) {
+                        $extraName = $extra->foodItem->name;
+                    } elseif ($extra->type === 'service' && $extra->branchServiceType && $extra->branchServiceType->serviceType) {
+                        $extraName = $extra->branchServiceType->serviceType->name;
+                    }
+
                     return [
-                        'name' => $extra->name,
+                        'id' => $extra->id,
+                        'type' => $extra->type,
+                        'name' => $extraName,
                         'price' => $extra->price,
                         'is_optional' => $extra->is_optional,
                     ];
@@ -103,10 +117,10 @@ class PackageService
 
         } catch (\Exception $e) {
             DB::rollBack();
-
             throw $e;
         }
     }
+
 
     public function getAllActivePackages()
     {

@@ -27,30 +27,38 @@ class PackageSeeder extends Seeder
                 'description' => 'Complete meal package for Iftar during Ramadan',
                 'base_price' => 120.00,
                 'prepayment_required' => true,
-                'prepayment_amount' => 60.00
+                'prepayment_amount' => 60.00,
+                'max_extra_persons' => 10,
+                'price_per_extra_person' => 15.00
             ],
             [
                 'name' => 'Family Gathering Package',
                 'description' => 'Ideal for large family gatherings',
                 'base_price' => 250.00,
-                'prepayment_required' => false
+                'prepayment_required' => false,
+                'max_extra_persons' => 15,
+                'price_per_extra_person' => 20.00
+
             ],
             [
                 'name' => 'Kids Package',
                 'description' => 'Special meals for kids with small toys',
                 'base_price' => 80.00,
                 'prepayment_required' => true,
-                'prepayment_amount' => 30.00
+                'prepayment_amount' => 30.00,
+                'max_extra_persons' => 5,
+                'price_per_extra_person' => 10.00
             ],
             [
                 'name' => 'Business Hosting Package',
                 'description' => 'Suitable for meetings and conferences',
                 'base_price' => 180.00,
                 'prepayment_required' => true,
-                'prepayment_amount' => 90.00
+                'prepayment_amount' => 90.00,
+                'max_extra_persons' => 8,
+                'price_per_extra_person' => 25.00
             ]
         ];
-
 
         foreach ($branches as $branch) {
 
@@ -64,7 +72,7 @@ class PackageSeeder extends Seeder
 
                 $package = Package::create([
                     'branch_id' => $branch->id,
-                    'service_type_id' => $serviceTypeId,
+                    'branch_service_type_id' => $serviceTypeId,
                     'occasion_type_id' => $occasionTypeId,
                     'name' => $packageData['name'] . ' ' . ($i + 1),
                     'description' => $packageData['description'],
@@ -80,6 +88,8 @@ class PackageSeeder extends Seeder
                     'prepayment_amount' => $packageData['prepayment_amount'] ?? 0,
                     'is_active' => true,
                     'notes' => $faker->sentence(),
+                    'max_extra_persons' => $packageData['max_extra_persons'] ?? rand(0, 20),
+                    'price_per_extra_person' => $packageData['price_per_extra_person'] ?? rand(5, 50),
                     'created_at' => now(),
                     'updated_at' => now()
                 ]);
