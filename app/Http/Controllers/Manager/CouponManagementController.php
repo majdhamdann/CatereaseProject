@@ -75,7 +75,6 @@ class CouponManagementController extends Controller
         return response()->json(['message' => 'تم التحديث', 'coupon' => $coupon->load('packages')]);
     }
 
-    // حذف الكوبون
     public function destroy($id)
     {
         $manager = auth()->user();
@@ -88,16 +87,17 @@ class CouponManagementController extends Controller
         return response()->json(['message' => 'تم حذف الكوبون بنجاح']);
     }
 
-    // عرض كل الباقات التي عليها كوبونات
     public function packagesWithCoupons()
     {
         $manager = auth()->user();
         $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
+       
         $packages = Package::with('coupons')
             ->where('branch_id', $branchId)
             ->whereHas('coupons')
             ->get();
+
 
         return response()->json($packages);
     }

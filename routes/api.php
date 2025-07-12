@@ -103,6 +103,10 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);
       Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
        Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
+       Route::get('/coupons-to-branch', [CouponManagementController::class, 'index']); 
+      Route::put('/coupons/{id}', [CouponManagementController::class, 'update']); 
+      Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']); 
+      Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
     });
       Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
       Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
