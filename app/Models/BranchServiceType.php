@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $branch_id
@@ -51,6 +51,15 @@ class BranchServiceType extends Model
     public function orderServiceTypes()
     {
         return $this->hasMany(OrderServiceType::class, 'branch_service_type_id');
+    }
+    public function packagesWithExtra()
+    {
+        return $this->belongsToMany(
+            Package::class,
+            'package_branch_service_map',
+            'branch_service_type_id',
+            'package_id'
+        )->withTimestamps();
     }
 
 
