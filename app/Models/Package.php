@@ -105,6 +105,7 @@ class Package extends Model
     {
         return $this->belongsTo(Branch::class);
     }
+
       public function coupon()
     {
         return $this->belongsToMany(Coupon::class, 'package_coupon');
@@ -118,4 +119,13 @@ class Package extends Model
             'branch_service_type_id'
         )->withTimestamps();
     }
+
+
+     public function coupons()
+     {
+       return $this->belongsToMany(Coupon::class, 'package_coupon');
+     }
+
+
+
 }
