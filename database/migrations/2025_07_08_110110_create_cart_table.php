@@ -11,10 +11,11 @@ return new class extends Migration
      */
  public function up()
 {
-    Schema::create('cart', function (Blueprint $table) {
-        $table->id();     
-        $table->unsignedBigInteger('user_id');  
-        $table->timestamps();                
+    Schema::create('carts', function (Blueprint $table) {
+        $table->id();
+        $table->unsignedBigInteger('user_id');
+        $table->decimal('total_price', 10, 2)->default(0.00);
+        $table->timestamps();
 
         $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
     });

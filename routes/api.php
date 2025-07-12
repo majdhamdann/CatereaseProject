@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
+use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FoodManagementController;
@@ -46,6 +47,22 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
 //Branch
 Route::prefix('branches')->group(function () {
     Route::get('/nearby', [BranchController::class, 'getNearby']);
+});
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
+    Route::get('packages/{id}', [PackageController::class, 'show']);
+    Route::get('/packages', [PackageController::class, 'listPackages']);
+
+});
+Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
+
+    Route::post('/add', [CartController::class, 'addToCart']);
+    Route::get('/', [CartController::class, 'getCart']);
+    Route::post('item/{id}', [CartController::class, 'updateCartItem']);
+
+    //Route::put('/items/{cartItem}', [CartController::class, 'updateCartItem']);
+    Route::delete('/items/{cartItem}', [CartController::class, 'removeCartItem']);
 });
 
 Route::post('login',[AuthController::class,'login']);
@@ -123,9 +140,5 @@ Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(funct
     Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
-    Route::get('packages/{id}', [PackageController::class, 'show']);
-    Route::get('/packages', [PackageController::class, 'listPackages']);
-});
+
 

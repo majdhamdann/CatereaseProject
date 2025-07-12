@@ -14,6 +14,7 @@ class CreateCartPackageExtrasTable extends Migration
             $table->unsignedBigInteger('cart_item_id');
             $table->unsignedBigInteger('extra_id');
             $table->integer('quantity')->default(1);
+            $table->decimal('unit_price', 8, 2)->default(0.00);
             $table->decimal('total_price', 10, 2)->default(0.00);
 
             $table->timestamps();

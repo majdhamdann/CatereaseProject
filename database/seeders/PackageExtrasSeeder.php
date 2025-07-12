@@ -27,12 +27,15 @@ class PackageExtrasSeeder extends Seeder
         foreach ($packages as $package) {
             //  food_item
             if (!empty($foodItems)) {
+                $foodItemId = $faker->randomElement($foodItems);
+                $foodItem = FoodItem::find($foodItemId);
+
                 PackageExtra::create([
                     'package_id' => $package->id,
                     'type' => 'food_item',
-                    'food_item_id' => $faker->randomElement($foodItems),
+                    'food_item_id' => $foodItemId,
                     'branch_service_type_id' => null,
-                    'name' => '', //  relation
+                    'name' => optional($foodItem)->name ?? 'Unknown Food Item',
                     'price' => $faker->randomFloat(2, 20, 100),
                     'is_optional' => true,
                 ]);
@@ -40,18 +43,22 @@ class PackageExtrasSeeder extends Seeder
 
             //  service
             if (!empty($branchServiceTypes)) {
+                $branchServiceTypeId = $faker->randomElement($branchServiceTypes);
+                $branchServiceType = \App\Models\BranchServiceType::with('serviceType')->find($branchServiceTypeId);
+
                 PackageExtra::create([
                     'package_id' => $package->id,
                     'type' => 'service',
                     'food_item_id' => null,
-                    'branch_service_type_id' => $faker->randomElement($branchServiceTypes),
-                    'name' => '', // relation
+                    'branch_service_type_id' => $branchServiceTypeId,
+                    'name' => optional($branchServiceType->serviceType)->name ?? 'Unnamed Service',
                     'price' => $faker->randomFloat(2, 50, 150),
                     'is_optional' => true,
                 ]);
             }
 
 
+            //  simple
             PackageExtra::create([
                 'package_id' => $package->id,
                 'type' => 'simple',
@@ -62,5 +69,6 @@ class PackageExtrasSeeder extends Seeder
                 'is_optional' => true,
             ]);
         }
+
     }
 }
