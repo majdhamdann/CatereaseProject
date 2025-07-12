@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $name
@@ -31,7 +31,12 @@ class OccasionType extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
-     public function packages() {
-        return $this->hasMany(Package::class, 'occasion_type_id');
+//     public function packages() {
+//        return $this->hasMany(Package::class, 'occasion_type_id');
+//    }
+    public function packages()
+    {
+        return $this->belongsToMany(Package::class, 'package_occasion_map', 'occasion_type_id', 'package_id');
     }
+
 }

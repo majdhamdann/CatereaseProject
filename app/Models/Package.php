@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $branch_id
@@ -93,19 +93,39 @@ class Package extends Model
     {
         return $this->belongsTo(ServiceType::class);
     }
-    public function occasionType()
+//    public function occasionType()
+//    {
+//        return $this->belongsTo(OccasionType::class);
+//    }
+    public function occasionTypes()
     {
-        return $this->belongsTo(OccasionType::class);
+        return $this->belongsToMany(OccasionType::class, 'package_occasion_map', 'package_id', 'occasion_type_id');
     }
     public function branch()
     {
         return $this->belongsTo(Branch::class);
     }
-     
+
+      public function coupon()
+    {
+        return $this->belongsToMany(Coupon::class, 'package_coupon');
+    }
+    public function extraServices()
+    {
+        return $this->belongsToMany(
+            \App\Models\BranchServiceType::class,
+            'package_branch_service_map',
+            'package_id',
+            'branch_service_type_id'
+        )->withTimestamps();
+    }
+
+
      public function coupons()
      {
        return $this->belongsToMany(Coupon::class, 'package_coupon');
      }
+
 
 
 }

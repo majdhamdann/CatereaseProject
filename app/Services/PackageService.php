@@ -61,7 +61,7 @@ class PackageService
                 'extras.branchServiceType.serviceType',
                 'categories',
                 'branchServiceType.serviceType',
-                'occasionType',
+                'occasionTypes',
                 'branch.restaurant'
             ])->find($id);
 
@@ -83,11 +83,24 @@ class PackageService
                 'prepayment_amount' => $package->prepayment_amount,
                 'branch_id' => $package->branch->id ?? null,
                 'branch_name' => $package->branch->name ?? ($package->branch->restaurant->name ?? 'Unknown'),
-                'service_type' => $package->branchServiceType->serviceType->name ?? null,
-                'occasion_type' => $package->occasionType->name ?? null,
+
+
+                'service_type' => [
+                    'id'=>$package->branchServiceType->serviceType->id ,
+                    'name' => $package->branchServiceType->serviceType->name ?? null,
+                    'service_cost' => $package->branchServiceType->service_cost ?? null,
+                ],
+
+                'occasion_types'      => $package->occasionTypes->map(fn($o) => [
+                    'id'   => $o->id,
+                    'name' => $o->name,
+                ])->values(),
+                // 'occasion_type' => $package->occasionType->name ?? null,
+
                 'categories' => $package->categories->pluck('name'),
                 'max_extra_persons' => $package->max_extra_persons,
                 'price_per_extra_person' => $package->price_per_extra_person,
+
                 'items' => $package->items->map(function ($item) {
                     return [
                         'food_item_id' => $item->food_item_id,
@@ -120,6 +133,7 @@ class PackageService
             throw $e;
         }
     }
+
 
 
     public function getAllActivePackages()
