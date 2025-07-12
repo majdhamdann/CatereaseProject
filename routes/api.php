@@ -15,7 +15,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
 use App\Http\Controllers\UserManagementController;
 use App\Http\Controllers\AddressController;
-
+use App\Http\Controllers\Admin\OccasionTypeController;
 use App\Http\Controllers\PackageController;
 
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
@@ -104,15 +104,18 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
        Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
     });
-Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
-
-Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
+      Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
+      Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
+      Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
    Route::apiResource('users', UserManagementController::class);
     Route::apiResource('/branches/management', OwnerBranchController::class);
     Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
     Route::post('/branches/{branchId}/working-days', [WorkingDayController::class, 'store']);
     Route::put('/working-days/{id}', [WorkingDayController::class, 'update']);
     Route::delete('/working-days/{id}', [WorkingDayController::class, 'destroy']);
+    Route::post('/occasion-types', [OccasionTypeController::class, 'store']);
+    Route::put('/occasion-types/{id}', [OccasionTypeController::class, 'update']);
+    Route::delete('/occasion-types/{id}', [OccasionTypeController::class, 'destroy']);
 });
 
 
