@@ -30,6 +30,9 @@ class PackageExtraManagementController extends Controller
             $request->validate([
                 'package_id' => 'required|exists:packages,id',
                 'extras' => 'required|array|min:1',
+                'extras.*.type' => 'nullable|string',
+                'extras.*.food_item_id' => 'nullable|exists:food_items,id',
+                'extras.*.branch_service_type_id' => 'nullable|exists:branch_service_types,id',
                 'extras.*.name' => 'nullable|string',
                 'extras.*.price' => 'nullable|numeric',
                 'extras.*.is_optional' => 'nullable|boolean',
@@ -38,6 +41,9 @@ class PackageExtraManagementController extends Controller
             foreach ($request->extras as $extra) {
                 PackageExtra::create([
                     'package_id' => $request->package_id,
+                    'type' => $extra['type'] ?? null,
+                    'food_item_id' => $extra['food_item_id'] ?? null,
+                    'branch_service_type_id' => $extra['branch_service_type_id'] ?? null,
                     'name' => $extra['name'] ?? 'زيادة غير مسماة',
                     'price' => $extra['price'] ?? 0,
                     'is_optional' => $extra['is_optional'] ?? true,
@@ -55,7 +61,15 @@ class PackageExtraManagementController extends Controller
         try {
             $extra = PackageExtra::findOrFail($id);
 
-            $data = $request->only(['name', 'price', 'is_optional']);
+            $data = $request->validate([
+                'type' => 'nullable|string',
+                'food_item_id' => 'nullable|exists:food_items,id',
+                'branch_service_type_id' => 'nullable|exists:branch_service_types,id',
+                'name' => 'nullable|string',
+                'price' => 'nullable|numeric',
+                'is_optional' => 'nullable|boolean',
+            ]);
+
             $extra->update($data);
 
             return response()->json(['message' => 'تم التحديث بنجاح']);
@@ -64,7 +78,6 @@ class PackageExtraManagementController extends Controller
         }
     }
 
-    // حذف زيادة
     public function destroy($id)
     {
         try {

@@ -19,9 +19,11 @@ use App\Http\Controllers\AddressController;
 use App\Http\Controllers\PackageController;
 
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
+use App\Http\Controllers\Manager\BranchServiceTypeManagementController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Manager\PackageExtraManagementController;
 use App\Http\Controllers\Manager\PackageItemManagementController;
+use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\WorkingDayController;
 
@@ -83,16 +85,17 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
    // Route::apiResource('food-items', FoodItemController::class);
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-      //  مجودة عدليه وانتبهي عل مسميات الله يرضى عليكي
-     // Route::apiResource('packages', PackagemanagementController::class);
+      Route::apiResource('packages/management', PackagemanagementController::class);
       Route::apiResource('packageItem', PackageItemManagementController::class);
       Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
       Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
       Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
       Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
       Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
-
+       Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
 });
+Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
+
 Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
    Route::apiResource('users', UserManagementController::class);
     Route::apiResource('/branches', OwnerBranchController::class);
@@ -107,7 +110,10 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
     Route::get('/role', [UserManagementController::class, 'allRole']);
     Route::apiResource('restaurants', AdminRestaurantController::class);
     Route::apiResource('complaints', \App\Http\Controllers\Admin\ComplaintController::class);
-
+    Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
+    Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
+    Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
+    Route::get('service-types/{id}', [ServiceTypeManagementController::class, 'show']);
 });
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
     Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
