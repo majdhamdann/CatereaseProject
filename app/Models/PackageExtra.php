@@ -26,6 +26,16 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|PackageExtra wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PackageExtra wherePrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|PackageExtra whereUpdatedAt($value)
+ * @property int|null $food_item_id
+ * @property int|null $branch_service_type_id
+ * @property string $type
+ * @property-read \App\Models\BranchServiceType|null $branchServiceType
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartPackageExtra> $cartPackageExtras
+ * @property-read int|null $cart_package_extras_count
+ * @property-read \App\Models\FoodItem|null $foodItem
+ * @method static \Illuminate\Database\Eloquent\Builder|PackageExtra whereBranchServiceTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PackageExtra whereFoodItemId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|PackageExtra whereType($value)
  * @mixin \Eloquent
  */
 class PackageExtra extends Model

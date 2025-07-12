@@ -66,7 +66,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
    // Route::apiResource('food-items', FoodItemController::class);
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-      Route::apiResource('packages', PackagemanagementController::class);
+      //  مجودة عدليه وانتبهي عل مسميات الله يرضى عليكي
+     // Route::apiResource('packages', PackagemanagementController::class);
       Route::apiResource('packageItem', PackageItemManagementController::class);
       Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
       Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
@@ -117,3 +118,4 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('packages/{id}', [PackageController::class, 'show']);
     Route::get('/packages', [PackageController::class, 'listPackages']);
 });
+

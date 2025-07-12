@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $branch_id
@@ -53,6 +53,16 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $order_details_count
  * @property-read \App\Models\OccasionType|null $occasionType
  * @property-read \App\Models\ServiceType|null $serviceType
+ * @property int|null $branch_service_type_id
+ * @property int $serves_count
+ * @property int $max_extra_persons
+ * @property string $price_per_extra_person
+ * @property-read \App\Models\Branch $branch
+ * @property-read \App\Models\BranchServiceType|null $branchServiceType
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereBranchServiceTypeId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereMaxExtraPersons($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package wherePricePerExtraPerson($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Package whereServesCount($value)
  * @mixin \Eloquent
  */
 class Package extends Model

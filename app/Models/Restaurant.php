@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Restaurant whereOwnerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Restaurant wherePhoto($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Restaurant whereUpdatedAt($value)
+ * @property int $is_active
+ * @method static \Illuminate\Database\Eloquent\Builder|Restaurant whereIsActive($value)
  * @mixin \Eloquent
  */
 class Restaurant extends Model

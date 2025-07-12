@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CartItem wherePackageId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CartItem whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CartItem whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartPackageExtra> $packageExtras
+ * @property-read int|null $package_extras_count
  * @mixin \Eloquent
  */
 class CartItem extends Model

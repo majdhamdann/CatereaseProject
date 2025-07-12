@@ -30,19 +30,20 @@ class DatabaseSeeder extends Seeder
         CategorySeeder::class,
         FoodCategorySeeder::class,
         FoodItemSeeder::class,
-            ServiceTypeSeeder::class,
+        ServiceTypeSeeder::class,
+         BranchServiceTypeSeeder::class,
         OccasionTypeSeeder::class,
         PackageSeeder::class,
         //CartItemSeeder::class,
         PackageItemSeeder::class,
-
+        PackageExtrasSeeder::class,
         AddressSeeder::class,
         OrderSeeder::class,
         OrderDetailSeeder::class,
         FeedBackTypeSeeder::class,
 
 
-        BranchServiceTypeSeeder::class,
+
         OrderServiceTypeSeeder::class,
 
         DeliveryPersonSeeder::class,
