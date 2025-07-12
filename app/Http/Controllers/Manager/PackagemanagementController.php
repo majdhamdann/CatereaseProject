@@ -1,4 +1,5 @@
 <?php
+
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
@@ -15,7 +16,7 @@ class PackagemanagementController extends Controller
 
         $packages = Package::whereHas('branch', function ($query) use ($managerId) {
             $query->where('manager_id', $managerId);
-        })->with(['branch', 'serviceType', 'occasionType'])->get();
+        })->with(['branch', 'occasionType'])->get();
 
         return response()->json(['packages' => $packages]);
     }
@@ -26,13 +27,15 @@ class PackagemanagementController extends Controller
 
         $data = $request->validate([
             'branch_id' => 'required|exists:branches,id',
-            'service_type_id' => 'nullable|exists:service_types,id',
+            'branch_service_type_id' => 'nullable|exists:branch_service_types,id',
             'occasion_type_id' => 'nullable|exists:occasion_types,id',
             'name' => 'required|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|string',
             'base_price' => 'required|numeric|min:0',
             'serves_count' => 'required|integer|min:0',
+            'max_extra_persons' => 'nullable|integer|min:0',
+            'price_per_extra_person' => 'nullable|numeric|min:0',
             'cancellation_policy' => 'nullable|string',
             'prepayment_required' => 'boolean',
             'prepayment_amount' => 'nullable|numeric|min:0',
@@ -61,7 +64,7 @@ class PackagemanagementController extends Controller
             ->whereHas('branch', function ($q) use ($managerId) {
                 $q->where('manager_id', $managerId);
             })
-            ->with(['branch', 'serviceType', 'occasionType'])
+            ->with(['branch', 'occasionType'])
             ->first();
 
         if (!$package) {
@@ -87,13 +90,15 @@ class PackagemanagementController extends Controller
 
         $data = $request->validate([
             'branch_id' => 'sometimes|exists:branches,id',
-            'service_type_id' => 'nullable|exists:service_types,id',
+            'branch_service_type_id' => 'nullable|exists:branch_service_types,id',
             'occasion_type_id' => 'nullable|exists:occasion_types,id',
             'name' => 'sometimes|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|string',
             'base_price' => 'nullable|numeric|min:0',
             'serves_count' => 'nullable|integer|min:0',
+            'max_extra_persons' => 'nullable|integer|min:0',
+            'price_per_extra_person' => 'nullable|numeric|min:0',
             'cancellation_policy' => 'nullable|string',
             'prepayment_required' => 'boolean',
             'prepayment_amount' => 'nullable|numeric|min:0',
