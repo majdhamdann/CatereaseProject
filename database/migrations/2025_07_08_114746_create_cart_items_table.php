@@ -16,9 +16,12 @@ return new class extends Migration
     $table->unsignedBigInteger('cart_id');
     $table->unsignedBigInteger('package_id');
     $table->integer('quantity')->default(1);
+    $table->integer('extra_persons')->default(0);
+    $table->decimal('total_price', 10, 2)->default(0.00);
+
     $table->timestamps();
 
-    $table->foreign('cart_id')->references('id')->on('cart')->onDelete('cascade');
+    $table->foreign('cart_id')->references('id')->on('carts')->onDelete('cascade');
     $table->foreign('package_id')->references('id')->on('packages')->onDelete('cascade');
 });
 

@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $cart_id
@@ -27,6 +27,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CartItem whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartPackageExtra> $packageExtras
  * @property-read int|null $package_extras_count
+ * @property string $total_price
+ * @method static \Illuminate\Database\Eloquent\Builder|CartItem whereTotalPrice($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartPackageExtra> $extras
+ * @property-read int|null $extras_count
  * @mixin \Eloquent
  */
 class CartItem extends Model
@@ -34,14 +38,29 @@ class CartItem extends Model
     use HasFactory;
      protected $guarded = ['id'];
     public function cart() {
-        return $this->belongsTo(Cart::class);
+        return $this->belongsTo(Cart::class, 'cart_id');
     }
+//    public function cart() {
+//        return $this->belongsTo(Cart::class);
+//    }
 
     public function package() {
         return $this->belongsTo(Package::class);
     }
-    public function packageExtras()
+//    public function packageExtras()
+//    {
+//        return $this->hasMany(CartPackageExtra::class);
+//    }
+    public function extras()
     {
         return $this->hasMany(CartPackageExtra::class);
     }
+    public function user() {
+        return $this->belongsTo(User::class);
+    }
+    public function packageExtras()
+    {
+        return $this->hasMany(CartPackageExtra::class, 'cart_item_id')->with('extra');
+    }
+
 }
