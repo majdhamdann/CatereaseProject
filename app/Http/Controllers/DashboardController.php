@@ -33,11 +33,7 @@ class DashboardController extends Controller
     // أرباح الطلبات
     public function getBranchProfit($branch_id)
     {
-        $income = $this->analytics->getBranchProfit($branch_id);
-        return response()->json([
-            'branch_id' => $branch_id,
-            'income' => $income,
-        ]);
+         return $this->analytics->getBranchProfit($branch_id);
     }
 
     // آخر 10 طلبات مع تقييم الأطعمة

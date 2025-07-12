@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardBranchService
 {
-    public function getBranchProfit($branch_id)
+    public function getBranchProfit1($branch_id)
     {
         $branch = Branch::find($branch_id);
 
@@ -20,6 +20,33 @@ class DashboardBranchService
             ->where('status', 'delivered')
             ->sum('total_price');
     }
+      public function getBranchProfit($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $lastOrder = Order::where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->orderByDesc('created_at')
+        ->first();
+
+    $income = $lastOrder ? (float) $lastOrder->total_price : 0;
+
+    $totalIncome = Order::where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->sum('total_price');
+
+    return response()->json([
+        'branch_id' => (int) $branch_id,
+        'income' => $income,
+        'total_income' => (float) $totalIncome,
+    ]);
+}
+
+
        public function getMyBranch()
    {
          $user = auth()->user();
