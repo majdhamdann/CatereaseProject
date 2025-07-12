@@ -16,7 +16,8 @@ class PackagemanagementController extends Controller
 
         $packages = Package::whereHas('branch', function ($query) use ($managerId) {
             $query->where('manager_id', $managerId);
-        })->with(['branch', 'occasionType'])->get();
+        })->with(['branch', 'occasionType', 'categories'])
+         ->get();
 
         return response()->json(['packages' => $packages]);
     }
@@ -32,6 +33,8 @@ class PackagemanagementController extends Controller
             'name' => 'required|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|string',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'exists:categories,id',
             'base_price' => 'required|numeric|min:0',
             'serves_count' => 'required|integer|min:0',
             'max_extra_persons' => 'nullable|integer|min:0',
@@ -52,6 +55,9 @@ class PackagemanagementController extends Controller
         }
 
         $package = Package::create($data);
+        if ($request->has('category_ids')) {
+            $package->categories()->sync($request->category_ids);
+        }
 
         return response()->json(['message' => 'Package created', 'package' => $package], 201);
     }
@@ -64,7 +70,8 @@ class PackagemanagementController extends Controller
             ->whereHas('branch', function ($q) use ($managerId) {
                 $q->where('manager_id', $managerId);
             })
-            ->with(['branch', 'occasionType'])
+            ->with(['branch', 'occasionType', 'categories'])
+
             ->first();
 
         if (!$package) {
@@ -95,6 +102,9 @@ class PackagemanagementController extends Controller
             'name' => 'sometimes|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|string',
+            'category_ids' => 'nullable|array',
+            'category_ids.*' => 'exists:categories,id',
+
             'base_price' => 'nullable|numeric|min:0',
             'serves_count' => 'nullable|integer|min:0',
             'max_extra_persons' => 'nullable|integer|min:0',
@@ -117,6 +127,9 @@ class PackagemanagementController extends Controller
         }
 
         $package->update($data);
+        if ($request->has('category_ids')) {
+           $package->categories()->sync($request->category_ids);  
+        }
 
         return response()->json(['message' => 'Package updated', 'package' => $package]);
     }
