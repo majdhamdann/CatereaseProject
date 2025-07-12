@@ -19,6 +19,7 @@ use App\Http\Controllers\PackageController;
 
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Manager\BranchServiceTypeManagementController;
+use App\Http\Controllers\Manager\CouponManagementController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Manager\PackageExtraManagementController;
 use App\Http\Controllers\Manager\PackageItemManagementController;
@@ -53,6 +54,8 @@ Route::post('/verify-otp', [AuthController::class, 'verify']);
 Route::post('/forgot-password/send-otp', [AuthController::class, 'sendResetOtp']);
 
 Route::post('/forgot-password/reset', [AuthController::class, 'resetPasswordAfterVerification']);
+Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanctum');
+;
 
 Route::get('/categories', [MenuManagementController::class, 'allCategory']);
 
@@ -75,13 +78,14 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
       Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
       Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
-       Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
-});
+      Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
+       Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']); 
+    });
 Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
 
 Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
    Route::apiResource('users', UserManagementController::class);
-    Route::apiResource('/branches', OwnerBranchController::class);
+    Route::apiResource('/branches/management', OwnerBranchController::class);
     Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
     Route::post('/branches/{branchId}/working-days', [WorkingDayController::class, 'store']);
     Route::put('/working-days/{id}', [WorkingDayController::class, 'update']);

@@ -63,13 +63,8 @@ use Illuminate\Database\Eloquent\Model;
 class Branch extends Model
 {
     use HasFactory;
+    
     protected $guarded = ['id'];
-
-
-
-
-
-
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
@@ -123,7 +118,7 @@ class Branch extends Model
     {
         return $this->hasMany(Package::class, 'branch_id');
     }
-
+   
 
 
 

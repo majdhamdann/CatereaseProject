@@ -92,7 +92,13 @@ public function resetPasswordAfterVerification(Request $request)
 
     return response()->json(['status' => true, 'message' => 'Password reset successfully']);
 }
+public function logout(Request $request)
+{
+    $request->user()->currentAccessToken()->delete();
 
+
+    return response()->json(['message' => 'Logged out successfully']);
+}
 
 
 

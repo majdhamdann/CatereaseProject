@@ -101,6 +101,9 @@ class Package extends Model
     {
         return $this->belongsTo(Branch::class);
     }
-
+      public function coupon()
+    {
+        return $this->belongsToMany(Coupon::class, 'package_coupon');
+    }
 
 }

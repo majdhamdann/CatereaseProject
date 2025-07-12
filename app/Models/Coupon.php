@@ -36,11 +36,15 @@ use Illuminate\Database\Eloquent\Model;
 class Coupon extends Model
 {
     use HasFactory;
+      protected $guarded = ['id'];
      public function branch() {
         return $this->belongsTo(Branch::class);
     }
 
     public function promoCode() {
         return $this->belongsTo(PromoCode::class, 'promo_code_id');
+    }
+    public function packages() {
+        return $this->belongsToMany(Package::class, 'package_coupon');
     }
 }
