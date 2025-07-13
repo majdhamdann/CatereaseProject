@@ -93,8 +93,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
      Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
 
-    Route::post('/report', [ReportController::class, 'store']);;
-
+      Route::post('/report', [ReportController::class, 'store']);;
+   ////////////////////////////////////////////
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
       Route::apiResource('packages/management', PackagemanagementController::class);
