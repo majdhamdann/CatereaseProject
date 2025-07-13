@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $cart_id
@@ -31,6 +31,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CartItem whereTotalPrice($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartPackageExtra> $extras
  * @property-read int|null $extras_count
+ * @property int $extra_persons
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|CartItem whereExtraPersons($value)
  * @mixin \Eloquent
  */
 class CartItem extends Model

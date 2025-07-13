@@ -50,12 +50,12 @@ Route::prefix('branches')->group(function () {
     Route::get('/nearby', [BranchController::class, 'getNearby']);
 });
 
-Route::middleware('auth:sanctum')->group(function () {
+//Route::middleware('auth:sanctum')->group(function () {
     Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
     Route::get('packages/{id}', [PackageController::class, 'show']);
     Route::get('/packages', [PackageController::class, 'listPackages']);
 
-});
+//});
 Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/add', [CartController::class, 'addToCart']);
@@ -105,7 +105,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
       Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
       Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
-      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']); 
+      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
       Route::get('/order/manange', [OrderManagementController::class, 'index']);
       Route::get('/order/manange/{id}', [OrderManagementController::class, 'show']);
       Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);

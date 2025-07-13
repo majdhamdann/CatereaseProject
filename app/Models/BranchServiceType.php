@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $branch_id
@@ -32,6 +32,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|BranchServiceType whereServiceCost($value)
  * @method static \Illuminate\Database\Eloquent\Builder|BranchServiceType whereServiceTypeId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|BranchServiceType whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packagesWithExtra
+ * @property-read int|null $packages_with_extra_count
  * @mixin \Eloquent
  */
 class BranchServiceType extends Model
