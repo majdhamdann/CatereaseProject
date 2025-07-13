@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $cart_item_id
@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|CartPackageExtra whereQuantity($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CartPackageExtra whereTotalPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|CartPackageExtra whereUpdatedAt($value)
+ * @property string $unit_price
+ * @method static \Illuminate\Database\Eloquent\Builder|CartPackageExtra whereUnitPrice($value)
  * @mixin \Eloquent
  */
 class CartPackageExtra extends Model
