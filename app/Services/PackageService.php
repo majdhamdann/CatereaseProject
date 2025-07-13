@@ -99,7 +99,7 @@ class PackageService
                     //'service_cost'  => $s->service_cost,
                 ])->values(),
 
-
+//
                 'occasion_types'      => $package->occasionTypes->map(fn($o) => [
                     'id'   => $o->id,
                     'name' => $o->name,
