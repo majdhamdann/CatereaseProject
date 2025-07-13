@@ -9,17 +9,7 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardBranchService
 {
-    public function getBranchProfit1($branch_id)
-    {
-        $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->manager_id) {
-           abort(403, 'Unauthorized access'); 
-         }
-        return Order::where('branch_id', $branch_id)
-            ->where('status', 'delivered')
-            ->sum('total_price');
-    }
       public function getBranchProfit($branch_id)
 {
     $branch = Branch::find($branch_id);
@@ -63,42 +53,54 @@ class DashboardBranchService
     }
 
     public function getLastDeliveredOrdersWithRatings($branch_id)
-    {
-        $branch = Branch::find($branch_id);
+{
+    $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->manager_id) {
-           abort(403, 'Unauthorized access'); 
-         }
-        $orders = Order::where('branch_id', $branch_id)
-            ->where('status', 'delivered')
-            ->orderBy('created_at', 'desc')
-            ->take(10)
-            ->get();
-
-        $results = [];
-
-        foreach ($orders as $order) {
-            foreach ($order->orderDetails as $detail) {
-                $food = $detail->foodItem;
-
-                $feedbacks = $food->feedbacks()->where('type', 'rating')->get();
-
-                $average = round($feedbacks->avg('score') ?? 0, 1);
-                $count = $feedbacks->count();
-
-                $results[] = [
-                    'order_id' => $order->id,
-                    'dishName' => $food->name,
-                    'dishImage' => $food->image_url,
-                    'dishRate' => $average,
-                    'number_of_ratings' => $count,
-                    'order_cost' => $order->total_price,
-                ];
-            }
-        }
-
-        return $results;
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
     }
+
+    $orders = Order::with(['orderDetails.foodItem']) // eager load to avoid N+1 queries
+        ->where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->orderBy('created_at', 'desc')
+        ->take(10)
+        ->get();
+
+    $results = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $food = $detail->foodItem;
+
+            if (!$food) {
+                continue;
+            }
+
+            $feedbacksQuery = $food->feedbacks();
+            if (!$feedbacksQuery) {
+                continue;
+            }
+
+            $feedbacks = $feedbacksQuery->where('type', 'rating')->get();
+
+            $average = round($feedbacks->avg('score') ?? 0, 1);
+            $count = $feedbacks->count();
+
+            $results[] = [
+                'order_id' => $order->id,
+                'dishName' => $food->name,
+                'dishImage' => $food->image_url,
+                'dishRate' => $average,
+                'number_of_ratings' => $count,
+                'order_cost' => $order->total_price,
+            ];
+        }
+    }
+
+    return $results;
+}
+
 
     public function getMonthlyDeliveredStats($branch_id)
     {

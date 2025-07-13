@@ -49,4 +49,9 @@ class OrderDetail extends Model
     {
         return $this->belongsTo(Package::class);
     }
+    public function foodItem()
+   {
+      return $this->belongsTo(FoodItem::class, 'food_item_id');
+    }
+
 }
