@@ -89,7 +89,12 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('orders/Popular-food-week/{branch_id}', [DashboardController::class, 'getPopularPackagesThisWeek']);
     Route::get('orders/best-sell/{branch_id}', [DashboardController::class, 'getBestSellerPackages']);
      Route::get('all_customer/{branch_id}', [DashboardController::class, 'getBranchCustomers']);
-   // Route::apiResource('food-items', FoodItemController::class);
+     Route::get('/branches/{branch_id}/customers/search', [DashboardController::class, 'searchCustomersByName']);
+     Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
+     Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
+
+     // Route::apiResource('food-items', FoodItemController::class);
+
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
       Route::apiResource('packages/management', PackagemanagementController::class);

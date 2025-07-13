@@ -10,6 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DashboardBranchService;
 use Carbon\Carbon;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
@@ -212,8 +213,6 @@ public function getBranchCustomers($branch_id)
     if (!$branch || Auth()->user()->id != $branch->manager_id) {
         abort(403, 'Unauthorized access');
     }
-
-    // جلب الطلبات مع بيانات المستخدم
     $orders = Order::with('user')
         ->where('branch_id', $branch_id)
         ->get();
@@ -224,10 +223,10 @@ public function getBranchCustomers($branch_id)
         $user = $order->user;
         if ($user) {
             if (!isset($customers[$user->id])) {
-                // أول مرة نضيف المستخدم
                 $customers[$user->id] = [
                     'id' => $user->id,
                     'name' => $user->name,
+                    'status ' => $user->status ,
                     'email' => $user->email,
                     'phone' => $user->phone ?? '',
                     'orders' => [],
@@ -249,6 +248,133 @@ public function getBranchCustomers($branch_id)
 
     return array_values($customers);
 }
+    public function searchCustomersByName($branch_id, Request $request)
+    {
+        $name = $request->query('name'); 
+
+        $branch = Branch::find($branch_id);
+
+        if (!$branch || Auth::user()->id != $branch->manager_id) {
+            abort(403, 'Unauthorized access');
+        }
+
+        $orders = Order::with('user')
+            ->where('branch_id', $branch_id)
+            ->whereHas('user', function ($query) use ($name) {
+                $query->where('name', 'LIKE', '%' . $name . '%');
+            })
+            ->get();
+
+        $customers = [];
+
+        foreach ($orders as $order) {
+            $user = $order->user;
+            if ($user && !isset($customers[$user->id])) {
+                $customers[$user->id] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone ?? '',
+                    'customer_since' => $user->created_at->format('Y-m-d'),
+                   'status' => $user->status ,
+                    'total_orders' => 0,
+                ];
+            }
+
+            if ($user) {
+                $customers[$user->id]['total_orders']++;
+            }
+        }
+
+        return response()->json(array_values($customers));
+    }
+
+
+    public function getCustomersVerifiedOnDate($branch_id, Request $request)
+{
+    $date = $request->query('date'); 
+
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth::user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $orders = Order::with('user')
+        ->where('branch_id', $branch_id)
+        ->whereHas('user', function ($query) use ($date) {
+            $query->whereDate('email_verified_at', $date);
+        })
+        ->get();
+
+    $customers = [];
+
+    foreach ($orders as $order) {
+        $user = $order->user;
+        if ($user && !isset($customers[$user->id])) {
+            $customers[$user->id] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'status ' => $user->status ,
+                'email' => $user->email,
+                'phone' => $user->phone ?? '',
+                'verified_at' => $user->email_verified_at?->format('Y-m-d H:i') ?? null,
+                'customer_since' => $user->created_at->format('Y-m-d'),
+                'total_orders' => 0,
+            ];
+        }
+
+        if ($user) {
+            $customers[$user->id]['total_orders']++;
+        }
+    }
+
+    return array_values($customers);
+}
+public function searchCustomersByStatus($branch_id, Request $request)
+{
+    $status = $request->query('status'); // مثال: active - deleted
+
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth::user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    // جلب الطلبات مع المستخدمين الذين يملكون نفس الحالة
+    $orders = Order::with('user')
+        ->where('branch_id', $branch_id)
+        ->whereHas('user', function ($query) use ($status) {
+            $query->where('status', $status);
+        })
+        ->get();
+
+    $customers = [];
+
+    foreach ($orders as $order) {
+        $user = $order->user;
+        if ($user && !isset($customers[$user->id])) {
+            $customers[$user->id] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+                'phone' => $user->phone ?? '',
+                'status' => $user->status ?? 'غير معروف',
+                'customer_since' => $user->created_at->format('Y-m-d'),
+                'total_orders' => 0,
+            ];
+        }
+
+        if ($user) {
+            $customers[$user->id]['total_orders']++;
+        }
+    }
+
+    return response()->json(array_values($customers));
+}
+
+
+
 
 
 

@@ -96,8 +96,11 @@ public function logout(Request $request)
 {
     $request->user()->currentAccessToken()->delete();
 
+    $user = $request->user();
+    $user->status = 'deleted';
+    $user->save();
 
-    return response()->json(['message' => 'Logged out successfully']);
+    return response()->json(['message' => 'Logout  successfully']);
 }
 
 
