@@ -205,6 +205,51 @@ class DashboardController extends Controller
 
     return $result;
 }
+public function getBranchCustomers($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    // جلب الطلبات مع بيانات المستخدم
+    $orders = Order::with('user')
+        ->where('branch_id', $branch_id)
+        ->get();
+
+    $customers = [];
+
+    foreach ($orders as $order) {
+        $user = $order->user;
+        if ($user) {
+            if (!isset($customers[$user->id])) {
+                // أول مرة نضيف المستخدم
+                $customers[$user->id] = [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'phone' => $user->phone ?? '',
+                    'orders' => [],
+                    'total_orders' => 0,
+                    'customer_since' => $user->created_at->format('Y-m-d'),  
+                ];
+            }
+
+            $customers[$user->id]['orders'][] = [
+                'order_id' => $order->id,
+                'order_date' => $order->created_at->format('Y-m-d'),
+                'order_status' => $order->status,
+                'order_total' => $order->total_price,
+            ];
+
+            $customers[$user->id]['total_orders']++;
+        }
+    }
+
+    return array_values($customers);
+}
+
 
 
 
