@@ -9,6 +9,8 @@ use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DashboardBranchService;
+use Carbon\Carbon;
+
 class DashboardController extends Controller
 {
 
@@ -124,6 +126,86 @@ class DashboardController extends Controller
         'data' => $feedback
     ]);
 }
+    
+ public function getPopularPackagesThisWeek($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $oneWeekAgo = Carbon::now()->subDays(7);
+
+    $orders = Order::with('orderDetails.package')
+        ->where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->where('created_at', '>=', $oneWeekAgo)
+        ->get();
+
+    $packageCounts = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $package = $detail->package;
+            if ($package) {
+                $packageName = $package->name;
+                $packageCounts[$packageName] = ($packageCounts[$packageName] ?? 0) + 1;
+            }
+        }
+    }
+
+    // تحويل النتائج إلى ترتيب تنازلي حسب عدد الطلبات
+    $result = [];
+    foreach ($packageCounts as $package => $count) {
+        $result[] = [
+            'package' => $package,
+            'order_count' => $count,
+        ];
+    }
+
+    usort($result, fn($a, $b) => $b['order_count'] <=> $a['order_count']);
+
+    return $result;
+}
+
+  public function getBestSellerPackages($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $orders = Order::with('orderDetails.package')
+        ->where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->get();
+
+    $packageCounts = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $package = $detail->package;
+            if ($package) {
+                $packageName = $package->name;
+                $packageCounts[$packageName] = ($packageCounts[$packageName] ?? 0) + 1;
+            }
+        }
+    }
+
+    $result = [];
+    foreach ($packageCounts as $package => $count) {
+        $result[] = [
+            'package' => $package,
+            'order_count' => $count,
+        ];
+    }
+    usort($result, fn($a, $b) => $b['order_count'] <=> $a['order_count']);
+
+    return $result;
+}
+
 
 
 

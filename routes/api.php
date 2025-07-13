@@ -86,6 +86,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('orders/{branch_id}/everymonth',[DashboardController::class,'getMonthlyStatusBreakdown']);
     Route::get('/orders/delivered-category-stats/{branch_id}', [DashboardController::class, 'getDeliveredCategoryStats']);
     Route::get('orders/statistics/popular-food-categories/{branch_id}', [DashboardController::class, 'getPopularCategoriesByUsers']);
+    Route::get('orders/Popular-food-week/{branch_id}', [DashboardController::class, 'getPopularPackagesThisWeek']);
+    Route::get('orders/best-sell/{branch_id}', [DashboardController::class, 'getBestSellerPackages']);
    // Route::apiResource('food-items', FoodItemController::class);
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
