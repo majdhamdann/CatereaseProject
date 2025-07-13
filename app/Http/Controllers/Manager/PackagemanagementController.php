@@ -16,7 +16,7 @@ class PackagemanagementController extends Controller
 
         $packages = Package::whereHas('branch', function ($query) use ($managerId) {
             $query->where('manager_id', $managerId);
-        })->with(['branch', 'occasionType', 'categories'])
+        })->with(['branch', 'occasionTypes', 'categories'])
          ->get();
 
         return response()->json(['packages' => $packages]);
@@ -29,12 +29,13 @@ class PackagemanagementController extends Controller
         $data = $request->validate([
             'branch_id' => 'required|exists:branches,id',
             'branch_service_type_id' => 'nullable|exists:branch_service_types,id',
-            'occasion_type_id' => 'nullable|exists:occasion_types,id',
             'name' => 'required|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|string',
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
+            'occasion_type_ids' => 'nullable|array',
+            'occasion_type_ids.*' => 'exists:occasion_types,id',
             'base_price' => 'required|numeric|min:0',
             'serves_count' => 'required|integer|min:0',
             'max_extra_persons' => 'nullable|integer|min:0',
@@ -55,11 +56,19 @@ class PackagemanagementController extends Controller
         }
 
         $package = Package::create($data);
+
         if ($request->has('category_ids')) {
             $package->categories()->sync($request->category_ids);
         }
 
-        return response()->json(['message' => 'Package created', 'package' => $package], 201);
+        if ($request->has('occasion_type_ids')) {
+            $package->occasionTypes()->sync($request->occasion_type_ids);
+        }
+
+        return response()->json([
+            'message' => 'Package created',
+            'package' => $package->load('branch', 'occasionTypes', 'categories')
+        ], 201);
     }
 
     public function show($id)
@@ -70,8 +79,7 @@ class PackagemanagementController extends Controller
             ->whereHas('branch', function ($q) use ($managerId) {
                 $q->where('manager_id', $managerId);
             })
-            ->with(['branch', 'occasionType', 'categories'])
-
+            ->with(['branch', 'occasionTypes', 'categories'])
             ->first();
 
         if (!$package) {
@@ -98,13 +106,13 @@ class PackagemanagementController extends Controller
         $data = $request->validate([
             'branch_id' => 'sometimes|exists:branches,id',
             'branch_service_type_id' => 'nullable|exists:branch_service_types,id',
-            'occasion_type_id' => 'nullable|exists:occasion_types,id',
             'name' => 'sometimes|string',
             'description' => 'nullable|string',
             'photo' => 'nullable|string',
             'category_ids' => 'nullable|array',
             'category_ids.*' => 'exists:categories,id',
-
+            'occasion_type_ids' => 'nullable|array',
+            'occasion_type_ids.*' => 'exists:occasion_types,id',
             'base_price' => 'nullable|numeric|min:0',
             'serves_count' => 'nullable|integer|min:0',
             'max_extra_persons' => 'nullable|integer|min:0',
@@ -127,11 +135,19 @@ class PackagemanagementController extends Controller
         }
 
         $package->update($data);
+
         if ($request->has('category_ids')) {
-           $package->categories()->sync($request->category_ids);  
+            $package->categories()->sync($request->category_ids);
         }
 
-        return response()->json(['message' => 'Package updated', 'package' => $package]);
+        if ($request->has('occasion_type_ids')) {
+            $package->occasionTypes()->sync($request->occasion_type_ids);
+        }
+
+        return response()->json([
+            'message' => 'Package updated',
+            'package' => $package->load('branch', 'occasionTypes', 'categories')
+        ]);
     }
 
     public function destroy($id)
