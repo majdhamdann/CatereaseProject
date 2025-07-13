@@ -28,7 +28,7 @@ use App\Http\Controllers\Manager\PackageItemManagementController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\WorkingDayController;
-
+use App\Http\Controllers\ReportController;
 
 Route::middleware('auth:sanctum')->get('/user', function (Request $request) {
     return $request->user();
@@ -93,7 +93,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
      Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
 
-     // Route::apiResource('food-items', FoodItemController::class);
+    Route::post('/report', [ReportController::class, 'store']);;
 
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);

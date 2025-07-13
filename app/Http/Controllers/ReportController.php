@@ -1,0 +1,44 @@
+<?php
+
+namespace App\Http\Controllers;
+
+use App\Models\Branch;
+use App\Models\Report;
+use Illuminate\Http\Request;
+
+class ReportController extends Controller
+{
+        public function store(Request $request)
+{
+    $request->validate([
+        'branch_id' => 'required|exists:branches,id',
+        'subject' => 'required|string|max:255',
+        'details' => 'required|string',
+    ]);
+
+    $branch = Branch::findOrFail($request->branch_id);
+
+    if (auth()->user()->id !== $branch->manager_id) {
+        abort(403, 'Unauthorized');
+    }
+
+    $report = Report::create([
+        'branch_id' => $branch->id,
+        'manager_id' => auth()->id(),
+        'subject' => $request->subject,
+        'details' => $request->details,
+    ]);
+
+    return response()->json(['message' => 'Report created successfully', 'report' => $report]);
+}
+public function index()
+{
+    $user = auth()->user(); // يجب أن يكون مالك مطعم
+
+    $reports = Report::whereIn('branch_id', $user->ownedBranches->pluck('id'))->with(['branch', 'manager'])->get();
+
+    return response()->json($reports);
+}
+
+
+}

@@ -88,6 +88,10 @@ class Branch extends Model
     {
         return $this->hasMany(FoodCategory::class);
     }
+    public function reports()
+    {
+       return $this->hasMany(Report::class);
+    }
 
     public function orders()
     {
