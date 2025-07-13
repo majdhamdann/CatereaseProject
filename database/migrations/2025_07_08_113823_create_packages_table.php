@@ -15,7 +15,7 @@ return new class extends Migration
         $table->id();
         $table->unsignedBigInteger('branch_id');
         $table->unsignedBigInteger('branch_service_type_id')->nullable();
-        $table->unsignedBigInteger('occasion_type_id')->nullable();
+       // $table->unsignedBigInteger('occasion_type_id')->nullable();
 
         $table->string('name');
         $table->text('description')->nullable();
@@ -37,7 +37,7 @@ return new class extends Migration
 
         $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
         $table->foreign('branch_service_type_id')->references('id')->on('branch_service_types')->onDelete('cascade');
-        $table->foreign('occasion_type_id')->references('id')->on('occasion_types')->nullOnDelete();
+       // $table->foreign('occasion_type_id')->references('id')->on('occasion_types')->nullOnDelete();
     });
 }
 

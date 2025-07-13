@@ -60,7 +60,8 @@ class PackageService
                 'extras.foodItem',
                 'extras.branchServiceType.serviceType',
                 'categories',
-                'branchServiceType.serviceType',
+                //'branchServiceType.serviceType',
+                'extraServices.serviceType',
                 'occasionTypes',
                 'branch.restaurant'
             ])->find($id);
@@ -84,12 +85,20 @@ class PackageService
                 'branch_id' => $package->branch->id ?? null,
                 'branch_name' => $package->branch->name ?? ($package->branch->restaurant->name ?? 'Unknown'),
 
+//
+//                'service_type' => [
+//                    'id'=>$package->branchServiceType->serviceType->id ,
+//                    'name' => $package->branchServiceType->serviceType->name ?? null,
+//                    'service_cost' => $package->branchServiceType->service_cost ?? null,
+//                ],
 
-                'service_type' => [
-                    'id'=>$package->branchServiceType->serviceType->id ,
-                    'name' => $package->branchServiceType->serviceType->name ?? null,
-                    'service_cost' => $package->branchServiceType->service_cost ?? null,
-                ],
+                'service_type' => $package->extraServices->map(fn($s) => [
+                    'id'            => $s->id,
+                    'name'          => $s->serviceType->name ?? null,
+                    'custom_price'  => $s->custom_price,
+                    //'service_cost'  => $s->service_cost,
+                ])->values(),
+
 
                 'occasion_types'      => $package->occasionTypes->map(fn($o) => [
                     'id'   => $o->id,
