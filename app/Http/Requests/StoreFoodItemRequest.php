@@ -23,7 +23,7 @@ class StoreFoodItemRequest extends FormRequest
     {
         return [
          'branch_id' => 'required|exists:branches,id',
-        'category_id' => 'required|exists:categories,id',
+        'food_category_id' => 'required|exists:food_category,id',
         'name' => 'required|string|max:255',
        'description' => 'nullable|string',
        'price' => 'required|numeric',

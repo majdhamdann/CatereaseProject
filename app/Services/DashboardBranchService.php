@@ -198,38 +198,48 @@ class DashboardBranchService
         ];
     }
 
-    public function getPopularFoodCategories($branch_id)
-    {
-        $branch = Branch::find($branch_id);
+  public function getPopularPackageCategories($branch_id)
+{
+    $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->manager_id) {
-           abort(403, 'Unauthorized access'); 
-         }
-        $orders = Order::with(['orderDetails.foodItem.category'])
-            ->where('branch_id', $branch_id)
-            ->get();
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
 
-        $categoryUserMap = [];
+    $orders = Order::with(['orderDetails.package.categories']) // ✅ تحميل التصنيفات المرتبطة بالباكجات
+        ->where('branch_id', $branch_id)
+        ->get();
 
-        foreach ($orders as $order) {
-            $userId = $order->user_id;
+    $categoryUserMap = [];
 
-            foreach ($order->orderDetails as $detail) {
-                $categoryName = $detail->foodItem->category->name ?? 'غير معروف';
-                $categoryUserMap[$categoryName][$userId] = true;
+    foreach ($orders as $order) {
+        $userId = $order->user_id;
+
+        foreach ($order->orderDetails as $detail) {
+            if ($detail->package && $detail->package->categories) {
+                foreach ($detail->package->categories as $category) {
+                    $categoryName = $category->name ?? 'غير معروف';
+                    $categoryUserMap[$categoryName][$userId] = true;
+                }
+            } else {
+                $categoryUserMap['غير معروف'][$userId] = true;
             }
         }
-
-        $result = [];
-        foreach ($categoryUserMap as $category => $users) {
-            $result[] = [
-                'name' => $category,
-                'user_count' => count($users)
-            ];
-        }
-
-        usort($result, fn($a, $b) => $b['user_count'] <=> $a['user_count']);
-
-        return $result;
     }
+
+    $result = [];
+    foreach ($categoryUserMap as $category => $users) {
+        $result[] = [
+            'name' => $category,
+            'user_count' => count($users)
+        ];
+    }
+
+    usort($result, fn($a, $b) => $b['user_count'] <=> $a['user_count']);
+
+    return $result;
+}
+
+
+
 }

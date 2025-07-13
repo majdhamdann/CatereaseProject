@@ -76,7 +76,7 @@ class DashboardController extends Controller
     // أكثر أنواع الطعام طلبًا من حيث عدد المستخدمين
     public function getPopularCategoriesByUsers($branch_id)
     {
-        return response()->json($this->analytics->getPopularFoodCategories($branch_id));
+        return response()->json($this->analytics->getPopularPackageCategories($branch_id));
     }
 
 
