@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     $schedule->call(function () {
         \App\Models\Coupon::where('expiration_date', '<', now())->delete();
     })->daily(); 
+    $schedule->command('discounts:cleanup')->daily(); 
 }
 
 

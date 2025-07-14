@@ -23,6 +23,7 @@ use App\Http\Controllers\Manager\BranchServiceTypeManagementController;
 use App\Http\Controllers\Manager\CouponManagementController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Manager\OrderManagementController;
+use App\Http\Controllers\Manager\PackageDiscountController;
 use App\Http\Controllers\Manager\PackageExtraManagementController;
 use App\Http\Controllers\Manager\PackageItemManagementController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
@@ -92,7 +93,9 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/branches/{branch_id}/customers/search', [DashboardController::class, 'searchCustomersByName']);
      Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
      Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
-
+     Route::get('package-discounts/management', [PackageDiscountController::class, 'index']);
+    Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
+    Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
       Route::post('/report', [ReportController::class, 'store']);;
       Route::get('/report', [ReportController::class, 'index']);;
    ////////////////////////////////////////////
