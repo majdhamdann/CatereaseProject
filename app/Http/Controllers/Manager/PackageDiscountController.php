@@ -3,24 +3,38 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Package;
 use App\Models\PackageDiscount;
+use Auth;
 use Illuminate\Http\Request;
 
 class PackageDiscountController extends Controller
 {
-    public function index()
+      public function index()
     {
-        $discounts = PackageDiscount::with('package')->get()->map(function ($discount) {
-           $discount->value = number_format($discount->value, 2) . '%';
+        $user = Auth::user();
 
-            return $discount;
-        });
+        $packages = Package::whereHas('discounts')
+           ->whereHas('branch', function ($query) use ($user) {
+               $query->where('manager_id', $user->id);
+           })
+          ->with([
+            'discounts', 
+            'categories'    
+        ])
+           ->get();
 
-        return response()->json([
-            'status' => true,
-            'discounts' => $discounts,
-        ]);
-    }
+       $packages->each(function ($package) {
+          $package->discounts->each(function ($discount) {
+              $discount->value = number_format($discount->value, 2) . '%';
+           });
+       });
+
+      return response()->json([
+         'status' => true,
+         'packages' => $packages,
+       ]);
+}
 
     public function store(Request $request)
     {
