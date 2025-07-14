@@ -359,6 +359,7 @@ class CartController extends Controller
 
         $packages = $cartItems->map(function ($item) {
             return [
+                'cart_item_id' => $item->id,
                 'id' => $item->package->id,
                 'name' => $item->package->name,
                 'photo' => $item->package->photo,
