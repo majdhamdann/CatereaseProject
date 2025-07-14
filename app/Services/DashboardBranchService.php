@@ -106,7 +106,7 @@ class DashboardBranchService
     {
         $branch = Branch::find($branch_id);
 
-        if (!$branch || Auth()->user()->id != $branch->Manager_id) {
+        if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
         return Order::selectRaw('MONTH(created_at) as month, COUNT(*) as count')

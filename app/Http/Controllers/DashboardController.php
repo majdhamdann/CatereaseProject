@@ -333,7 +333,7 @@ public function getBranchCustomers($branch_id)
 }
 public function searchCustomersByStatus($branch_id, Request $request)
 {
-    $status = $request->query('status'); // مثال: active - deleted
+    $status = $request->query('status'); 
 
     $branch = Branch::find($branch_id);
 
@@ -341,7 +341,6 @@ public function searchCustomersByStatus($branch_id, Request $request)
         abort(403, 'Unauthorized access');
     }
 
-    // جلب الطلبات مع المستخدمين الذين يملكون نفس الحالة
     $orders = Order::with('user')
         ->where('branch_id', $branch_id)
         ->whereHas('user', function ($query) use ($status) {
