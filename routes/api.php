@@ -7,6 +7,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FoodManagementController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\Manager\DeliveryEmployeeManagementController;
 use App\Http\Controllers\Manager\FoodItemController;
 use App\Http\Controllers\Manager\PackagemanagementController;
 use App\Http\Controllers\MenuController;
@@ -97,7 +98,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
     Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
       Route::post('/report', [ReportController::class, 'store']);;
-      Route::get('/report', [ReportController::class, 'index']);;
+      Route::get('/report', [ReportController::class, 'index']);
+      Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
    ////////////////////////////////////////////
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
