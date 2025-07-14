@@ -52,12 +52,12 @@ Route::prefix('branches')->group(function () {
     Route::get('/nearby', [BranchController::class, 'getNearby']);
 });
 
-//Route::middleware('auth:sanctum')->group(function () {
+Route::middleware('auth:sanctum')->group(function () {
     Route::get('/branches/{branch}/packages', [PackageController::class, 'index']);
     Route::get('packages/{id}', [PackageController::class, 'show']);
     Route::get('/packages', [PackageController::class, 'listPackages']);
 
-//});
+});
 Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/add', [CartController::class, 'addToCart']);
