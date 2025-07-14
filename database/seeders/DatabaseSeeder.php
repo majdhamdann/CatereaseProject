@@ -41,7 +41,7 @@ class DatabaseSeeder extends Seeder
         OrderSeeder::class,
         OrderDetailSeeder::class,
         FeedBackTypeSeeder::class,
-
+         PackageDiscountSeeder::class,
 
 
         OrderServiceTypeSeeder::class,

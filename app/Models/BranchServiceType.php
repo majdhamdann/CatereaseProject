@@ -34,6 +34,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|BranchServiceType whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packagesWithExtra
  * @property-read int|null $packages_with_extra_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartItem> $cartItems
+ * @property-read int|null $cart_items_count
  * @mixin \Eloquent
  */
 class BranchServiceType extends Model
@@ -64,5 +66,11 @@ class BranchServiceType extends Model
         )->withTimestamps();
     }
 
+    public function cartItems()
+    {
+        return $this->belongsToMany(CartItem::class, 'cart_item_service_map')
+            ->withPivot('custom_price')
+            ->withTimestamps();
+    }
 
 }
