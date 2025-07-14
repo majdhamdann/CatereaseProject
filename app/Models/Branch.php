@@ -58,6 +58,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $food_categories_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
  * @property-read int|null $packages_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Report> $reports
+ * @property-read int|null $reports_count
  * @mixin \Eloquent
  */
 class Branch extends Model

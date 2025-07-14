@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- *
+ * 
  *
  * @property int $id
  * @property int $branch_id
@@ -63,12 +63,23 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Package whereMaxExtraPersons($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Package wherePricePerExtraPerson($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Package whereServesCount($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Coupon> $coupon
+ * @property-read int|null $coupon_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Coupon> $coupons
+ * @property-read int|null $coupons_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\PackageDiscount> $discounts
+ * @property-read int|null $discounts_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchServiceType> $extraServices
+ * @property-read int|null $extra_services_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OccasionType> $occasionTypes
+ * @property-read int|null $occasion_types_count
  * @mixin \Eloquent
  */
 class Package extends Model
 {
     use HasFactory;
-     protected $guarded = ['id'];
+    protected $guarded = ['id'];
+
     public function items() {
         return $this->hasMany(PackageItem::class);
     }
@@ -81,7 +92,7 @@ class Package extends Model
         return $this->belongsTo(BranchServiceType::class);
     }
 
-   
+
     public function categories() {
         return $this->belongsToMany(Category::class, 'package_categories', 'package_id', 'category_id');
     }
@@ -126,6 +137,10 @@ class Package extends Model
        return $this->belongsToMany(Coupon::class, 'package_coupon');
      }
 
+    public function discounts()
+    {
+        return $this->hasMany(PackageDiscount::class);
+    }
 
 
 }

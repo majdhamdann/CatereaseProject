@@ -13,8 +13,8 @@ return new class extends Migration
     {
         Schema::create('reports', function (Blueprint $table) {
               $table->id();
-              $table->unsignedBigInteger('branch_id');  // الفرع الذي يتبع له التقرير
-              $table->unsignedBigInteger('manager_id'); // من أنشأ التقرير
+              $table->unsignedBigInteger('branch_id');
+              $table->unsignedBigInteger('manager_id');
               $table->string('subject');
               $table->text('details');
               $table->timestamps();
