@@ -26,7 +26,13 @@ class CouponManagementController extends Controller
     $manager = auth()->user();
     $validated = $request->validate([
         'branch_id'=>'required|exists:branches,id',
-        'code' => 'required|string|unique:coupons,code',
+        'code' => [
+         'required',
+         'string',
+         'unique:coupons,code',
+         'regex:/^[a-zA-Z0-9]{5,7}$/'
+        ],
+        //'code' => 'required|string|unique:coupons,code',
         'discount_amount' => 'required|numeric|min:0',
         'expiration_date' => 'required|date|after:today',
         'package_ids' => 'required|array|min:1',
