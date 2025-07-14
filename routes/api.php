@@ -61,12 +61,16 @@ Route::prefix('branches')->group(function () {
 Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/add', [CartController::class, 'addToCart']);
-    Route::get('/', [CartController::class, 'getCart']);
     Route::post('item/{id}', [CartController::class, 'updateCartItem']);
+    Route::get('/packages', [CartController::class, 'getCartPackages']);
+
+    Route::get('/', [CartController::class, 'getCart']);
 
     //Route::put('/items/{cartItem}', [CartController::class, 'updateCartItem']);
     Route::delete('/items/{cartItem}', [CartController::class, 'removeCartItem']);
 });
+
+
 
 Route::post('login',[AuthController::class,'login']);
 Route::post('/register', [AuthController::class, 'register']);

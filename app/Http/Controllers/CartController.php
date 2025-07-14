@@ -171,15 +171,14 @@ class CartController extends Controller
         ]);
     }
 
-
-
-
-
     public function updateCartItem(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
             'quantity' => 'sometimes|integer|min:1',
             'extra_persons' => 'sometimes|integer|min:0',
+            'occasion_type_id' => 'sometimes|exists:occasion_types,id',
+            'service_type' => 'sometimes|array',
+            'service_type.*.id' => 'required|exists:branch_service_types,id',
             'extras' => 'sometimes|array',
             'extras.*.extra_id' => 'required|exists:package_extras,id',
             'extras.*.quantity' => 'required|integer|min:1',
@@ -196,9 +195,7 @@ class CartController extends Controller
         DB::beginTransaction();
 
         try {
-            $cartItem = CartItem::with(['package', 'cart', 'packageExtras.extra'])
-                ->findOrFail($id);
-
+            $cartItem = CartItem::with(['package', 'cart', 'packageExtras.extra', 'services'])->findOrFail($id);
 
             if ($cartItem->cart->user_id !== Auth::id()) {
                 return response()->json([
@@ -213,20 +210,32 @@ class CartController extends Controller
 
             $cartItem->quantity = $request->input('quantity', $cartItem->quantity);
             $cartItem->extra_persons = $request->input('extra_persons', $cartItem->extra_persons);
-
+            $cartItem->occasion_type_id = $request->input('occasion_type_id', $cartItem->occasion_type_id);
 
             if ($cartItem->extra_persons > $package->max_extra_persons) {
                 throw new \Exception('You cannot add more than ' . $package->max_extra_persons . ' extra persons.');
             }
 
 
-            $baseCost = $package->base_price * $cartItem->quantity;
-            $extraPersonsCost = $cartItem->extra_persons * $package->price_per_extra_person;
+            $activeDiscount = $package->discounts()
+                ->where('is_active', true)
+                ->where('start_at', '<=', now())
+                ->where('end_at', '>=', now())
+                ->first();
+
+            $originalPrice = (float) $package->base_price;
+            $discountPercentage = $activeDiscount ? (float) $activeDiscount->value : 0;
+            $discountedPrice = $originalPrice * (1 - ($discountPercentage / 100));
+            $discountedPrice = max($discountedPrice, 0);
+
+            $baseCost = $discountedPrice * $cartItem->quantity;
+            $extraPersonsCost = $cartItem->extra_persons * (float) $package->price_per_extra_person;
+
+
             $extrasCost = 0;
-
-
             $existingExtras = $cartItem->packageExtras->keyBy('extra_id');
             $newExtraIds = [];
+            $extrasDetails = [];
 
             foreach ($request->input('extras', []) as $ex) {
                 $extraModel = PackageExtra::findOrFail($ex['extra_id']);
@@ -235,13 +244,11 @@ class CartController extends Controller
                 $newExtraIds[] = $ex['extra_id'];
 
                 if (isset($existingExtras[$ex['extra_id']])) {
-
                     $existingExtras[$ex['extra_id']]->update([
                         'quantity' => $ex['quantity'],
                         'total_price' => $total
                     ]);
                 } else {
-
                     CartPackageExtra::create([
                         'cart_item_id' => $cartItem->id,
                         'extra_id' => $ex['extra_id'],
@@ -250,27 +257,78 @@ class CartController extends Controller
                         'total_price' => $total
                     ]);
                 }
+
+                $extrasDetails[] = [
+                    'id' => $extraModel->id,
+                    'name' => $extraModel->name,
+                    'price' => $extraModel->price,
+                    'quantity' => $ex['quantity'],
+                    'total' => $total
+                ];
             }
 
 
-            $cartItem->packageExtras()
-                ->whereNotIn('extra_id', $newExtraIds)
-                ->delete();
+            $cartItem->packageExtras()->whereNotIn('extra_id', $newExtraIds)->delete();
 
 
-            $totalCost = $baseCost + $extraPersonsCost + $extrasCost;
+            $serviceTypesCost = 0;
+            $serviceTypesDetails = [];
+            $cartItem->services()->detach();
+
+            foreach ($request->input('service_type', []) as $service) {
+                $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
+                $price = (float) $serviceModel->service_cost;
+                $serviceTypesCost += $price;
+
+                $cartItem->services()->attach($service['id'], [
+                    'custom_price' => $price
+                ]);
+
+                $serviceTypesDetails[] = [
+                    'id' => $serviceModel->id,
+                    'name' => $serviceModel->serviceType->name ?? 'Unknown',
+                    'price' => $price,
+                ];
+            }
+
+
+            $totalCost = $baseCost + $extraPersonsCost + $extrasCost + $serviceTypesCost;
             $cartItem->total_price = $totalCost;
             $cartItem->save();
 
 
             $cart = $cartItem->cart;
-            $cart->total_price = $cart->total_price - $originalTotal + $totalCost;
+            $cart->total_price = $cart->items()->sum('total_price');
             $cart->save();
 
             DB::commit();
 
 
-            $cartItem->load('packageExtras.extra');
+            $occasionName = null;
+            if ($cartItem->occasion_type_id) {
+                $occasion = OccasionType::find($cartItem->occasion_type_id);
+                $occasionName = $occasion->name ?? null;
+            }
+
+
+            $details = [
+                'package' => $package->name,
+                'quantity' => $cartItem->quantity,
+                'extra_persons' => $cartItem->extra_persons,
+                'extra_persons_cost' => number_format($extraPersonsCost, 2),
+                'extras' => $extrasDetails,
+                'service_type' => $serviceTypesDetails,
+                'service_type_cost' => number_format($serviceTypesCost, 2),
+                'occasion_type_id' => $cartItem->occasion_type_id,
+                'occasion_type_name' => $occasionName,
+                'total' => number_format($totalCost, 2),
+            ];
+
+            if ($discountPercentage > 0) {
+                $details['original_price'] = number_format($originalPrice, 2);
+                $details['discount_percentage'] = number_format($discountPercentage, 0) . '%';
+                $details['discounted_price'] = number_format($discountedPrice, 2);
+            }
 
             return response()->json([
                 'status' => true,
@@ -279,23 +337,9 @@ class CartController extends Controller
                     'cart_item_id' => $cartItem->id,
                     'total_price' => $cartItem->total_price,
                     'cart_total' => $cart->total_price,
-                    'details' => [
-                        'base_cost' => $baseCost,
-                        'extra_persons_cost' => $extraPersonsCost,
-                        'extras_cost' => $extrasCost,
-                        'extras' => $cartItem->packageExtras->map(function($extra) {
-                            return [
-                                'id' => $extra->extra_id,
-                                'name' => $extra->extra->name,
-                                'quantity' => $extra->quantity,
-                                'unit_price' => $extra->unit_price,
-                                'total_price' => $extra->total_price
-                            ];
-                        })
-                    ]
+                    'details' => $details
                 ]
             ]);
-
         } catch (\Exception $e) {
             DB::rollBack();
             return response()->json([
@@ -305,6 +349,34 @@ class CartController extends Controller
             ], 500);
         }
     }
+
+    public function getCartPackages(Request $request)
+    {
+
+        $cartItems = CartItem::with('package')
+            ->where('cart_id', auth()->user()->cart->id)
+            ->get();
+
+        $packages = $cartItems->map(function ($item) {
+            return [
+                'id' => $item->package->id,
+                'name' => $item->package->name,
+                'photo' => $item->package->photo,
+                'description' => $item->package->description,
+                'serves_count' => $item->package->serves_count,
+                'base_price' => $item->package->base_price,
+            ];
+        });
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Cart packages retrieved successfully.',
+            'packages' => $packages,
+
+        ]);
+    }
+
+
 
 
 }
