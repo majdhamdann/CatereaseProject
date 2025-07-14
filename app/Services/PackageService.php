@@ -163,7 +163,6 @@ class PackageService
                 return null;
             }
 
-
             $now = now();
             $currentDiscount = $package->discounts
                 ->where('is_active', true)
@@ -173,31 +172,26 @@ class PackageService
 
             DB::commit();
 
-            return [
+            $response = [
                 'id' => $package->id,
                 'name' => $package->name,
                 'description' => $package->description,
                 'serves_count' => $package->serves_count,
                 'photo' => $package->photo,
-
-
-                'base_price' => $currentDiscount
-                    ? $package->base_price . ' - ' . $currentDiscount->value . '%'
-                    : $package->base_price,
-
+                'base_price' => number_format($package->base_price, 2, '.', ''),
                 'prepayment_required' => $package->prepayment_required,
                 'prepayment_amount' => $package->prepayment_amount,
                 'branch_id' => $package->branch->id ?? null,
                 'branch_name' => $package->branch->name ?? ($package->branch->restaurant->name ?? 'Unknown'),
 
                 'service_type' => $package->extraServices->map(fn($s) => [
-                    'id'            => $s->id,
-                    'name'          => $s->serviceType->name ?? null,
-                    'custom_price'  => $s->custom_price,
+                    'id' => $s->id,
+                    'name' => $s->serviceType->name ?? null,
+                    'custom_price' => $s->custom_price,
                 ])->values(),
 
                 'occasion_types' => $package->occasionTypes->map(fn($o) => [
-                    'id'   => $o->id,
+                    'id' => $o->id,
                     'name' => $o->name,
                 ])->values(),
 
@@ -233,11 +227,28 @@ class PackageService
                 }),
             ];
 
+            if ($currentDiscount) {
+                $discountValue = $currentDiscount->value;
+                $discountedPrice = round($package->base_price - ($package->base_price * ($discountValue / 100)), 2);
+
+                $response['discount'] = [
+                    'value' => $discountValue . '%',
+                    'description' => $currentDiscount->description,
+                    'start_at' => $currentDiscount->start_at,
+                    'end_at' => $currentDiscount->end_at,
+                ];
+
+                $response['final_price'] = number_format($discountedPrice, 2, '.', '');
+            }
+
+            return $response;
+
         } catch (\Exception $e) {
             DB::rollBack();
             throw $e;
         }
     }
+
 
 
 
