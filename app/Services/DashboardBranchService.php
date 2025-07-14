@@ -164,7 +164,7 @@ class DashboardBranchService
         if (!$branch || Auth()->user()->id != $branch->manager_id) {
            abort(403, 'Unauthorized access'); 
          }
-        $orders = Order::with(['orderDetails.foodItem.category'])
+        $orders = Order::with(['orderDetails.package.categories'])
             ->where('status', 'delivered')
             ->where('branch_id', $branch_id)
             ->get();
@@ -174,7 +174,8 @@ class DashboardBranchService
 
         foreach ($orders as $order) {
             foreach ($order->orderDetails as $detail) {
-                $categoryName = $detail->foodItem->category->name ?? 'غير معروف';
+                $categoryName = optional($detail->package->categories->first())->name ?? 'غير معروف';
+
 
                 $categoryCounts[$categoryName] = ($categoryCounts[$categoryName] ?? 0) + 1;
                 $totalDeliveredItems++;
