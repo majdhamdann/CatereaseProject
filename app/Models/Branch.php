@@ -115,11 +115,12 @@ class Branch extends Model
      public function workingDays() {
         return $this->hasMany(WorkingDay::class);
     }
-    public function categories()
 
-    {
-        return $this->hasMany(Category::class, 'branch_id');
-    }
+    public function categories()
+{
+    return $this->belongsToMany(Category::class, 'food_categories', 'branch_id', 'category_id');
+}
+
     public function packages()
     {
         return $this->hasMany(Package::class, 'branch_id');

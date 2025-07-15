@@ -19,7 +19,7 @@ class UserAuthService
         'email' => $data['email'],
         'password' => Hash::make($data['password']),
         'role_id' => 3,
-        'phone' => (int) $data['phone'],
+        'phone' => $data['phone'],
         'gender' => $data['gender'],
         'verified' => false,
     ]);
