@@ -10,7 +10,7 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Carbon\Carbon;
-class branchtatisticsontroller extends Controller
+class BranchStatisticsController extends Controller
 {
 
    public function getOrdersCountbranches()
@@ -249,6 +249,62 @@ public function getOwnerSummary()
         'total_revenue' => (float) $totalRevenue,
         'average_rating' => round($averageRating, 2),
         'total_rating' => $totalRating
+    ]);
+}
+public function getBranchStatistics($branchId)
+{
+    $owner = Auth::user();
+
+    $restaurant = Restaurant::where('owner_id', $owner->id)->first();
+
+    if (!$restaurant) {
+        return response()->json(['message' => 'لا يوجد مطعم لهذا المالك'], 404);
+    }
+
+    $branch = Branch::where('id', $branchId)
+        ->where('restaurant_id', $restaurant->id)
+        ->first();
+
+    if (!$branch) {
+        return response()->json(['message' => 'الفرع غير موجود أو لا يتبع لهذا المطعم'], 404);
+    }
+
+    // الطلبات الشهرية
+    $monthlyData = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as orders_count, SUM(total_price) as revenue')
+        ->where('branch_id', $branch->id)
+        ->where('status', 'delivered')
+        ->groupBy(DB::raw('MONTH(created_at)'))
+        ->get();
+
+    $monthlyStats = [];
+    foreach ($monthlyData as $data) {
+        $monthName = Carbon::create()->month($data->month)->locale('en')->isoFormat('MMMM');
+        $monthlyStats[$monthName] = [
+            'orders_count' => $data->orders_count,
+            'revenue' => (float) $data->revenue,
+        ];
+    }
+
+    $averageRating = DB::table('feedback')
+        ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
+        ->where('feedback.type', 'rating')
+        ->where('feedback_types.target_type', 'branch')
+        ->where('feedback_types.target_ref_id', $branch->id)
+        ->avg('feedback.score');
+
+    $totalRatings = DB::table('feedback')
+        ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
+        ->where('feedback.type', 'rating')
+        ->where('feedback_types.target_type', 'branch')
+        ->where('feedback_types.target_ref_id', $branch->id)
+        ->count();
+
+    return response()->json([
+        'branch_id' => $branch->id,
+        'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
+        'monthly_stats' => $monthlyStats,
+        'average_rating' => round($averageRating, 2),
+        'total_ratings' => $totalRatings,
     ]);
 }
 
