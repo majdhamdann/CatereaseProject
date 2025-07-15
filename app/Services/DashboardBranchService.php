@@ -35,22 +35,42 @@ class DashboardBranchService
         'total_income' => (float) $totalIncome,
     ]);
 }
+  public function getMyBranch()
+{
+    $user = auth()->user();
 
+    $branch = Branch::with([
+        'categories:id,name',                             // الأصناف المرتبطة
+        'branchServiceTypes.serviceType:id,name,description', // مناطق التوصيل
+        'manager:id,phone'                                // مدير الفرع
+    ])
+    ->where('manager_id', $user->id)
+    ->first();
 
-       public function getMyBranch()
-   {
-         $user = auth()->user();
-
-         $branch = \App\Models\Branch::where('manager_id', $user->id)->first();
-
-         if (!$branch) {
-            return response()->json(['message' => 'No branch found for this manager'], 404);
-          }
-
-         return response()->json([
-           'branch' => $branch
-        ]);
+    if (!$branch) {
+        return response()->json(['message' => 'No branch found for this manager'], 404);
     }
+
+    return response()->json([
+        'branch' => [
+            'id' => $branch->id,
+            'location_note' => $branch->location_note,
+            'description' => $branch->description,
+            'phone' => $branch->manager->phone ?? null,
+
+            'categories' => $branch->categories->pluck('name'),
+
+            'delivery_regions' => $branch->branchServiceTypes->map(function ($service) {
+                return [
+                    'name' => $service->serviceType->name ?? 'غير معروف',
+                    'description' => $service->serviceType->description ?? '',
+                    'price' => $service->custom_price ?? $service->service_cost ?? 0,
+                ];
+            }),
+        ]
+    ]);
+}
+
 
     public function getLastDeliveredOrdersWithRatings($branch_id)
 {
