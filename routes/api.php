@@ -29,6 +29,7 @@ use App\Http\Controllers\Manager\PackageExtraManagementController;
 use App\Http\Controllers\Manager\PackageItemManagementController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
+use App\Http\Controllers\Owner\branchtatisticsontroller;
 use App\Http\Controllers\Owner\WorkingDayController;
 use App\Http\Controllers\ReportController;
 
@@ -153,8 +154,13 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
     Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
     Route::post('/branches/{branch}/categories', [OwnerBranchController::class, 'addCategoriesToBranch']);
+    Route::get('branch-statistics', [branchtatisticsontroller::class, 'getStatistics']);
+     Route::get('/OrdersCountbranches', [branchtatisticsontroller::class, 'getOrdersCountbranches']);
+     Route::get('/RevenueByMonth', [branchtatisticsontroller::class, 'getBranchesRevenueByMonth']);
+      Route::get('/BranchFoodItemStats', [branchtatisticsontroller::class, 'getBranchFoodItemStats']);
+      Route::get('/Summary', [branchtatisticsontroller::class, 'getOwnerSummary']);
 
-});
+    });
 
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurant', [RestaurantController::class, 'index']);
