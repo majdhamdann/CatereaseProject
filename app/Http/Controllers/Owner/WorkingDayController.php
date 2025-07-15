@@ -10,9 +10,14 @@ use Illuminate\Support\Facades\Auth;
 
 class WorkingDayController extends Controller
 {
-   private function ensureBranchBelongsToOwner($branchId)
+ private function ensureBranchBelongsToOwner($branchId)
 {
     $user = Auth::user();
+
+    if (!$user) {
+        abort(401, 'You must be logged in first.');
+    }
+
     $role = $user->role->name ?? null;
 
     if ($role === 'Admin') {
@@ -22,7 +27,7 @@ class WorkingDayController extends Controller
             ->where('restaurant_id', $user->restaurant->id)
             ->first();
     } else {
-        abort(403, 'Unauthorized: No restaurant assigned to you.');
+        abort(403, 'You do not have a restaurant assigned to your account.');
     }
 
     if (!$branch) {
@@ -32,19 +37,33 @@ class WorkingDayController extends Controller
     return $branch;
 }
 
-
     public function index($branchId)
-    {
-        $this->ensureBranchBelongsToOwner($branchId);
+{
+    $branch = Branch::findOrFail($branchId);
 
-        $workingDays = WorkingDay::where('branch_id', $branchId)->get();
-
-        return response()->json($workingDays);
+    if (auth()->user()->id !== $branch->manager_id) {
+        abort(403, 'غير مصرح لك بعرض أوقات العمل لهذا الفرع.');
     }
+
+    $workingDays = WorkingDay::where('branch_id', $branchId)->get();
+
+    return response()->json($workingDays);
+}
+
+public function all($branchId)
+{
+  $this->ensureBranchBelongsToOwner($branchId);
+
+    $workingDays = WorkingDay::where('branch_id', $branchId)->get();
+
+    return response()->json($workingDays);
+}
+
 
     public function store(Request $request, $branchId)
     {
-        $this->ensureBranchBelongsToOwner($branchId);
+     
+          $this->ensureBranchBelongsToOwner($branchId);
 
         $data = $request->validate([
             'day_of_week' => 'required|in:Saturday,Sunday,Monday,Tuesday,Wednesday,Thursday,Friday',

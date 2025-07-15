@@ -100,7 +100,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::post('/report', [ReportController::class, 'store']);;
       Route::get('/report', [ReportController::class, 'index']);
       Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
-   ////////////////////////////////////////////
+   Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
       Route::apiResource('food-items', FoodManagementController::class);
       Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
       Route::apiResource('packages/management', PackagemanagementController::class);
@@ -124,15 +124,15 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     });
       Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
       Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
-      Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
+Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
    Route::apiResource('users', UserManagementController::class);
     Route::apiResource('/branches/management', OwnerBranchController::class);
-    Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
     Route::post('/branches/{branchId}/working-days', [WorkingDayController::class, 'store']);
     Route::put('/working-days/{id}', [WorkingDayController::class, 'update']);
     Route::delete('/working-days/{id}', [WorkingDayController::class, 'destroy']);
     Route::post('/occasion-types', [OccasionTypeController::class, 'store']);
     Route::put('/occasion-types/{id}', [OccasionTypeController::class, 'update']);
+    Route::get('/branches/{branchId}/working-days/owner', [WorkingDayController::class, 'all']);
     Route::delete('/occasion-types/{id}', [OccasionTypeController::class, 'destroy']);
 });
 
