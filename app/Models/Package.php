@@ -141,6 +141,18 @@ class Package extends Model
     {
         return $this->hasMany(PackageDiscount::class);
     }
+  public function feedbacks()
+{
+    return $this->hasManyThrough(
+        Feedback::class,
+        FeedbackType::class,
+        'target_ref_id',     
+        'FeedbackType_id',  
+        'id',              
+        'id'                 
+    )->where('feedback_types.target_type', 'package')
+     ->where('feedback.type', 'rating');
+}
 
 
 }

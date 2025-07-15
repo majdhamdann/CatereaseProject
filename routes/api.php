@@ -124,6 +124,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);
       Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']);
       Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
+       Route::get('/packages_to_category', [MenuManagementController::class, 'getPackagesByCategory']);
+
     });
       Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
       Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
