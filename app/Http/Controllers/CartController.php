@@ -377,7 +377,220 @@ class CartController extends Controller
         ]);
     }
 
+    public function showCartItem($cartItemId)
+    {
+        $user = Auth::user();
 
+        try {
+
+            $cartItem = CartItem::with([
+                'cart' => function($query) use ($user) {
+                    $query->where('user_id', $user->id);
+                },
+                'package.branch.restaurant',
+                'package.extraServices.serviceType',
+                'package.branchServiceType.serviceType',
+                'package.occasionTypes',
+                'package.categories',
+                'package.items.foodItem',
+                'package.extras.foodItem',
+                'package.extras.branchServiceType.serviceType',
+                'package.discounts',
+                'occasionType',
+                'extras.extra',
+                'services.serviceType'
+            ])->findOrFail($cartItemId);
+
+            if (!$cartItem->cart) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Cart item not found'
+                ], 404);
+            }
+
+            $package = $cartItem->package;
+
+
+            $allServices = collect();
+
+
+            if ($package->branchServiceType) {
+                $allServices->push([
+                    'id' => $package->branchServiceType->id,
+                    'name' => $package->branchServiceType->serviceType->name ?? null,
+                    'custom_price' => $package->branchServiceType->custom_price
+                ]);
+            }
+
+
+            foreach ($package->extraServices as $service) {
+                $allServices->push([
+                    'id' => $service->id,
+                    'name' => $service->serviceType->name ?? null,
+                    'custom_price' => $service->custom_price
+                ]);
+            }
+
+
+            $now = now();
+            $currentDiscount = $package->discounts
+                ->where('is_active', true)
+                ->where('start_at', '<=', $now)
+                ->where('end_at', '>=', $now)
+                ->first();
+
+
+            $formattedItem = [
+                'package_id' => $package->id,
+                'name' => $package->name,
+                'description' => $package->description,
+                'serves_count' => $package->serves_count,
+                'photo' => $package->photo,
+                'base_price' => number_format($package->base_price, 2, '.', ''),
+                'prepayment_required' => $package->prepayment_required,
+                'prepayment_amount' => $package->prepayment_amount,
+                'branch_id' => $package->branch_id,
+                'branch_name' => $package->branch->name ?? ($package->branch->restaurant->name ?? 'Unknown'),
+                'service_type' => $allServices->toArray(),
+                'occasion_types' => $package->occasionTypes->map(function ($type) {
+                    return [
+                        'id' => $type->id,
+                        'name' => $type->name
+                    ];
+                })->toArray(),
+                'categories' => $package->categories->pluck('name')->toArray(),
+                'max_extra_persons' => $package->max_extra_persons,
+                'price_per_extra_person' => $package->price_per_extra_person,
+                'items' => $package->items->map(function ($item) {
+                    return [
+                        'food_item_id' => $item->food_item_id,
+                        'food_item_name' => $item->foodItem->name ?? null,
+                        'quantity' => $item->quantity,
+                        'is_optional' => $item->is_optional
+                    ];
+                })->toArray(),
+                'extras' => $package->extras->map(function ($extra) {
+                    $extraName = $extra->name;
+                    if ($extra->type === 'food_item' && $extra->foodItem) {
+                        $extraName = $extra->foodItem->name;
+                    } elseif ($extra->type === 'service' && $extra->branchServiceType && $extra->branchServiceType->serviceType) {
+                        $extraName = $extra->branchServiceType->serviceType->name;
+                    }
+                    return [
+                        'id' => $extra->id,
+                        'type' => $extra->type,
+                        'name' => $extraName,
+                        'price' => $extra->price,
+                        'is_optional' => $extra->is_optional
+                    ];
+                })->toArray(),
+
+
+                'selected_options' => [
+                    'quantity' => $cartItem->quantity,
+                    'extra_persons' => $cartItem->extra_persons,
+                    'occasion_type' => $cartItem->occasionType ? [
+                        'id' => $cartItem->occasionType->id,
+                        'name' => $cartItem->occasionType->name
+                    ] : null,
+                    'selected_extras' => $cartItem->extras->map(function ($extra) {
+                        return [
+                            'id' => $extra->extra->id,
+                            'name' => $extra->extra->name,
+                            'price' => $extra->unit_price,
+                            'quantity' => $extra->quantity,
+                            'total' => $extra->total_price
+                        ];
+                    })->toArray(),
+                    'selected_services' => $cartItem->services->map(function ($service) {
+                        return [
+                            'id' => $service->id,
+                            'name' => $service->serviceType->name,
+                            'price' => $service->pivot->custom_price
+                        ];
+                    })->toArray()
+                ]
+            ];
+
+
+            if ($currentDiscount) {
+                $discountValue = $currentDiscount->value;
+                $discountedPrice = round($package->base_price - ($package->base_price * ($discountValue / 100)), 2);
+
+                $formattedItem['discount'] = [
+                    'value' => $discountValue . '%',
+                    'description' => $currentDiscount->description,
+                    'start_at' => $currentDiscount->start_at,
+                    'end_at' => $currentDiscount->end_at,
+                ];
+
+                $formattedItem['final_price'] = number_format($discountedPrice, 2, '.', '');
+            }
+
+            return response()->json([
+                'status' => 'success',
+                'data' => $formattedItem
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Cart item not found'
+            ], 404);
+        }
+    }
+
+
+    public function removeCartItem($cartItemId)
+    {
+        $user = Auth::user();
+
+        try {
+            DB::beginTransaction();
+
+
+            $cartItem = CartItem::whereHas('cart', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            })->findOrFail($cartItemId);
+
+
+            $itemPrice = $cartItem->total_price;
+
+
+            $cartItem->packageExtras()->delete();
+            $cartItem->services()->detach();
+
+
+            $cartItem->delete();
+
+
+            $cart = $cartItem->cart;
+            $cart->total_price = $cart->items()->sum('total_price');
+            $cart->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'package removed from cart successfully.',
+                'cart_total' => number_format($cart->total_price, 2)
+            ]);
+
+        } catch (\Illuminate\Database\Eloquent\ModelNotFoundException $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Cart package not found'
+            ], 404);
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to remove package from cart',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
 
 
 }

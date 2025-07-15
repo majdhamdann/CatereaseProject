@@ -38,18 +38,19 @@ class CustomerService
                     'email' => $user->email,
                     'phone' => $user->phone,
                     'gender' => $user->gender,
-                    'photo_url' => $user->photo,
+                    'photo' => $user->photo,
                     'role' => optional($user->role)->name,
                     'addresses' => $user->addresses->map(function ($address) {
                         return [
-                            'address_id' => $address->address_id,
+                            'address_id' => $address->id,
                             'city' => optional($address->city)->name,
                             'country' => optional($address->city)->country,
                             'street' => $address->street,
                             'building' => $address->building,
                             'floor' => $address->floor,
                             'apartment' => $address->apartment,
-                            'coordinate' => $address->coordinate,
+                            'latitude'   => $address->latitude,
+                            'longitude'  => $address->longitude,
                         ];
                     }),
                     'created_at' => $user->created_at->format('Y-m-d'),
