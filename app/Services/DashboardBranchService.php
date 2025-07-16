@@ -35,7 +35,7 @@ class DashboardBranchService
         'total_income' => (float) $totalIncome,
     ]);
 }
-  public function getMyBranch()
+  public function getMyBranch1()
 {
     $user = auth()->user();
 
@@ -58,6 +58,43 @@ class DashboardBranchService
             'description' => $branch->description,
             'phone' => $branch->manager->phone ?? null,
 
+            'categories' => $branch->categories->pluck('name'),
+
+            'delivery_regions' => $branch->branchServiceTypes->map(function ($service) {
+                return [
+                    'name' => $service->serviceType->name ?? 'غير معروف',
+                    'description' => $service->serviceType->description ?? '',
+                    'price' => $service->custom_price ?? $service->service_cost ?? 0,
+                ];
+            }),
+        ]
+    ]);
+}
+public function getMyBranch()
+{
+    $user = auth()->user();
+
+    $branch = Branch::with([
+        'categories:id,name',                             
+        'branchServiceTypes.serviceType:id,name,description', 
+        'manager:id,phone,name'                       
+    ])
+    ->where('manager_id', $user->id)
+    ->first();
+
+    if (!$branch) {
+        return response()->json(['message' => 'No branch found for this manager'], 404);
+    }
+
+    return response()->json([
+        'branch' => [
+            'id' => $branch->id,
+            'location_note' => $branch->location_note,
+            'description' => $branch->description,
+            'phone' => $branch->manager->phone ?? null,
+            'manager_name' => $branch->manager->name ?? null,  
+            'restaurant_photo' => $branch->restaurant->photo ?? null,  
+            
             'categories' => $branch->categories->pluck('name'),
 
             'delivery_regions' => $branch->branchServiceTypes->map(function ($service) {

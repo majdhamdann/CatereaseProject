@@ -29,6 +29,8 @@ use App\Http\Controllers\Manager\PackageExtraManagementController;
 use App\Http\Controllers\Manager\PackageItemManagementController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
+use App\Http\Controllers\Owner\BranchStatisticsController;
+use App\Http\Controllers\Owner\branchtatisticsontroller;
 use App\Http\Controllers\Owner\WorkingDayController;
 use App\Http\Controllers\ReportController;
 
@@ -97,6 +99,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('package-discounts/management', [PackageDiscountController::class, 'index']);
     Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
     Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
+
     Route::post('/report', [ReportController::class, 'store']);;
     Route::get('/report', [ReportController::class, 'index']);
     Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
@@ -121,6 +124,34 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);
     Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']);
     Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
+
+      Route::post('/report', [ReportController::class, 'store']);;
+      Route::get('/report', [ReportController::class, 'index']);
+      Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
+   Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
+      Route::apiResource('food-items', FoodManagementController::class);
+      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
+      Route::apiResource('packages/management', PackagemanagementController::class);
+      Route::apiResource('packageItem', PackageItemManagementController::class);
+      Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
+      Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
+      Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
+      Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
+      Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
+      Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
+      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
+      Route::get('/order/manange', [OrderManagementController::class, 'index']);
+      Route::get('/order/manange/{id}', [OrderManagementController::class, 'show']);
+      Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);
+      Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
+       Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
+       Route::get('/coupons-to-branch', [CouponManagementController::class, 'index']);
+      Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);
+      Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']);
+      Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
+       Route::get('/packages_to_category', [MenuManagementController::class, 'getPackagesByCategory']);
+
+
     });
       Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
       Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
@@ -149,8 +180,14 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
     Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
     Route::post('/branches/{branch}/categories', [OwnerBranchController::class, 'addCategoriesToBranch']);
+    Route::get('branch-statistics', [BranchStatisticsController::class, 'getStatistics']);
+     Route::get('/OrdersCountbranches', [BranchStatisticsController::class, 'getOrdersCountbranches']);
+     Route::get('/RevenueByMonth', [BranchStatisticsController::class, 'getBranchesRevenueByMonth']);
+      Route::get('/BranchFoodItemStats', [BranchStatisticsController::class, 'getBranchFoodItemStats']);
+      Route::get('/Summary', [BranchStatisticsController::class, 'getOwnerSummary']);
+     Route::get('/branch/{id}/statistics', [BranchStatisticsController::class, 'getBranchStatistics']);
 
-});
+    });
 
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurant', [RestaurantController::class, 'index']);
