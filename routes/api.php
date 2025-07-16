@@ -59,7 +59,6 @@ Route::middleware('auth:sanctum')->group(function () {
 
 });
 Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
-
     Route::post('/add', [CartController::class, 'addToCart']);
     Route::post('item/{id}', [CartController::class, 'updateCartItem']);
     Route::get('/packages', [CartController::class, 'getCartPackages']);
@@ -81,7 +80,7 @@ Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth:sanc
 Route::get('/categories', [MenuManagementController::class, 'allCategory']);
 
 Route::middleware(['auth:sanctum', 'manager'])->group(function () {
-     Route::get('/mybranch',[DashboardController::class,'getMyBranch']);
+    Route::get('/mybranch',[DashboardController::class,'getMyBranch']);
     Route::get('earnings/{branch_id}',[DashboardController::class,'getBranchProfit']);
     Route::get('Order/{branch_id}',[DashboardController::class,'getLatestDeliveredOrders']);
     Route::get('orders/{branch_id}/monthly-stats',[DashboardController::class,'getMonthlyDeliveredOrders']);
@@ -91,37 +90,37 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('orders/statistics/popular-food-categories/{branch_id}', [DashboardController::class, 'getPopularCategoriesByUsers']);
     Route::get('orders/Popular-food-week/{branch_id}', [DashboardController::class, 'getPopularPackagesThisWeek']);
     Route::get('orders/best-sell/{branch_id}', [DashboardController::class, 'getBestSellerPackages']);
-     Route::get('all_customer/{branch_id}', [DashboardController::class, 'getBranchCustomers']);
-     Route::get('/branches/{branch_id}/customers/search', [DashboardController::class, 'searchCustomersByName']);
-     Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
-     Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
-     Route::get('package-discounts/management', [PackageDiscountController::class, 'index']);
+    Route::get('all_customer/{branch_id}', [DashboardController::class, 'getBranchCustomers']);
+    Route::get('/branches/{branch_id}/customers/search', [DashboardController::class, 'searchCustomersByName']);
+    Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
+    Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
+    Route::get('package-discounts/management', [PackageDiscountController::class, 'index']);
     Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
     Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
-      Route::post('/report', [ReportController::class, 'store']);;
-      Route::get('/report', [ReportController::class, 'index']);
-      Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
-   Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
-      Route::apiResource('food-items', FoodManagementController::class);
-      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-      Route::apiResource('packages/management', PackagemanagementController::class);
-      Route::apiResource('packageItem', PackageItemManagementController::class);
-      Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
-      Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
-      Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
-      Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
-      Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
-      Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
-      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
-      Route::get('/order/manange', [OrderManagementController::class, 'index']);
-      Route::get('/order/manange/{id}', [OrderManagementController::class, 'show']);
-      Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);
-      Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
-       Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
-       Route::get('/coupons-to-branch', [CouponManagementController::class, 'index']);
-      Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);
-      Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']);
-      Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
+    Route::post('/report', [ReportController::class, 'store']);;
+    Route::get('/report', [ReportController::class, 'index']);
+    Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
+    Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
+    Route::apiResource('food-items', FoodManagementController::class);
+    Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
+    Route::apiResource('packages/management', PackagemanagementController::class);
+    Route::apiResource('packageItem', PackageItemManagementController::class);
+    Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
+    Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
+    Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
+    Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
+    Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
+    Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
+    Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
+    Route::get('/order/manange', [OrderManagementController::class, 'index']);
+    Route::get('/order/manange/{id}', [OrderManagementController::class, 'show']);
+    Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);
+    Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
+    Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
+    Route::get('/coupons-to-branch', [CouponManagementController::class, 'index']);
+    Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);
+    Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']);
+    Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
     });
       Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
       Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
