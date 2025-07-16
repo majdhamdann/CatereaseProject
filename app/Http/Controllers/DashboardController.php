@@ -170,67 +170,6 @@ class DashboardController extends Controller
 
     return $result;
 }
-public function getPopularPackagesThisWeek(Request $request)
-{
-    $manager = Auth::user();
-
-    $branch = Branch::where('manager_id', $manager->id)->first();
-
-    if (!$branch) {
-        return response()->json(['message' => 'لا يوجد فرع مرتبط بهذا المدير'], 404);
-    }
-
-    $categoryId = $request->category_id;
-    $oneWeekAgo = Carbon::now()->subDays(7);
-
-    $orders = Order::with('orderDetails.package.categories')
-        ->where('branch_id', $branch->id)
-        ->where('status', 'delivered')
-        ->where('created_at', '>=', $oneWeekAgo)
-        ->get();
-    $packageOrderCounts = [];
-
-    foreach ($orders as $order) {
-        foreach ($order->orderDetails as $detail) {
-            $package = $detail->package;
-
-            if ($package && $package->categories->contains('id', $categoryId)) {
-                $packageId = $package->id;
-                $packageOrderCounts[$packageId] = ($packageOrderCounts[$packageId] ?? 0) + $detail->quantity;
-            }
-        }
-    }
-
-    $packages = Package::with('feedbacks')
-        ->where('branch_id', $branch->id)
-        ->whereHas('categories', function ($query) use ($categoryId) {
-            $query->where('categories.id', $categoryId);
-        })
-        ->get();
-
-    $data = $packages->map(function ($package) use ($packageOrderCounts) {
-        $averageRating = $package->feedbacks->avg('score') ?? 0;
-        $reviewsCount = $package->feedbacks->count();
-        $orderCount = $packageOrderCounts[$package->id] ?? 0;
-
-        return [
-            'id' => $package->id,
-            'name' => $package->name,
-            'photo' => $package->photo,
-            'price' => $package->base_price,
-            'average_rating' => round($averageRating, 2),
-            'reviews_count' => $reviewsCount,
-            'weekly_order_count' => $orderCount,
-        ];
-    });
-
-    return response()->json([
-        'branch' => $branch->location_note ?? $branch->description,
-        'category_id' => $categoryId,
-        'packages' => $data->sortByDesc('weekly_order_count')->values(),
-    ]);
-}
-
   public function getBestSellerPackages($branch_id)
 {
     $branch = Branch::find($branch_id);
@@ -436,6 +375,56 @@ public function searchCustomersByStatus($branch_id, Request $request)
 
 
 
+
+public function getPopularPackagesThisWeek($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $oneWeekAgo = Carbon::now()->subDays(7);
+
+    $orders = Order::with('orderDetails.package')
+        ->where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->where('created_at', '>=', $oneWeekAgo)
+        ->get();
+
+    $packageStats = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $package = $detail->package;
+
+            if ($package) {
+                $packageId = $package->id;
+
+                if (!isset($packageStats[$packageId])) {
+                    $packageStats[$packageId] = [
+                        'id' => $packageId,
+                        'name' => $package->name,
+                        'photo' => $package->photo, // ✅ أضف الصورة هنا
+                        'price' => $package->base_price,
+                        'order_count' => 0,
+                    ];
+                }
+
+                $packageStats[$packageId]['order_count'] += 1;
+            }
+        }
+    }
+
+    // ترتيب تنازلي حسب عدد الطلبات
+    $result = array_values($packageStats);
+    usort($result, fn($a, $b) => $b['order_count'] <=> $a['order_count']);
+
+    return response()->json([
+        'branch' => $branch->location_note ?? $branch->description,
+        'packages' => $result
+    ]);
+}
 
 
 
