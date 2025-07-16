@@ -539,8 +539,7 @@ class CartController extends Controller
             ], 404);
         }
     }
-
-
+    
     public function removeCartItem($cartItemId)
     {
         $user = Auth::user();
