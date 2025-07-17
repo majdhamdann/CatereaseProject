@@ -40,9 +40,9 @@ class DashboardBranchService
     $user = auth()->user();
 
     $branch = Branch::with([
-        'categories:id,name',                             // الأصناف المرتبطة
-        'branchServiceTypes.serviceType:id,name,description', // مناطق التوصيل
-        'manager:id,phone'                                // مدير الفرع
+        'categories:id,name',                           
+        'branchServiceTypes.serviceType:id,name,description', 
+        'manager:id,phone'                              
     ])
     ->where('manager_id', $user->id)
     ->first();
@@ -256,7 +256,7 @@ public function getMyBranch()
         ];
     }
 
-  public function getPopularPackageCategories($branch_id)
+  public function getPopularPackageCategories1($branch_id)
 {
     $branch = Branch::find($branch_id);
 
@@ -264,7 +264,7 @@ public function getMyBranch()
         abort(403, 'Unauthorized access');
     }
 
-    $orders = Order::with(['orderDetails.package.categories']) // ✅ تحميل التصنيفات المرتبطة بالباكجات
+    $orders = Order::with(['orderDetails.package.categories','orderDetails.package.feedbacks']) 
         ->where('branch_id', $branch_id)
         ->get();
 
@@ -298,6 +298,68 @@ public function getMyBranch()
     return $result;
 }
 
+public function getPopularPackageCategories($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $orders = Order::with(['orderDetails.package.categories', 'orderDetails.package.feedbacks'])
+        ->where('branch_id', $branch_id)
+        ->get();
+
+    $categoryData = [];
+
+    foreach ($orders as $order) {
+        $userId = $order->user_id;
+
+        foreach ($order->orderDetails as $detail) {
+            $package = $detail->package;
+
+            if ($package && $package->categories) {
+                foreach ($package->categories as $category) {
+                    $categoryName = $category->name ?? 'غير معروف';
+
+                    // Track unique users
+                    $categoryData[$categoryName]['users'][$userId] = true;
+
+                    // Track total feedbacks and ratings
+                    $feedbacks = $package->feedbacks;
+
+                    foreach ($feedbacks as $feedback) {
+                        $categoryData[$categoryName]['total_rating'] = ($categoryData[$categoryName]['total_rating'] ?? 0) + $feedback->rating;
+                        $categoryData[$categoryName]['feedback_count'] = ($categoryData[$categoryName]['feedback_count'] ?? 0) + 1;
+                    }
+                }
+            } else {
+                $categoryName = 'غير معروف';
+                $categoryData[$categoryName]['users'][$userId] = true;
+            }
+        }
+    }
+
+    $result = [];
+
+    foreach ($categoryData as $categoryName => $data) {
+        $feedbackCount = $data['feedback_count'] ?? 0;
+        $totalRating = $data['total_rating'] ?? 0;
+        $averageRating = $feedbackCount > 0 ? round($totalRating / $feedbackCount, 2) : null;
+
+        $result[] = [
+            'name' => $categoryName,
+            'user_count' => count($data['users']),
+            'average_rating' => $averageRating,
+            'feedback_count' => $feedbackCount
+        ];
+    }
+
+    // Sort by user_count descending
+    usort($result, fn($a, $b) => $b['user_count'] <=> $a['user_count']);
+
+    return $result;
+}
 
 
 }
