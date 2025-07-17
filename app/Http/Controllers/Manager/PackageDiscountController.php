@@ -100,16 +100,21 @@ class PackageDiscountController extends Controller
         $discount = $package->discounts->first();
         $reviewsCount = $package->feedbacks->count();
 
+        $averageRating = $package->feedbacks->avg('rating'); 
+
         return [
             'id' => $package->id,
+            'name' => $package->name,
             'photo' => $package->photo,
             'old_price' => $package->base_price,
             'discount_value' => $discount ? $discount->value . '%' : '0%',
             'reviews_count' => $reviewsCount,
+            'average_rating' => round($averageRating, 1), 
         ];
     });
 
     return response()->json($data);
 }
+
 
 }

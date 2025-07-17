@@ -35,8 +35,6 @@ class CouponManagementController extends Controller
         ],
         'discount_amount' => 'required|numeric|min:0',
         'expiration_date' => 'required|date|after:today',
-        'package_ids' => 'nullable|array|min:1',
-        'package_ids.*' => 'exists:packages,id',
         'user_id' => 'nullable|exists:users,id', 
     ]);
 
@@ -53,7 +51,7 @@ class CouponManagementController extends Controller
         'expiration_date' => $validated['expiration_date'],
     ]);
 
-  //  $coupon->packages()->attach($validated['package_ids']);
+   // $coupon->packages()->attach($validated['package_ids']);
 
     return response()->json([
         'message' => 'تم إنشاء الكوبون وربطه بالباكجات بنجاح',
@@ -72,8 +70,8 @@ class CouponManagementController extends Controller
         'code' => 'sometimes|required|string|unique:coupons,code,' . $coupon->id,
         'discount_amount' => 'sometimes|required|numeric|min:0',
         'expiration_date' => 'sometimes|required|date|after:today',
-       // 'package_ids' => 'nullable|array',
-        //'package_ids.*' => 'exists:packages,id',
+        'package_ids' => 'required|array',
+        'package_ids.*' => 'exists:packages,id',
         'user_id' => 'nullable|exists:users,id', 
     ]);
 
