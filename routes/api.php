@@ -97,6 +97,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/branches/{branch_id}/customers/search', [DashboardController::class, 'searchCustomersByName']);
      Route::get('/branches/{branch_id}/customers/verified', [DashboardController::class, 'getCustomersVerifiedOnDate']);
      Route::get('/branches/{branch_id}/customers/status', [DashboardController::class, 'searchCustomersByStatus']);
+     Route::get('/branches/{user_id}/customer', [DashboardController::class, 'getCustomerWithOrders']);
      Route::get('package-discounts/management', [PackageDiscountController::class, 'index']);
      Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
      Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);

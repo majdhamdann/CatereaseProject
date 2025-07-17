@@ -7,6 +7,7 @@ use App\Models\Feedback;
 use App\Models\FeedbackType;
 use App\Models\Order;
 use App\Models\Package;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use App\Services\DashboardBranchService;
@@ -181,6 +182,60 @@ public function getBestSellerPackages($branch_id)
     return response()->json([
         'branch' => $branch->location_note ?? $branch->description,
         'best_selling_packages' => $result
+    ]);
+}
+
+
+public function getCustomerWithOrders($user_id)
+{
+    $manager = Auth::user();
+
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
+    }
+
+    $user = User::find($user_id);
+
+    if (!$user) {
+        return response()->json(['message' => 'المستخدم غير موجود.'], 404);
+    }
+
+    $orders = $user->orders()
+        ->where('branch_id', $branch->id)
+        ->with(['orderDetails.package', 'branch'])
+        ->get();
+
+    return response()->json([
+        'user' => [
+            'id' => $user->id,
+            'name' => $user->name,
+            'email' => $user->email,
+            'status' => $user->status,
+            'phone' => $user->phone ?? null,
+            'created_at' => $user->created_at,
+        ],
+        'orders' => $orders->map(function ($order) {
+            return [
+                'order_id' => $order->id,
+                'status' => $order->status,
+                'total_price' => $order->total_price,
+                'created_at' => $order->created_at,
+                'items' => $order->orderDetails->map(function ($detail) {
+                    $package = $detail->package;
+
+                    return [
+                        'package_name' => $package->name ?? 'غير معروف',
+                        'quantity' => $detail->quantity,
+                        'unit_price' => $detail->unit_price,
+                        'photo' => $package->photo 
+                            ? asset('storage/' . $package->photo)
+                            : null,
+                    ];
+                }),
+            ];
+        }),
     ]);
 }
 
