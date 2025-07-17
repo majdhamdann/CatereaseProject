@@ -132,6 +132,10 @@ class User extends Authenticatable implements MustVerifyEmail
     {
       return $this->hasOne(Restaurant::class, 'owner_id');
     }
+    public function coupons()
+   {
+      return $this->hasMany(Coupon::class);
+    }
 
     public function bills() {
         return $this->hasMany(Bill::class);
