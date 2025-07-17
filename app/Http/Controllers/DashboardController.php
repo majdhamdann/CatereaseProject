@@ -130,42 +130,7 @@ class DashboardController extends Controller
 }
     
  
-  public function getBestSellerPackages11($branch_id)
-{
-    $branch = Branch::find($branch_id);
-
-    if (!$branch || Auth()->user()->id != $branch->manager_id) {
-        abort(403, 'Unauthorized access');
-    }
-
-    $orders = Order::with('orderDetails.package')
-        ->where('branch_id', $branch_id)
-        ->where('status', 'delivered')
-        ->get();
-
-    $packageCounts = [];
-
-    foreach ($orders as $order) {
-        foreach ($order->orderDetails as $detail) {
-            $package = $detail->package;
-            if ($package) {
-                $packageName = $package->name;
-                $packageCounts[$packageName] = ($packageCounts[$packageName] ?? 0) + 1;
-            }
-        }
-    }
-
-    $result = [];
-    foreach ($packageCounts as $package => $count) {
-        $result[] = [
-            'package' => $package,
-            'order_count' => $count,
-        ];
-    }
-    usort($result, fn($a, $b) => $b['order_count'] <=> $a['order_count']);
-
-    return $result;
-}
+  
 public function getBestSellerPackages($branch_id)
 {
     $branch = Branch::find($branch_id);
@@ -174,7 +139,6 @@ public function getBestSellerPackages($branch_id)
         abort(403, 'Unauthorized access');
     }
 
-    // جلب الطلبات المكتملة
     $orders = Order::with('orderDetails.package.feedbacks')
         ->where('branch_id', $branch_id)
         ->where('status', 'delivered')
