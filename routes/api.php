@@ -28,6 +28,7 @@ use App\Http\Controllers\Manager\OrderManagementController;
 use App\Http\Controllers\Manager\PackageDiscountController;
 use App\Http\Controllers\Manager\PackageExtraManagementController;
 use App\Http\Controllers\Manager\PackageItemManagementController;
+use App\Http\Controllers\Manager\ReviewmanagerController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\BranchStatisticsController;
@@ -139,6 +140,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::delete('/coupons/{id}', [CouponManagementController::class, 'destroy']);
      Route::get('/packages/with/coupons', [CouponManagementController::class, 'packagesWithCoupons']);
      Route::get('/packages_to_category', [MenuManagementController::class, 'getPackagesByCategory']);
+    ////////////////////////////////////////////reviews Management
+    Route::get('/reviews/manage', [ReviewmanagerController::class, 'getBranchReviewsSummary']);
 
 });
 Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
