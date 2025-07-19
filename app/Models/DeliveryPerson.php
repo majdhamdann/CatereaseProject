@@ -50,4 +50,16 @@ class DeliveryPerson extends Model
     {
         return $this->hasMany(DeliveryTracking::class);
     }
+    public function feedbacks()
+{
+    return $this->hasManyThrough(
+        Feedback::class,
+        FeedbackType::class,
+        'target_ref_id',     
+        'FeedbackType_id',  
+        'id',              
+        'id'                 
+    )->where('feedback_types.target_type', 'delivery_person')
+     ->where('feedback.type', 'rating');
+}
 }

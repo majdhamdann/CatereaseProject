@@ -3,6 +3,8 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
+use App\Models\Delivery;
 use App\Models\DeliveryPerson;
 use App\Models\User;
 use Illuminate\Http\Request;
@@ -56,7 +58,7 @@ class DeliveryEmployeeManagementController extends Controller
 }
 
 
-    public function show($id)
+    public function show1($id)
     {
         $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
 
@@ -65,6 +67,47 @@ class DeliveryEmployeeManagementController extends Controller
             'delivery_person' => $deliveryPerson,
         ]);
     }
+     public function show($id)
+{
+    $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
+    $reviewsCount = $deliveryPerson->feedbacks()->count();
+    $deliveredOrdersCount = $deliveryPerson->deliveries()
+        ->whereHas('order', function ($query) {
+            $query->where('status', 'delivered');
+        })->count();
+    $cancelledOrdersCount = $deliveryPerson->deliveries()
+        ->whereHas('order', function ($query) {
+            $query->where('status', 'cancelled');
+        })->count();
+
+    $todayEarnings = $deliveryPerson->deliveries()
+        ->whereDate('created_at', now()->toDateString())
+        ->whereHas('order', function ($query) {
+            $query->where('status', 'delivered');
+        })
+        ->with('order')
+        ->get()
+        ->sum(function ($delivery) {
+            return $delivery->order->total_price ?? 0;
+        });
+
+    return response()->json([
+        'status' => true,
+        'delivery_person' => [
+            'id' => $deliveryPerson->id,
+            'name' => $deliveryPerson->user->name ?? null,
+            'phone' => $deliveryPerson->user->phone ?? null,
+            'email' => $deliveryPerson->user->email ?? null,
+            'vehicle_type' => $deliveryPerson->vehicle_type,
+            'is_available' => $deliveryPerson->is_available,
+            'created_at' => $deliveryPerson->created_at,
+            'reviews_count' => $reviewsCount,
+            'delivered_orders_count' => $deliveredOrdersCount,
+            'cancelled_orders_count' => $cancelledOrdersCount,
+            'today_earnings' => $todayEarnings,
+        ],
+    ]);
+}
 
     public function update(Request $request, $id)
     {
@@ -123,15 +166,89 @@ class DeliveryEmployeeManagementController extends Controller
     $data = $deliveryPeople->map(function ($deliveryPerson) {
         return [
             'id' => $deliveryPerson->id,
+            'gender'=>$deliveryPerson->user->gender,
             'name' => $deliveryPerson->user->name ?? null,
             'phone' => $deliveryPerson->user->phone ?? null,
             'email' => $deliveryPerson->user->email ?? null,
             'orders_count' => $deliveryPerson->orders_count ?? 0,
             'vehicle_type' => $deliveryPerson->vehicle_type,
             'status' => $deliveryPerson->is_available ? 'available' : 'unavailable',
+            'created_at'    => $deliveryPerson->created_at->toDateTimeString()
         ];
     });
     return response()->json($data);
 }
+ public function getBranchDeliveries()
+{
+    $manager = auth()->user();
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
+    }
+
+    $deliveries = Delivery::with(['order', 'deliveryPerson.user'])
+        ->whereHas('order', function ($q) use ($branch) {
+            $q->where('branch_id', $branch->id);
+        })
+        ->get();
+
+    $data = $deliveries->map(function ($delivery) {
+        return [
+            'delivery_id' => $delivery->id,
+            'delivery_person_name' => optional($delivery->deliveryPerson->user)->name,
+            'order_id' => $delivery->order->id ?? null,
+            'order_status' => $delivery->order->status ?? null,
+            'order_total' => $delivery->order->total_price ?? null,
+            'delivered_at' => $delivery->created_at->toDateTimeString(),
+        ];
+    });
+
+    return response()->json([
+        'status' => true,
+        'branch_id' => $branch->id,
+        'deliveries' => $data,
+    ]);
+}
+public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
+{
+    $manager = auth()->user();
+
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
+    }
+
+    $deliveries = Delivery::with(['order'])
+        ->where('delivery_person_id', $deliveryPersonId)
+        ->whereHas('order', function ($q) use ($branch) {
+            $q->where('branch_id', $branch->id);
+        })
+        ->get();
+
+    if ($deliveries->isEmpty()) {
+        return response()->json(['message' => 'لا يوجد طلبات لهذا الموظف في فرعك.'], 404);
+    }
+
+    $data = $deliveries->map(function ($delivery) {
+        return [
+            'delivery_id' => $delivery->id,
+            'order_id' => $delivery->order->id ?? null,
+            'order_status' => $delivery->order->status ?? null,
+            'total_price' => $delivery->order->total_price ?? null,
+            'delivered_at' => $delivery->delivered_at ?? $delivery->created_at->toDateTimeString(),
+        ];
+    });
+
+    return response()->json([
+        'status' => true,
+        'delivery_person_id' => $deliveryPersonId,
+        'branch_id' => $branch->id,
+        'orders_count' => $data->count(),
+        'orders' => $data,
+    ]);
+}
+
 
 }

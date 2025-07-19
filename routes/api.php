@@ -107,7 +107,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
      Route::get('/delivery/manage', [DeliveryEmployeeManagementController::class, 'getDeliveryPersons']);
      Route::get('/descount/manage/all', [PackageDiscountController::class, 'getDiscountedPackages']);
-
+     Route::get('/order/delivery/allOrder', [DeliveryEmployeeManagementController::class, 'getBranchDeliveries']);
+      Route::get('/manager/delivery-person/{id}/orders', [DeliveryEmployeeManagementController::class, 'getDeliveryPersonOrdersInMyBranch']);
      Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
      Route::apiResource('food-items', FoodManagementController::class);
      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
