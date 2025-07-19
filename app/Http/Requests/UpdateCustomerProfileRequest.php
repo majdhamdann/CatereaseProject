@@ -29,9 +29,12 @@ class UpdateCustomerProfileRequest extends FormRequest
                 Rule::unique('users')->ignore($this->user()->id)
             ],
             'phone' => [
-                'sometimes', 'string',
+                'sometimes',
+                'string',
+                'regex:/^[0-9+\-\s\(\)]+$/',
                 Rule::unique('users')->ignore($this->user()->id)
             ],
+
             'gender' => ['sometimes', 'in:m,f'],
             'photo' => ['sometimes', 'string'],
         ];
