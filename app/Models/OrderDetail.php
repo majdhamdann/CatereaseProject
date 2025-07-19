@@ -30,6 +30,15 @@ use Illuminate\Database\Eloquent\Model;
  * @property int $package_id
  * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail wherePackageId($value)
  * @property-read \App\Models\Package $package
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OrderPackageExtra> $extras
+ * @property-read int|null $extras_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchServiceType> $services
+ * @property-read int|null $services_count
+ * @property int|null $occasion_type_id
+ * @property int $extra_persons
+ * @property-read \App\Models\OccasionType|null $occasionType
+ * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereExtraPersons($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|OrderDetail whereOccasionTypeId($value)
  * @mixin \Eloquent
  */
 class OrderDetail extends Model
@@ -53,5 +62,24 @@ class OrderDetail extends Model
    {
       return $this->belongsTo(FoodItem::class, 'food_item_id');
     }
+
+    public function extras()
+    {
+        return $this->hasMany(OrderPackageExtra::class, 'order_detail_id');
+    }
+//    public function services()
+//    {
+//        return $this->belongsToMany(BranchServiceType::class, 'order_item_service_map')
+//            ->withPivot('custom_price');
+//    }
+    public function services()
+    {
+        return $this->hasMany(OrderItemService::class, 'order_detail_id');
+    }
+    public function occasionType()
+    {
+        return $this->belongsTo(OccasionType::class, 'occasion_type_id');
+    }
+
 
 }

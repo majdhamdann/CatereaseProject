@@ -73,6 +73,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $extra_services_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\OccasionType> $occasionTypes
  * @property-read int|null $occasion_types_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
+ * @property-read int|null $feedbacks_count
  * @mixin \Eloquent
  */
 class Package extends Model

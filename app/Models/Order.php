@@ -56,6 +56,14 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereApprovedBy($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereIsApproved($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereRejectionReason($value)
+ * @property int $prepayment_paid
+ * @property string|null $prepayment_paid_at
+ * @property string|null $notes
+ * @property string|null $delivery_time
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereDeliveryTime($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereNotes($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order wherePrepaymentPaid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order wherePrepaymentPaidAt($value)
  * @mixin \Eloquent
  */
 class Order extends Model
