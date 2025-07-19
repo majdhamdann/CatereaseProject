@@ -94,4 +94,44 @@ class DeliveryEmployeeManagementController extends Controller
             'message' => 'Delivery person deleted.',
         ]);
     }
+    public function getDeliveryPersons(Request $request)
+{
+    $query = DeliveryPerson::with('user')
+        ->withCount(['deliveries as orders_count' => function ($q) {
+            $q->whereHas('order', function ($q2) {
+                $q2->where('status', 'delivered'); 
+            });
+        }]);
+
+    if ($request->has('name')) {
+        $query->whereHas('user', function ($q) use ($request) {
+            $q->where('name', 'like', '%' . $request->name . '%');
+        });
+    }
+
+    if ($request->has('status')) {
+        $status = $request->status === 'available' ? 1 : 0;
+        $query->where('is_available', $status);
+    }
+
+    if ($request->has('date')) {
+        $query->whereDate('created_at', $request->date);
+    }
+
+    $deliveryPeople = $query->get();
+
+    $data = $deliveryPeople->map(function ($deliveryPerson) {
+        return [
+            'id' => $deliveryPerson->id,
+            'name' => $deliveryPerson->user->name ?? null,
+            'phone' => $deliveryPerson->user->phone ?? null,
+            'email' => $deliveryPerson->user->email ?? null,
+            'orders_count' => $deliveryPerson->orders_count ?? 0,
+            'vehicle_type' => $deliveryPerson->vehicle_type,
+            'status' => $deliveryPerson->is_available ? 'available' : 'unavailable',
+        ];
+    });
+    return response()->json($data);
+}
+
 }

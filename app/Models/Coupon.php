@@ -50,4 +50,9 @@ class Coupon extends Model
     public function packages() {
         return $this->belongsToMany(Package::class, 'package_coupon');
     }
+    public function user()
+{
+    return $this->belongsTo(User::class);
+}
+
 }

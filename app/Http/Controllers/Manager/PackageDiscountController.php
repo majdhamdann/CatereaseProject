@@ -3,11 +3,12 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
 use App\Models\Package;
 use App\Models\PackageDiscount;
-use Auth;
 use Illuminate\Http\Request;
-
+use Illuminate\Support\Facades\Auth ;
+use Carbon\Carbon;
 class PackageDiscountController extends Controller
 {
       public function index()
@@ -70,4 +71,50 @@ class PackageDiscountController extends Controller
             'discount' => $discount,
         ]);
     }
+      public function getDiscountedPackages()
+{
+    $manager = Auth::user();
+
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json(['message' => 'لا يوجد فرع مرتبط بهذا المدير'], 404);
+    }
+
+    $now = Carbon::now();
+
+    $packages = Package::where('branch_id', $branch->id)
+        ->whereHas('discounts', function ($query) use ($now) {
+            $query->where('is_active', true)
+                  ->where('start_at', '<=', $now)
+                  ->where('end_at', '>=', $now);
+        })
+        ->with(['discounts' => function ($query) use ($now) {
+            $query->where('is_active', true)
+                  ->where('start_at', '<=', $now)
+                  ->where('end_at', '>=', $now);
+        }, 'feedbacks'])
+        ->get();
+
+    $data = $packages->map(function ($package) {
+        $discount = $package->discounts->first();
+        $reviewsCount = $package->feedbacks->count();
+
+        $averageRating = $package->feedbacks->avg('rating'); 
+
+        return [
+            'id' => $package->id,
+            'name' => $package->name,
+            'photo' => $package->photo,
+            'old_price' => $package->base_price,
+            'discount_value' => $discount ? $discount->value . '%' : '0%',
+            'reviews_count' => $reviewsCount,
+            'average_rating' => round($averageRating, 1), 
+        ];
+    });
+
+    return response()->json($data);
+}
+
+
 }
