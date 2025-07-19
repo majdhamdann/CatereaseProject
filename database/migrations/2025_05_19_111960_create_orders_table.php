@@ -16,12 +16,16 @@ return new class extends Migration
             $table->unsignedBigInteger('user_id');
             $table->unsignedBigInteger('branch_id');
             $table->unsignedBigInteger('delivery_id')->nullable();
+            $table->unsignedBigInteger('address_id')->nullable();
+            $table->unsignedBigInteger('cart_id')->nullable();
 
             $table->enum('status', ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled']);
             $table->unsignedBigInteger('promo_code_id')->nullable();
             $table->decimal('total_price', 10, 2);
-            $table->unsignedBigInteger('address_id')->nullable();
-            $table->unsignedBigInteger('cart_id')->nullable();
+            $table->boolean('prepayment_paid')->default(false);
+            $table->timestamp('prepayment_paid_at')->nullable();
+            $table->text('notes')->nullable();
+            $table->timestamp('delivery_time')->nullable();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');

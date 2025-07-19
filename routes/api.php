@@ -11,6 +11,7 @@ use App\Http\Controllers\Manager\DeliveryEmployeeManagementController;
 use App\Http\Controllers\Manager\FoodItemController;
 use App\Http\Controllers\Manager\PackagemanagementController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
@@ -69,6 +70,15 @@ Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
     Route::delete('/items/{cartItem}', [CartController::class, 'removeCartItem']);
 });
 
+Route::prefix('order')->middleware('auth:sanctum')->group(function () {
+
+    Route::post('/init', [OrderController::class, 'initOrder']);
+    Route::post('/create', [OrderController::class, 'createOrder']);
+    Route::get('/{id}', [OrderController::class, 'show']);
+    Route::get('/user/orders', [OrderController::class, 'listUserOrders']);
+    Route::post('/orders/{id}', [OrderController::class, 'updateOrder']);
+
+});
 
 
 Route::post('login',[AuthController::class,'login']);
