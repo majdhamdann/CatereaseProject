@@ -3,6 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Models\Branch;
+use App\Models\BranchServiceType;
+use App\Models\DeliveryPerson;
 use App\Models\Feedback;
 use App\Models\FeedbackType;
 use App\Models\Order;
@@ -202,7 +204,17 @@ public function getCustomerWithOrders($user_id)
 
     $orders = $user->orders()
         ->where('branch_id', $branch->id)
-        ->with(['orderDetails.package', 'branch'])
+        ->with(['orderDetails.package', 'orderDetails.extras', 'orderDetails.services.service', 'branch'])
+        ->get();
+
+    $packageIds = Package::where('branch_id', $branch->id)->pluck('id');
+
+   $feedbacks = $user->feedbacks()
+        ->whereHas('feedbackType', function ($query) use ($packageIds) {
+            $query->where('target_type', 'package')
+                  ->whereIn('target_ref_id', $packageIds);
+        })
+        ->with('feedbackType')
         ->get();
 
     $coupons = $user->coupons()
@@ -226,6 +238,15 @@ public function getCustomerWithOrders($user_id)
             'phone' => $user->phone ?? null,
             'created_at' => $user->created_at,
         ],
+        'feedbacks' => $feedbacks->map(function ($f) {
+            return [
+                'type' => $f->type,
+                'score' => $f->score,
+                'message' => $f->message,
+                'created_at' => $f->created_at->toDateTimeString(),
+                'package_id' => $f->feedbackType->target_ref_id ?? null,
+            ];
+        }),
         'orders' => $orders->map(function ($order) {
             return [
                 'order_id' => $order->id,
@@ -239,9 +260,23 @@ public function getCustomerWithOrders($user_id)
                         'package_name' => $package->name ?? 'غير معروف',
                         'quantity' => $detail->quantity,
                         'unit_price' => $detail->unit_price,
-                        'photo' => $package->photo 
+                        'photo' => $package->photo
                             ? asset('storage/' . $package->photo)
                             : null,
+                        'extras' => $detail->extras->map(function ($extra) {
+                            return [
+                                'name' => $extra->extra->name ?? '---',
+                                'quantity' => $extra->quantity,
+                                'unit_price' => $extra->unit_price,
+                                'total_price' => $extra->total_price,
+                            ];
+                        }),
+                        'services' => $detail->services->map(function ($serviceMap) {
+                            return [
+                                'name' => $serviceMap->service->name ?? '---',
+                                'custom_price' => $serviceMap->custom_price,
+                            ];
+                        }),
                     ];
                 }),
             ];
@@ -251,7 +286,7 @@ public function getCustomerWithOrders($user_id)
 }
 
 
- public function getCustomerWithOrders1($user_id)
+ public function getCustomerWithOrder61($user_id)
 {
     $manager = Auth::user();
 

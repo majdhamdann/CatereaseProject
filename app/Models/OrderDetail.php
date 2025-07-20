@@ -72,6 +72,7 @@ class OrderDetail extends Model
 //        return $this->belongsToMany(BranchServiceType::class, 'order_item_service_map')
 //            ->withPivot('custom_price');
 //    }
+
     public function services()
     {
         return $this->hasMany(OrderItemService::class, 'order_detail_id');

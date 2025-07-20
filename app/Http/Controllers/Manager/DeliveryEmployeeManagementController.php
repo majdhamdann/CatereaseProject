@@ -167,12 +167,13 @@ class DeliveryEmployeeManagementController extends Controller
         return [
             'id' => $deliveryPerson->id,
             'gender'=>$deliveryPerson->user->gender,
+            'status'=>$deliveryPerson->user->status,
             'name' => $deliveryPerson->user->name ?? null,
             'phone' => $deliveryPerson->user->phone ?? null,
             'email' => $deliveryPerson->user->email ?? null,
             'orders_count' => $deliveryPerson->orders_count ?? 0,
             'vehicle_type' => $deliveryPerson->vehicle_type,
-            'status' => $deliveryPerson->is_available ? 'available' : 'unavailable',
+            'is_available' => $deliveryPerson->is_available ? 'available' : 'unavailable',
             'created_at'    => $deliveryPerson->created_at->toDateTimeString()
         ];
     });
@@ -210,45 +211,7 @@ class DeliveryEmployeeManagementController extends Controller
         'deliveries' => $data,
     ]);
 }
-public function getDeliveryPersonOrdersInMyBranch1($deliveryPersonId)
-{
-    $manager = auth()->user();
 
-    $branch = Branch::where('manager_id', $manager->id)->first();
-
-    if (!$branch) {
-        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
-    }
-
-    $deliveries = Delivery::with(['order'])
-        ->where('delivery_person_id', $deliveryPersonId)
-        ->whereHas('order', function ($q) use ($branch) {
-            $q->where('branch_id', $branch->id);
-        })
-        ->get();
-
-    if ($deliveries->isEmpty()) {
-        return response()->json(['message' => 'لا يوجد طلبات لهذا الموظف في فرعك.'], 404);
-    }
-
-    $data = $deliveries->map(function ($delivery) {
-        return [
-            'delivery_id' => $delivery->id,
-            'order_id' => $delivery->order->id ?? null,
-            'order_status' => $delivery->order->status ?? null,
-            'total_price' => $delivery->order->total_price ?? null,
-            'delivered_at' => $delivery->delivered_at ?? $delivery->created_at->toDateTimeString(),
-        ];
-    });
-
-    return response()->json([
-        'status' => true,
-        'delivery_person_id' => $deliveryPersonId,
-        'branch_id' => $branch->id,
-        'orders_count' => $data->count(),
-        'orders' => $data,
-    ]);
-}
 
 public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
 {
