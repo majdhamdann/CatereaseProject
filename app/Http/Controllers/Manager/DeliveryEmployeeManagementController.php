@@ -57,17 +57,7 @@ class DeliveryEmployeeManagementController extends Controller
     ], 201);
 }
 
-
-    public function show1($id)
-    {
-        $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
-
-        return response()->json([
-            'status' => true,
-            'delivery_person' => $deliveryPerson,
-        ]);
-    }
-     public function show($id)
+     public function show1($id)
 {
     $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
     $reviewsCount = $deliveryPerson->feedbacks()->count();
@@ -108,6 +98,77 @@ class DeliveryEmployeeManagementController extends Controller
         ],
     ]);
 }
+public function show($id)
+{
+    $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
+
+    $reviewsCount = $deliveryPerson->feedbacks()->count();
+
+    $deliveredOrdersCount = $deliveryPerson->deliveries()
+        ->whereHas('order', fn($q) => $q->where('status', 'delivered'))->count();
+
+    $cancelledOrdersCount = $deliveryPerson->deliveries()
+        ->whereHas('order', fn($q) => $q->where('status', 'cancelled'))->count();
+
+    $todayEarnings = $deliveryPerson->deliveries()
+        ->whereDate('created_at', now()->toDateString())
+        ->whereHas('order', fn($q) => $q->where('status', 'delivered'))
+        ->with('order')
+        ->get()
+        ->sum(fn($delivery) => $delivery->order->total_price ?? 0);
+
+    $managerId = auth()->id();
+    $branchId = Branch::where('manager_id', $managerId)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.',
+        ], 403);
+    }
+
+    $branchDeliveries = $deliveryPerson->deliveries()
+        ->whereHas('order', fn($q) => $q->where('branch_id', $branchId))
+        ->with('order')
+        ->get()
+        ->map(function ($delivery) {
+            $status = match ($delivery->order->status) {
+                'delivered' => 'paid',
+                'cancelled' => 'cancelled',
+                default => $delivery->order->status ?? 'unknown',
+            };
+
+            return [
+                'delivery_id' => $delivery->id,
+                'order_id' => $delivery->order->id ?? null,
+                'status' => $status,
+                'notes' => $delivery->notes,
+                'estimated_time' => $delivery->estimated_time,
+                'total_price' => $delivery->order->total_price ?? 0,
+                'delivered_at' => $delivery->delivered_at,
+            ];
+        });
+
+    return response()->json([
+        'status' => true,
+        'delivery_person' => [
+            'id' => $deliveryPerson->id,
+            'name' => $deliveryPerson->user->name ?? null,
+            'phone' => $deliveryPerson->user->phone ?? null,
+            'email' => $deliveryPerson->user->email ?? null,
+            'vehicle_type' => $deliveryPerson->vehicle_type,
+            'is_available' => $deliveryPerson->is_available,
+            'created_at' => $deliveryPerson->created_at,
+            'reviews_count' => $reviewsCount,
+            'delivered_orders_count' => $deliveredOrdersCount,
+            'cancelled_orders_count' => $cancelledOrdersCount,
+            'today_earnings' => $todayEarnings,
+        ],
+        'branch_deliveries' => $branchDeliveries,
+    ]);
+}
+
+
 
     public function update(Request $request, $id)
     {
