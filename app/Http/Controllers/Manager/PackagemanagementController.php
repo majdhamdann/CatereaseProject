@@ -75,7 +75,7 @@ class PackagemanagementController extends Controller
         ], 201);
     }
 
-    public function show($id)
+    public function show1($id)
     {
         $managerId = Auth::id();
 
@@ -92,6 +92,32 @@ class PackagemanagementController extends Controller
 
         return response()->json(['package' => $package]);
     }
+    public function show($id)
+{
+    $managerId = Auth::id();
+
+    $package = Package::query()
+        ->whereKey($id)
+        ->whereHas('branch', fn ($q) => $q->where('manager_id', $managerId))
+        ->with([
+            'branch',
+            'occasionTypes',
+            'categories',
+            'extraServices'
+        ])
+        ->withCount('feedbacks as review_count')
+        ->withAvg('feedbacks as average_rating', 'score')
+        ->first();
+
+    if (!$package) {
+        return response()->json(['error' => 'Package not found or unauthorized'], 404);
+    }
+
+    $package->average_rating = number_format($package->average_rating ?? 0, 1);
+
+    return response()->json(compact('package'));
+}
+
 
     public function update(Request $request, $id)
     {
