@@ -566,4 +566,45 @@ class OrderController extends Controller
         ]);
     }
 
+    public function deleteOrder($id)
+    {
+        $user = Auth::user();
+
+        $order = Order::where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if (in_array($order->status, ['completed', 'in_progress'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Cannot delete order in its current state.',
+            ], 400);
+        }
+
+        $order->orderDetails()->each(function ($detail) {
+            $detail->services()->delete();
+            $detail->extras()->delete();
+            $detail->delete();
+        });
+
+        if ($order->bill) {
+            $order->bill()->delete();
+        }
+
+        $order->delete();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Order deleted successfully.',
+        ]);
+    }
+
+
 }
