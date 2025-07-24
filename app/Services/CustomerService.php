@@ -42,7 +42,7 @@ class CustomerService
                     'role' => optional($user->role)->name,
                     'addresses' => $user->addresses->map(function ($address) {
                         return [
-                            'address_id' => $address->id,
+                            'id' => $address->id,
                             'city' => optional($address->city)->name,
                             'country' => optional($address->city)->country,
                             'street' => $address->street,
