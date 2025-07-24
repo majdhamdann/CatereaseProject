@@ -8,6 +8,7 @@ use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Carbon;
 use App\Mail\WelcomeEmail;
+use Illuminate\Auth\AuthenticationException;
 
 class UserAuthService
 {
@@ -43,19 +44,15 @@ class UserAuthService
     {
         $user = User::where('email', $credentials['email'])->first();
 
-        if (!$user || !Hash::check($credentials['password'], $user->password)) {
-             return response()->json([
-                'message' => 'Invalid Credentials'
-            ],401);
+         if (!$user || !Hash::check($credentials['password'], $user->password)) {
+           throw new AuthenticationException('Invalid credentials.');
         }
 
         $token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
 
-        $user->photo = asset('storage/' . $user->photo);
-
-        return [
-            'access_token' => $token,
-            'user' => $user,
+       return [
+          'access_token' => $token,
+          'user' => $user,
         ];
     }
     public function verify($userId, $otp)
