@@ -93,7 +93,7 @@ class PackageDiscountController extends Controller
             $query->where('is_active', true)
                   ->where('start_at', '<=', $now)
                   ->where('end_at', '>=', $now);
-        }, 'feedbacks'])
+        }, 'feedbacks','categories'])
         ->get();
 
     $data = $packages->map(function ($package) {
@@ -110,6 +110,8 @@ class PackageDiscountController extends Controller
             'discount_value' => $discount ? $discount->value . '%' : '0%',
             'reviews_count' => $reviewsCount,
             'average_rating' => round($averageRating, 1), 
+            'category_ids' => $package->categories->pluck('id')->toArray(),
+
         ];
     });
 

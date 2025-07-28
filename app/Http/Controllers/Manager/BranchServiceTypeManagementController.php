@@ -3,58 +3,43 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
-use App\Models\BranchServiceType;
+use App\Http\Requests\StoreBranchServiceTypeRequest;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use App\Services\Manager\BranchServiceTypeService;
 
 class BranchServiceTypeManagementController extends Controller
 {
-    public function index()
+    protected $service;
+
+    public function __construct(BranchServiceTypeService $service)
     {
-        $managerId = Auth::id();
-
-        $branchServiceTypes = BranchServiceType::whereHas('branch', function ($query) use ($managerId) {
-            $query->where('manager_id', $managerId);
-        })->with('branch')->get();
-
-        return response()->json(['data' => $branchServiceTypes]);
+        $this->service = $service;
     }
 
-    public function store(Request $request)
+    public function index()
     {
-        $managerId = Auth::id();
+        $items = $this->service->getAllForManager();
 
-        $data = $request->validate([
-            'branch_id' => 'required|exists:branches,id',
-            'service_type_id' => 'required|exists:service_types,id',
-            'custom_price' => 'required|numeric|min:0',
-            'service_cost' => 'required|numeric|min:0',
-            'is_available' => 'required|boolean',
-        ]);
+        return response()->json(['data' => $items]);
+    }
 
-        $branch = Branch::where('id', $data['branch_id'])
-                        ->where('manager_id', $managerId)
-                        ->first();
+    public function store(StoreBranchServiceTypeRequest  $request)
+    {
+        
+        $data = $request->validated();
 
-        if (!$branch) {
+        $item = $this->service->create($data);
+
+        if (!$item) {
             return response()->json(['error' => 'غير مصرح لك بإضافة خدمة لهذا الفرع'], 403);
         }
-
-        $item = BranchServiceType::create($data);
 
         return response()->json(['message' => 'تمت الإضافة بنجاح', 'data' => $item], 201);
     }
 
     public function show($id)
     {
-        $managerId = Auth::id();
-
-        $item = BranchServiceType::where('id', $id)
-            ->whereHas('branch', function ($query) use ($managerId) {
-                $query->where('manager_id', $managerId);
-            })
-            ->first();
+        $item = $this->service->getByIdForManager($id);
 
         if (!$item) {
             return response()->json(['error' => 'غير مصرح بعرض هذا العنصر أو غير موجود'], 404);
@@ -65,44 +50,28 @@ class BranchServiceTypeManagementController extends Controller
 
     public function update(Request $request, $id)
     {
-        $managerId = Auth::id();
-
-        $item = BranchServiceType::where('id', $id)
-            ->whereHas('branch', function ($query) use ($managerId) {
-                $query->where('manager_id', $managerId);
-            })
-            ->first();
-
-        if (!$item) {
-            return response()->json(['error' => 'غير مصرح بالتعديل على هذا العنصر'], 403);
-        }
-
         $data = $request->validate([
             'custom_price' => 'nullable|numeric|min:0',
             'service_cost' => 'nullable|numeric|min:0',
             'is_available' => 'nullable|boolean',
         ]);
 
-        $item->update($data);
+        $item = $this->service->update($id, $data);
+
+        if (!$item) {
+            return response()->json(['error' => 'غير مصرح بالتعديل على هذا العنصر'], 403);
+        }
 
         return response()->json(['message' => 'تم التحديث بنجاح', 'data' => $item]);
     }
 
     public function destroy($id)
     {
-        $managerId = Auth::id();
+        $deleted = $this->service->delete($id);
 
-        $item = BranchServiceType::where('id', $id)
-            ->whereHas('branch', function ($query) use ($managerId) {
-                $query->where('manager_id', $managerId);
-            })
-            ->first();
-
-        if (!$item) {
+        if (!$deleted) {
             return response()->json(['error' => 'غير مصرح بالحذف أو غير موجود'], 403);
         }
-
-        $item->delete();
 
         return response()->json(['message' => 'تم الحذف بنجاح']);
     }

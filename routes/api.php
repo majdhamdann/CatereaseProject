@@ -27,7 +27,7 @@ use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Manager\OrderManagementController;
 use App\Http\Controllers\Manager\PackageDiscountController;
 use App\Http\Controllers\Manager\PackageExtraManagementController;
-use App\Http\Controllers\Manager\PackageItemManagementController;
+use App\Http\Controllers\Manager\PackageExtraItemManageController ;
 use App\Http\Controllers\Manager\ReviewmanagerController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
@@ -123,13 +123,16 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
       Route::get('/manager/delivery-person/{id}/orders', [DeliveryEmployeeManagementController::class, 'getDeliveryPersonOrdersInMyBranch']);
      Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
      Route::apiResource('food-items', FoodManagementController::class);
+     /////////////////////
+     Route::apiResource('packagesmangement', PackageExtraItemManageController::class);
+
+    // Route::get('packages/management', [PackageExtraItemManageController::class, 'index']);
+      //Route::post('packages/management', [PackageExtraItemManageController::class, 'store']);
+      //Route::get('packages/{package}/management', [PackageExtraItemManageController::class, 'show']);
+      //Route::put('packages/{package}/management', [PackageExtraItemManageController::class, 'update']);
+     // Route::delete('packages/{package}/management', [PackageExtraItemManageController::class, 'destroy']);
+    ////////////////////////
      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-     Route::apiResource('packages/management', PackagemanagementController::class);
-     Route::apiResource('packageItem', PackageItemManagementController::class);      Route::get('/packages/{packageId}/extras', [PackageExtraManagementController::class, 'index']);
-     Route::post('/packages/extras', [PackageExtraManagementController::class, 'store']);
-     Route::put('/packages/extras/{id}', [PackageExtraManagementController::class, 'update']);
-     Route::delete('/packages/extras/{id}', [PackageExtraManagementController::class, 'destroy']);
-     Route::get('/packages/{packageId}/with-extras', [PackageExtraManagementController::class, 'showPackageWithExtras']);
      Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
      Route::get('/order/manange', [OrderManagementController::class, 'index']);
      Route::get('/order/manange/{id}', [OrderManagementController::class, 'show']);
