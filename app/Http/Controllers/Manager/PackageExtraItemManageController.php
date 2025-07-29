@@ -203,93 +203,141 @@ public function store(Request $request)
 
 
     public function update(Request $request, $id)
-    {
-        $branch = Branch::where('manager_id', Auth::id())->first();
+{
+    $branch = Branch::where('manager_id', Auth::id())->first();
 
-        if (!$branch) {
-           return response()->json(['error' => 'No branch found for this manager'], 403);
-       }
-
-           $package = Package::where('branch_id', $branch->id)->findOrFail($id);
-
-
-       $validated = $request->validate([
-         'branch_id' => 'sometimes|exists:branches,id',
-         'branch_service_type_ids' => 'sometimes|array',
-         'branch_service_type_ids.*' => 'exists:branch_service_types,id',
-         'name' => 'sometimes|string|max:255',
-         'description' => 'sometimes|string',
-         'photo' => 'sometimes|string',
-         'base_price' => 'sometimes|numeric',
-         'serves_count' => 'sometimes|integer',
-         'max_extra_persons' => 'sometimes|integer',
-         'price_per_extra_person' => 'sometimes|numeric',
-         'cancellation_policy' => 'sometimes|string',
-         'prepayment_required' => 'sometimes|boolean',
-         'prepayment_amount' => 'sometimes|numeric',
-         'category_ids' => 'sometimes|array',
-         'category_ids.*' => 'exists:categories,id',
-         'is_active' => 'sometimes|boolean',
-         'notes' => 'sometimes|nullable|string',
-         'occasion_type_ids' => 'sometimes|array',
-         'occasion_type_ids.*' => 'exists:occasion_types,id',
-         'items' => 'sometimes|array',
-         'items.*.food_item_id' => 'required_with:items|exists:food_items,id',
-         'items.*.quantity' => 'required_with:items|integer|min:1',
-         'items.*.is_optional' => 'sometimes|boolean',
-         'extras' => 'sometimes|array',
-         'extras.*.type' => 'required_with:extras|in:food_item,service,simple',
-         'extras.*.name' => 'required_with:extras|string',
-         'extras.*.price' => 'required_with:extras|numeric',
-         'extras.*.is_optional' => 'sometimes|boolean',
-         'extras.*.food_item_id' => 'required_with:extras|exists:food_items,id',
-         'extras.*.branch_service_type_id' => 'required_with:extras|exists:branch_service_types,id',
-]);
-
-        DB::beginTransaction();
-
-        try {
-            $package->update($request->only([
-                'name', 'description', 'photo', 'base_price', 'serves_count',
-                'max_extra_persons', 'price_per_extra_person', 'cancellation_policy',
-                'prepayment_required', 'prepayment_amount', 'is_active', 'notes'
-            ]));
-
-            if ($request->has('items')) {
-                $package->items()->delete();
-                foreach ($validated['items'] as $item) {
-                    PackageItem::create([
-                        'package_id' => $package->id,
-                        'food_item_id' => $item['food_item_id'],
-                        'quantity' => $item['quantity'],
-                        'is_optional' => $item['is_optional'] ?? false,
-                    ]);
-                }
-            }
-
-            if ($request->has('extras')) {
-                $package->extras()->delete();
-                foreach ($validated['extras'] as $extra) {
-                    PackageExtra::create([
-                        'package_id' => $package->id,
-                        'type' => $extra['type'],
-                        'name' => $extra['name'],
-                        'price' => $extra['price'],
-                        'is_optional' => $extra['is_optional'] ?? true,
-                        'food_item_id' => $extra['food_item_id'] ?? null,
-                        'branch_service_type_id' => $extra['branch_service_type_id'] ?? null,
-                    ]);
-                }
-            }
-
-            DB::commit();
-            return response()->json(['message' => 'Package updated', 'package' => $package]);
-
-        } catch (\Throwable $e) {
-            DB::rollBack();
-            return response()->json(['error' => 'Failed to update package', 'message' => $e->getMessage()], 500);
-        }
+    if (!$branch) {
+        return response()->json(['error' => 'No branch found for this manager'], 403);
     }
+
+    $package = Package::where('branch_id', $branch->id)->findOrFail($id);
+
+    $validated = $request->validate([
+        'branch_service_type_ids' => 'sometimes|array',
+        'branch_service_type_ids.*' => 'exists:branch_service_types,id',
+        'name' => 'sometimes|string|max:255',
+        'description' => 'sometimes|string',
+        'photo' => 'sometimes|string',
+        'base_price' => 'sometimes|numeric',
+        'serves_count' => 'sometimes|integer',
+        'max_extra_persons' => 'sometimes|integer',
+        'price_per_extra_person' => 'sometimes|numeric',
+        'cancellation_policy' => 'sometimes|string',
+        'prepayment_required' => 'sometimes|boolean',
+        'prepayment_amount' => 'sometimes|numeric',
+        'category_ids' => 'sometimes|array',
+        'category_ids.*' => 'exists:categories,id',
+        'is_active' => 'sometimes|boolean',
+        'notes' => 'sometimes|nullable|string',
+        'occasion_type_ids' => 'sometimes|array',
+        'occasion_type_ids.*' => 'exists:occasion_types,id',
+
+        'items' => 'sometimes|array',
+        'items.*.food_item_name' => 'required_with:items|string',
+        'items.*.quantity' => 'required_with:items|integer|min:1',
+        'items.*.is_optional' => 'sometimes|boolean',
+
+        'extras' => 'sometimes|array',
+        'extras.*.name' => 'required_with:extras|string',
+        'extras.*.price' => 'required_with:extras|numeric',
+    ]);
+
+    DB::beginTransaction();
+
+    try {
+        $package->update($request->only([
+            'name', 'description', 'photo', 'base_price', 'serves_count',
+            'max_extra_persons', 'price_per_extra_person', 'cancellation_policy',
+            'prepayment_required', 'prepayment_amount', 'is_active', 'notes'
+        ]));
+
+        // Update Items
+        if (isset($validated['items'])) {
+            $package->items()->delete();
+            foreach ($validated['items'] as $item) {
+                $foodItem = FoodItem::firstOrCreate(
+                    ['name' => $item['food_item_name'], 'branch_id' => $branch->id],
+                    [
+                        'food_category_id' => 1,
+                        'description' => 'Auto-created item.',
+                        'price' => 0.0,
+                        'discount_price' => null,
+                        'photo' => '',
+                        'available' => true,
+                        'type' => null,
+                    ]
+                );
+
+                PackageItem::create([
+                    'package_id' => $package->id,
+                    'food_item_id' => $foodItem->id,
+                    'quantity' => $item['quantity'],
+                    'is_optional' => $item['is_optional'] ?? false,
+                ]);
+            }
+        }
+
+        // Update Extras
+        if (isset($validated['extras'])) {
+            $package->extras()->delete();
+            foreach ($validated['extras'] as $extra) {
+                $foodItem = FoodItem::firstOrCreate(
+                    ['name' => $extra['name'], 'branch_id' => $branch->id],
+                    [
+                        'food_category_id' => 1,
+                        'description' => 'Auto-created extra item.',
+                        'price' => $extra['price'],
+                        'discount_price' => null,
+                        'photo' => '',
+                        'available' => true,
+                        'type' => null,
+                    ]
+                );
+
+                PackageExtra::create([
+                    'package_id' => $package->id,
+                    'type' => 'food_item',
+                    'name' => $extra['name'],
+                    'price' => $extra['price'],
+                    'is_optional' => true,
+                    'food_item_id' => $foodItem->id,
+                    'branch_service_type_id' => null,
+                ]);
+            }
+        }
+
+        // Update Pivot Tables
+        if (isset($validated['category_ids'])) {
+            $package->categories()->sync($validated['category_ids']);
+        }
+
+        if (isset($validated['occasion_type_ids'])) {
+            $package->occasionTypes()->sync($validated['occasion_type_ids']);
+        }
+
+        if (isset($validated['branch_service_type_ids'])) {
+            $package->extraServices()->sync($validated['branch_service_type_ids']);
+        }
+
+        DB::commit();
+
+        $package->load([
+            'items.foodItem',
+            'extras.foodItem',
+            'extras.branchServiceType',
+            'categories',
+            'occasionTypes',
+            'extraServices',
+        ]);
+
+        return response()->json(['message' => 'Package updated', 'package' => $package]);
+
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        return response()->json(['error' => 'Failed to update package', 'message' => $e->getMessage()], 500);
+    }
+}
+
 
     public function destroy($id)
 {
