@@ -36,6 +36,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Delivery whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Delivery whereStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Delivery whereUpdatedAt($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeliveryTracking> $trackings
+ * @property-read int|null $trackings_count
  * @mixin \Eloquent
  */
 class Delivery extends Model
@@ -58,7 +60,7 @@ class Delivery extends Model
 
     }
 
-    public function tracking()
+    public function trackings()
     {
         return $this->hasMany(DeliveryTracking::class);
     }

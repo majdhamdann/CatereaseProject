@@ -82,6 +82,14 @@ Route::prefix('order')->middleware('auth:sanctum')->group(function () {
 
 });
 
+// delivery routes
+Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
+
+    Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
+    Route::get('/assigned-orders/{order}', [DeliveryController::class, 'assignedOrderDetails']);
+
+});
+
 
 Route::post('login',[AuthController::class,'login']);
 Route::post('/register', [AuthController::class, 'register']);
@@ -193,10 +201,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
 });
 
-// delivery routes
-Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
-    Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
-});
+
 
 
 

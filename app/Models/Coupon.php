@@ -34,6 +34,9 @@ use Illuminate\Database\Eloquent\SoftDeletes;
  * @method static \Illuminate\Database\Eloquent\Builder|Coupon whereUsed($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Package> $packages
  * @property-read int|null $packages_count
+ * @property int|null $user_id
+ * @property-read \App\Models\User|null $user
+ * @method static \Illuminate\Database\Eloquent\Builder|Coupon whereUserId($value)
  * @mixin \Eloquent
  */
 class Coupon extends Model

@@ -67,6 +67,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Report> $reports
  * @property-read int|null $reports_count
  * @method static \Illuminate\Database\Eloquent\Builder|User whereStatus($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Coupon> $coupons
+ * @property-read int|null $coupons_count
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements MustVerifyEmail
