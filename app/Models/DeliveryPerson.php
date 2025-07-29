@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliveryPerson whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DeliveryPerson whereUserId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|DeliveryPerson whereVehicleType($value)
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
+ * @property-read int|null $feedbacks_count
  * @mixin \Eloquent
  */
 class DeliveryPerson extends Model
