@@ -5,11 +5,8 @@ use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
-use App\Http\Controllers\FoodManagementController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\Manager\DeliveryEmployeeManagementController;
-use App\Http\Controllers\Manager\FoodItemController;
-use App\Http\Controllers\Manager\PackagemanagementController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
 use Illuminate\Http\Request;
@@ -130,15 +127,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/order/delivery/allOrder', [DeliveryEmployeeManagementController::class, 'getBranchDeliveries']);
       Route::get('/manager/delivery-person/{id}/orders', [DeliveryEmployeeManagementController::class, 'getDeliveryPersonOrdersInMyBranch']);
      Route::get('/branches/{branchId}/working-days', [WorkingDayController::class, 'index']);
-     Route::apiResource('food-items', FoodManagementController::class);
      /////////////////////
      Route::apiResource('packagesmangement', PackageExtraItemManageController::class);
-
-    // Route::get('packages/management', [PackageExtraItemManageController::class, 'index']);
-      //Route::post('packages/management', [PackageExtraItemManageController::class, 'store']);
-      //Route::get('packages/{package}/management', [PackageExtraItemManageController::class, 'show']);
-      //Route::put('packages/{package}/management', [PackageExtraItemManageController::class, 'update']);
-     // Route::delete('packages/{package}/management', [PackageExtraItemManageController::class, 'destroy']);
     ////////////////////////
      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
      Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);

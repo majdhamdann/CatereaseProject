@@ -9,6 +9,7 @@ use App\Http\Requests\packageManagement\UpdatePackagemanageRequest;
 use App\Http\Requests\packageManagement\StorePackageItemRequest;
 use App\Http\Requests\packageManagement\StorePackageExtraRequest;
 use App\Models\Branch;
+use App\Models\FoodItem;
 use App\Models\Package;
 use App\Models\PackageExtra;
 use App\Models\PackageItem;
@@ -73,8 +74,8 @@ class PackageExtraItemManageController extends Controller
     return response()->json(['package' => $package]);
 }
 
-
-   public function store(Request $request)
+   
+public function store(Request $request)
 {
     $branch = Branch::where('manager_id', Auth::id())->first();
 
@@ -97,27 +98,24 @@ class PackageExtraItemManageController extends Controller
         'prepayment_amount' => 'required|numeric',
         'category_ids' => 'required|array',
         'category_ids.*' => 'exists:categories,id',
-        'is_active' => 'boolean',
+        'is_active' => 'required|boolean',
         'notes' => 'nullable|string',
         'occasion_type_ids' => 'required|array',
         'occasion_type_ids.*' => 'exists:occasion_types,id',
+
         'items' => 'array',
-        'items.*.food_item_id' => 'required|exists:food_items,id',
+        'items.*.food_item_name' => 'required|string',
         'items.*.quantity' => 'required|integer|min:1',
         'items.*.is_optional' => 'boolean',
+
         'extras' => 'array',
-        'extras.*.type' => 'required|in:food_item,service,simple',
         'extras.*.name' => 'required|string',
         'extras.*.price' => 'required|numeric',
-        'extras.*.is_optional' => 'boolean',
-        'extras.*.food_item_id' => 'required|exists:food_items,id',
-        'extras.*.branch_service_type_id' => 'required|exists:branch_service_types,id',
     ]);
 
     DB::beginTransaction();
 
     try {
-        // نضيف branch_id يدويًا هنا
         $package = Package::create([
             'branch_id' => $branch->id,
             'name' => $validated['name'],
@@ -135,23 +133,49 @@ class PackageExtraItemManageController extends Controller
         ]);
 
         foreach ($validated['items'] ?? [] as $item) {
+            $foodItem = FoodItem::firstOrCreate(
+                ['name' => $item['food_item_name'], 'branch_id' => $branch->id],
+                [
+                    'food_category_id' => 1, 
+                    'description' => 'Auto-created item.',
+                    'price' => 0.0,
+                    'discount_price' => null,
+                    'photo' => '',
+                    'available' => true,
+                    'type' => null,
+                ]
+            );
+
             PackageItem::create([
                 'package_id' => $package->id,
-                'food_item_id' => $item['food_item_id'],
+                'food_item_id' => $foodItem->id,
                 'quantity' => $item['quantity'],
                 'is_optional' => $item['is_optional'] ?? false,
             ]);
         }
 
         foreach ($validated['extras'] ?? [] as $extra) {
+            $foodItem = FoodItem::firstOrCreate(
+                ['name' => $extra['name'], 'branch_id' => $branch->id],
+                [
+                    'food_category_id' => 1, 
+                    'description' => 'Auto-created extra item.',
+                    'price' => $extra['price'],
+                    'discount_price' => null,
+                    'photo' => '',
+                    'available' => true,
+                    'type' => null,
+                ]
+            );
+
             PackageExtra::create([
                 'package_id' => $package->id,
-                'type' => $extra['type'],
+                'type' => 'food_item',
                 'name' => $extra['name'],
                 'price' => $extra['price'],
-                'is_optional' => $extra['is_optional'] ?? true,
-                'food_item_id' => $extra['food_item_id'] ?? null,
-                'branch_service_type_id' => $extra['branch_service_type_id'] ?? null,
+                'is_optional' => true,
+                'food_item_id' => $foodItem->id,
+                'branch_service_type_id' => null,
             ]);
         }
 
@@ -171,7 +195,6 @@ class PackageExtraItemManageController extends Controller
         ]);
 
         return response()->json(['message' => 'Package created', 'package' => $package], 201);
-
     } catch (\Throwable $e) {
         DB::rollBack();
         return response()->json(['error' => 'Failed to create package', 'message' => $e->getMessage()], 500);
