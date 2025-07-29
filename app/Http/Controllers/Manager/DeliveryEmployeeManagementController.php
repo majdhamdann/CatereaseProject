@@ -21,7 +21,7 @@ class DeliveryEmployeeManagementController extends Controller
     }
 
     public function store(Request $request)
-{
+  {
     $request->validate([
         'name' => 'required|string',
         'email' => 'required|email|unique:users,email',
@@ -55,7 +55,7 @@ class DeliveryEmployeeManagementController extends Controller
         'user' => $user,
         'delivery_person' => $deliveryPerson,
     ], 201);
-}
+   }
 
      public function show1($id)
 {
@@ -171,22 +171,47 @@ public function show($id)
 
 
     public function update(Request $request, $id)
-    {
-        $deliveryPerson = DeliveryPerson::findOrFail($id);
+{
+    $deliveryPerson = DeliveryPerson::findOrFail($id);
 
-        $request->validate([
-            'vehicle_type' => 'sometimes|string',
-            'is_available' => 'sometimes|boolean',
-        ]);
+    $request->validate([
+        'vehicle_type' => 'sometimes|string',
+        'is_available' => 'sometimes|boolean',
+        'name' => 'sometimes|string',
+        'email' => 'sometimes|email|unique:users,email,' . $deliveryPerson->user_id,
+        'phone' => 'sometimes|numeric',
+        'gender' => 'sometimes|in:m,f',
+        'password' => 'sometimes|string|min:6',
+    ]);
 
-        $deliveryPerson->update($request->only('vehicle_type', 'is_available'));
+    $user = $deliveryPerson->user;
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Delivery person updated.',
-            'delivery_person' => $deliveryPerson,
-        ]);
+    if ($request->has('name')) {
+        $user->name = $request->input('name');
     }
+    if ($request->has('email')) {
+        $user->email = $request->input('email');
+    }
+    if ($request->has('phone')) {
+        $user->phone = $request->input('phone');
+    }
+    if ($request->has('gender')) {
+        $user->gender = $request->input('gender');
+    }
+    if ($request->has('password')) {
+        $user->password = bcrypt($request->input('password'));
+    }
+    $user->save();
+
+    $deliveryPerson->update($request->only(['vehicle_type', 'is_available']));
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Delivery person updated.',
+        'delivery_person' => $deliveryPerson->load('user'),
+    ]);
+}
+
 
     public function destroy($id)
     {
