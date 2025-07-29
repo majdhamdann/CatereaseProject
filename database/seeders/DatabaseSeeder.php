@@ -49,6 +49,9 @@ class DatabaseSeeder extends Seeder
         DeliveryPersonSeeder::class,
         DeliverySeeder::class,
         DeliveryTrackingSeeder::class,
+        //FeedbackTypeSeeder::class,
+        //FeedbackSeeder::class,
+       
     ]);
 
     }

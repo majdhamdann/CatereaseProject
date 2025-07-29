@@ -3,115 +3,67 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
-use App\Models\Branch;
-use App\Models\Coupon;
-use App\Models\Package;
-use Illuminate\Http\Request;
+use App\Http\Requests\StoreCouponRequest;
+use App\Http\Requests\UpdateCouponRequest;
+use App\Services\Manager\CouponService;
 
 class CouponManagementController extends Controller
 {
-    public function index()
-{
-    $manager = auth()->user();
-    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+    protected $service;
 
-    $coupons = Coupon::with(['packages', 'user'])
-        ->where('branch_id', $branchId)
-        ->get();
-
-    return response()->json($coupons);
-}
-   public function createCoupon(Request $request)
-{
-    $manager = auth()->user();
-
-    $validated = $request->validate([
-        'branch_id' => 'required|exists:branches,id',
-        'code' => [
-            'required',
-            'string',
-            'unique:coupons,code',
-            'regex:/^[a-zA-Z0-9]{5,7}$/'
-        ],
-        'discount_amount' => 'required|numeric|min:0',
-        'expiration_date' => 'required|date|after:today',
-        'user_id' => 'nullable|exists:users,id', 
-    ]);
-
-    $branchId = Branch::where('manager_id', $manager->id)->value('id');
-    if ($branchId != $validated['branch_id']) {
-        return response()->json(['message' => 'لا يمكنك إنشاء كوبون لفرع لا تملكه.'], 403);
+    public function __construct(CouponService $service)
+    {
+        $this->service = $service;
     }
 
-    $coupon = Coupon::create([
-        'branch_id' => $branchId,
-        'user_id' => $validated['user_id'] ?? null, 
-        'code' => $validated['code'],
-        'discount_amount' => $validated['discount_amount'],
-        'expiration_date' => $validated['expiration_date'],
-    ]);
+    public function index()
+    {
+        $coupons = $this->service->getAll();
+        return response()->json($coupons);
+    }
 
-   // $coupon->packages()->attach($validated['package_ids']);
+    public function createCoupon(StoreCouponRequest $request)
+    {
+        $coupon = $this->service->create($request->validated());
 
-    return response()->json([
-        'message' => 'تم إنشاء الكوبون وربطه بالباكجات بنجاح',
-        'coupon' => $coupon->load([ 'user']) 
-    ]);
-}
+        if (!$coupon) {
+            return response()->json(['message' => 'لا يمكنك إنشاء كوبون لفرع لا تملكه.'], 403);
+        }
 
-     public function update(Request $request, $id)
-{
-    $manager = auth()->user();
-    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+        return response()->json([
+            'message' => 'تم إنشاء الكوبون بنجاح',
+            'coupon' => $coupon,
+        ]);
+    }
 
-    $coupon = Coupon::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    public function update(UpdateCouponRequest $request, $id)
+    {
+        $coupon = $this->service->update($id, $request->validated());
 
-    $validated = $request->validate([
-        'code' => 'sometimes|required|string|unique:coupons,code,' . $coupon->id,
-        'discount_amount' => 'sometimes|required|numeric|min:0',
-        'expiration_date' => 'sometimes|required|date|after:today',
-        'package_ids' => 'required|array',
-        'package_ids.*' => 'exists:packages,id',
-        'user_id' => 'nullable|exists:users,id', 
-    ]);
+        if (!$coupon) {
+            return response()->json(['message' => 'لا يمكنك تعديل هذا الكوبون'], 403);
+        }
 
-    $coupon->update($validated);
-
-   
-    return response()->json([
-        'message' => 'تم التحديث',
-        'coupon' => $coupon->load([ 'user']) 
-    ]);
-}
-
+        return response()->json([
+            'message' => 'تم التحديث',
+            'coupon' => $coupon,
+        ]);
+    }
 
     public function destroy($id)
     {
-        $manager = auth()->user();
-        $branchId = Branch::where('manager_id', $manager->id)->value('id');
+        $deleted = $this->service->delete($id);
 
-        $coupon = Coupon::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
-
-        $coupon->delete();
+        if (!$deleted) {
+            return response()->json(['message' => 'لا يمكنك حذف هذا الكوبون'], 403);
+        }
 
         return response()->json(['message' => 'تم حذف الكوبون بنجاح']);
     }
 
     public function packagesWithCoupons()
     {
-        $manager = auth()->user();
-        $branchId = Branch::where('manager_id', $manager->id)->value('id');
-
-       
-        $packages = Package::with('coupons')
-            ->where('branch_id', $branchId)
-            ->whereHas('coupons')
-            ->get();
-
-
+        $packages = $this->service->getPackagesWithCoupons();
         return response()->json($packages);
     }
-
-
-
 }

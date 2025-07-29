@@ -68,10 +68,17 @@ class PackagemanagementController extends Controller
         if ($request->has('branch_service_type_ids')) {
             $package->extraServices()->sync($request->branch_service_type_ids);
         }
-
+        $package->load([
+            'items.foodItem',                
+            'extras.foodItem',             
+            'extras.branchServiceType',      
+            'categories',                    
+            'occasionTypes',                 
+            'extraServices',                  
+        ]);
         return response()->json([
             'message' => 'Package created',
-            'package' => $package->load('branch', 'occasionTypes', 'categories', 'extraServices')
+            'package' => $package
         ], 201);
     }
 

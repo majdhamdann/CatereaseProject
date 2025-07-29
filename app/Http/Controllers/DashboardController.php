@@ -142,7 +142,8 @@ class DashboardController extends Controller
         abort(403, 'Unauthorized access');
     }
 
-    $orders = Order::with('orderDetails.package.feedbacks')
+   $orders = Order::with('orderDetails.package.feedbacks', 'orderDetails.package.categories')
+
         ->where('branch_id', $branch_id)
         ->where('status', 'delivered')
         ->get();
@@ -152,7 +153,7 @@ class DashboardController extends Controller
     foreach ($orders as $order) {
         foreach ($order->orderDetails as $detail) {
             $package = $detail->package;
-
+              $categoryIds = $package->categories->pluck('id')->toArray();
             if ($package) {
                 $packageId = $package->id;
 
@@ -169,6 +170,8 @@ class DashboardController extends Controller
                         'order_count' => 0,
                         'feedback_count' => $feedbackCount,
                         'average_rating' => $averageRating,
+                        'category_ids' => $categoryIds,
+
                     ];
                 }
 
@@ -510,7 +513,7 @@ public function getCustomerWithOrders($user_id)
 
 
 
- public function getPopularPackagesThisWeek($branch_id)
+ public function getPopularPackagesThisWeek1($branch_id)
 {
     $branch = Branch::find($branch_id);
 
@@ -565,6 +568,63 @@ public function getCustomerWithOrders($user_id)
     ]);
  }
 
+public function getPopularPackagesThisWeek($branch_id)
+{
+    $branch = Branch::find($branch_id);
+
+    if (!$branch || Auth()->user()->id != $branch->manager_id) {
+        abort(403, 'Unauthorized access');
+    }
+
+    $oneWeekAgo = Carbon::now()->subDays(7);
+
+    $orders = Order::with('orderDetails.package.feedbacks', 'orderDetails.package.categories')
+        ->where('branch_id', $branch_id)
+        ->where('status', 'delivered')
+        ->where('created_at', '>=', $oneWeekAgo)
+        ->get();
+
+    $packageStats = [];
+
+    foreach ($orders as $order) {
+        foreach ($order->orderDetails as $detail) {
+            $package = $detail->package;
+
+            if ($package) {
+                $packageId = $package->id;
+
+                if (!isset($packageStats[$packageId])) {
+                    $feedbackCount = $package->feedbacks->count();
+                    $totalRating = $package->feedbacks->sum('rating');
+                    $averageRating = $feedbackCount > 0 ? round($totalRating / $feedbackCount, 2) : null;
+
+                    $categoryIds = $package->categories->pluck('id')->toArray();
+
+                    $packageStats[$packageId] = [
+                        'id' => $packageId,
+                        'name' => $package->name,
+                        'photo' => $package->photo,
+                        'price' => $package->base_price,
+                        'order_count' => 0,
+                        'feedback_count' => $feedbackCount,
+                        'average_rating' => $averageRating,
+                        'category_ids' => $categoryIds, 
+                    ];
+                }
+
+                $packageStats[$packageId]['order_count'] += 1;
+            }
+        }
+    }
+
+    $result = array_values($packageStats);
+    usort($result, fn($a, $b) => $b['order_count'] <=> $a['order_count']);
+
+    return response()->json([
+        'branch' => $branch->location_note ?? $branch->description,
+        'packages' => $result
+    ]);
+}
 
 
 public function getCustomerOrdersByStatus($user_id, $status)
