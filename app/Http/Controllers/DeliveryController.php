@@ -50,6 +50,7 @@ class DeliveryController extends Controller
 //            }),
 //        ]);
 //    }
+//
 
     public function assignedOrders()
     {
@@ -75,35 +76,42 @@ class DeliveryController extends Controller
         $data = $deliveries->map(function ($delivery) {
             $order = $delivery->order;
 
+
+            if (!$order) {
+                return null;
+            }
+
             $itemsSummary = $order->orderDetails->map(function ($detail) {
-                return optional($detail->package)->name . ' (' . $detail->quantity . ')';
+                $packageName = $detail->package->name ?? 'Unknown Package';
+                return $packageName . ' (' . $detail->quantity . ')';
             })->implode(', ');
 
-            $translatedStatus = match($order->status) {
+
+            $translatedStatus = match(strtolower($delivery->status ?? '')) {
                 'pending'   => 'Pending',
                 'approved'  => 'Approved',
                 'rejected'  => 'Rejected',
                 'canceled'  => 'Canceled',
                 'completed' => 'Completed',
-                default     => 'Unknown',
+                default     => $order->status ?? 'Unknown',
             };
 
             return [
                 'order_id'      => $order->id,
-                'customer_name' => $order?->user?->name ?? 'Unknown',
-                'branch_name'   => $order?->branch?->description ?? 'Not Available',
+                'customer_name' => $order->user->name ?? 'Unknown',
+                'branch_name'   => $order->branch->description ?? 'Not Available',
                 'status'        => $translatedStatus,
                 'total_price'   => number_format($order->total_price, 2),
                 'created_at'    => $order->created_at->format('Y-m-d H:i'),
                 'created_since' => $order->created_at->diffForHumans(),
-                'items'         => $itemsSummary,
+               // 'items'         => $itemsSummary,
             ];
-        });
+        })->filter();
 
         return response()->json([
             'status' => 'success',
             'count'  => $data->count(),
-            'data'   => $data,
+            'data'   => $data->values(),
         ]);
     }
 
@@ -150,7 +158,7 @@ class DeliveryController extends Controller
             'status' => 'success',
             'data' => [
                 'order_id'        => $order->id,
-                'status'          => ucfirst($order->status),
+                'status'          => ucfirst($delivery->status),
                 'total_price'     => number_format($order->total_price, 2),
                 'created_at'      => $order->created_at->format('Y-m-d H:i'),
                 'created_since'   => $order->created_at->diffForHumans(),
