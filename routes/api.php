@@ -131,9 +131,13 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::apiResource('packagesmangement', PackageExtraItemManageController::class);
     ////////////////////////
      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-     Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);      Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
-     Route::get('/order/manange', [OrderManagementController::class, 'index']);
-     Route::get('/order/manange/{id}', [OrderManagementController::class, 'show']);
+     Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);   
+    Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
+     Route::get('/order/manange/allorder', [OrderManagementController::class, 'index']);
+     Route::get('/order/manange/assignDelivery', [OrderManagementController::class, 'assignDeliveryPerson']);
+     Route::get('/order/alldelivery/manange', [OrderManagementController::class, 'getAvailableDeliveryPersons']);
+     Route::get('/order/manange/{status}', [OrderManagementController::class, 'stateOrder']);
+     Route::get('/order/manange/{id}', [OrderManagementController::class, 'showOrder']);
      Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);
      Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
      Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);

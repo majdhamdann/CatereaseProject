@@ -4,77 +4,117 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Delivery;
+use App\Models\DeliveryPerson;
 use App\Models\Order;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class OrderManagementController extends Controller
 {
-     public function index(Request $request)
-    {
-        $manager = auth()->user();
-        $branch = Branch::where('manager_id', $manager->id)->first();
-
-        if (!$branch) {
-            return response()->json(['message' => 'Manager has no branch assigned.'], 404);
-        }
-
-        $orders = Order::with(['orderDetails.package'])
-            ->where('branch_id', $branch->id)
-            ->orderBy('created_at', 'desc')
-            ->get();
-
-        return response()->json($orders);
+    public function index()
+{
+    $manager = auth()->user();
+    
+    $branch = Branch::where('manager_id', $manager->id)->first();
+    if (!$branch) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مسجل لهذا المدير'
+        ], 404);
     }
 
-    public function show($id)
-    {
-        $manager = auth()->user();
-        $branchId = Branch::where('manager_id', $manager->id)->value('id');
+    $orders = Order::with(['orderDetails.package', 'branch'])
+        ->where('branch_id', $branch->id)
+        ->orderBy('created_at', 'desc')
+        ->get();
 
-        $order = Order::with(['orderDetails.package'])
-            ->where('id', $id)
-            ->where('branch_id', $branchId)
-            ->firstOrFail();
-
-        return response()->json($order);
+    if ($orders->isEmpty()) {
+        return response()->json([
+            'status' => true,
+            'message' => 'لا توجد طلبات مسجلة لهذا الفرع',
+            'branch_id' => $branch->id,
+            'orders' => []
+        ]);
     }
+
+    return response()->json([
+        'status' => true,
+        'branch_id' => $branch->id,
+        'orders_count' => $orders->count(),
+        'orders' => $orders
+    ]);
+}
+public function showOrder($id)
+{
+    $manager = auth()->user();
+    
+    $branch = Branch::where('manager_id', $manager->id)->first();
+    
+    if (!$branch) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير'
+        ], 403);
+    }
+
+    $order = Order::with(['orderDetails.package'])
+                ->where('id', $id)
+                ->where('branch_id', $branch->id)
+                ->first();
+
+    if (!$order) {
+        return response()->json([
+            'status' => false,
+            'message' => 'الطلب غير موجود أو لا ينتمي لفرعك',
+            'order_id' => $id,
+            'branch_id' => $branch->id
+        ], 404);
+    }
+
+    return response()->json([
+        'status' => true,
+        'order' => $order
+    ]);
+}
 
     public function approve($id)
-    {
-        $manager = auth()->user();
-        $branchId = Branch::where('manager_id', $manager->id)->value('id');
+{
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
-        $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
 
-        $order->is_approved = true;
-        $order->approved_by = $manager->id;
-        $order->approved_at = now();
-        $order->save();
+    $order->is_approved = true;
+    $order->rejection_reason = null; // Clear rejection reason when approving
+    $order->approved_by = $manager->id;
+    $order->approved_at = now();
+    $order->save();
 
-        return response()->json(['message' => 'Order approved successfully']);
+    return response()->json(['message' => 'Order approved successfully']);
     }
 
     public function reject(Request $request, $id)
-    {
-        $request->validate([
-            'rejection_reason' => 'required|string',
-        ]);
+{
+    $request->validate([
+        'rejection_reason' => 'required|string',
+    ]);
 
-        $manager = auth()->user();
-        $branchId = Branch::where('manager_id', $manager->id)->value('id');
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
-        $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
 
-        $order->is_approved = false;
-        $order->rejection_reason = $request->rejection_reason;
-        $order->approved_by = $manager->id;
-        $order->approved_at = now();
-        $order->save();
+    $order->is_approved = false; // This is already 0/false
+    $order->rejection_reason = $request->rejection_reason;
+    $order->approved_by = $manager->id;
+    $order->approved_at = now();
+    $order->save();
 
-        return response()->json(['message' => 'Order rejected']);
+    return response()->json(['message' => 'Order rejected']);
     }
     public function updateStatus(Request $request, $id)
-{
+   {
     $request->validate([
         'status' => 'required|in:pending,confirmed,preparing,delivered,cancelled',
     ]);
@@ -95,6 +135,105 @@ class OrderManagementController extends Controller
         'from' => $oldStatus,
         'to' => $order->status,
     ]);
+   }
+public function getAvailableDeliveryPersons()
+{
+    $availableDeliveryPersons = DeliveryPerson::with('user')
+        ->where('is_available', 1)
+        ->get()
+        ->map(function ($deliveryPerson) {
+            return [
+                'id' => $deliveryPerson->id,
+                'user_id' => $deliveryPerson->user_id,
+                'name' => $deliveryPerson->user->name ?? null,
+                'phone' => $deliveryPerson->user->phone ?? null,
+            ];
+        });
+
+    return response()->json([
+        'status' => true,
+        'available_delivery_persons' => $availableDeliveryPersons,
+    ]);
 }
 
+ public function stateOrder($status)
+    {
+        $manager = auth()->user();
+        $branchId = Branch::where('manager_id', $manager->id)->value('id');
+         if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+           ], 403);
+        }
+        $order = Order::with(['orderDetails.package'])
+            ->where('branch_id', $branchId)
+            ->where('status',$status)
+            ->firstOrFail();
+
+        return response()->json($order);
+    }
+public function assignDeliveryPerson(Request $request)
+{
+    $validated = $request->validate([
+        'order_id' => 'required|exists:orders,id',
+        'delivery_person_id' => 'required|exists:delivery_people,id',
+        'estimated_minutes' => 'required|integer|min:10' 
+    ]);
+
+    DB::beginTransaction();
+    try {
+        $manager = auth()->user();
+        $branch = Branch::where('manager_id', $manager->id)->firstOrFail();
+
+        $order = Order::where('id', $validated['order_id'])
+                    ->where('branch_id', $branch->id)
+                    ->where('is_approved', true)
+                    ->lockForUpdate()
+                    ->firstOrFail();
+
+        $deliveryPerson = DeliveryPerson::where('id', $validated['delivery_person_id'])
+                                    ->where('is_available', true)
+                                    ->lockForUpdate()
+                                    ->firstOrFail();
+
+        $estimatedTime = now()->addMinutes($validated['estimated_minutes']);
+
+        $delivery = Delivery::create([
+            'order_id' => $order->id,
+            'delivery_person_id' => $deliveryPerson->id,
+            'status' => 'assigned',
+            'estimated_time' => $estimatedTime, 
+            'assigned_at' => now(),
+        ]);
+
+        $deliveryPerson->update(['is_available' => false]);
+        
+        $order->update([
+            'status' => 'assigned',
+            'delivery_id' => $delivery->id,
+            'updated_at' => now()
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'تم تعيين موظف التوصيل بنجاح',
+            'estimated_delivery_time' => $estimatedTime->format('Y-m-d H:i:s'),
+            'data' => [
+                'order' => $order->fresh(),
+                'delivery' => $delivery,
+                'delivery_person' => $deliveryPerson->fresh()
+            ]
+        ]);
+
+    } catch (\Exception $e) {
+        DB::rollBack();
+        return response()->json([
+            'status' => false,
+            'message' => 'فشل التعيين: ' . $e->getMessage()
+        ], 500);
+    }
+}
 }
