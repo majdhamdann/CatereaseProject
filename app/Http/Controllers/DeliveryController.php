@@ -158,7 +158,7 @@ class DeliveryController extends Controller
             'status' => 'success',
             'data' => [
                 'order_id'        => $order->id,
-                'status'          => ucfirst($order->status),
+                'status'          => ucfirst($delivery->status),
                 'total_price'     => number_format($order->total_price, 2),
                 'created_at'      => $order->created_at->format('Y-m-d H:i'),
                 'created_since'   => $order->created_at->diffForHumans(),
