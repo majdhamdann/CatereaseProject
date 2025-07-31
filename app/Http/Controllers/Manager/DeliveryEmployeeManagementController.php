@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Delivery;
 use App\Models\DeliveryPerson;
+use App\Models\Order;
 use App\Models\User;
 use Illuminate\Http\Request;
 
@@ -57,47 +58,7 @@ class DeliveryEmployeeManagementController extends Controller
     ], 201);
    }
 
-     public function show1($id)
-{
-    $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
-    $reviewsCount = $deliveryPerson->feedbacks()->count();
-    $deliveredOrdersCount = $deliveryPerson->deliveries()
-        ->whereHas('order', function ($query) {
-            $query->where('status', 'delivered');
-        })->count();
-    $cancelledOrdersCount = $deliveryPerson->deliveries()
-        ->whereHas('order', function ($query) {
-            $query->where('status', 'cancelled');
-        })->count();
 
-    $todayEarnings = $deliveryPerson->deliveries()
-        ->whereDate('created_at', now()->toDateString())
-        ->whereHas('order', function ($query) {
-            $query->where('status', 'delivered');
-        })
-        ->with('order')
-        ->get()
-        ->sum(function ($delivery) {
-            return $delivery->order->total_price ?? 0;
-        });
-
-    return response()->json([
-        'status' => true,
-        'delivery_person' => [
-            'id' => $deliveryPerson->id,
-            'name' => $deliveryPerson->user->name ?? null,
-            'phone' => $deliveryPerson->user->phone ?? null,
-            'email' => $deliveryPerson->user->email ?? null,
-            'vehicle_type' => $deliveryPerson->vehicle_type,
-            'is_available' => $deliveryPerson->is_available,
-            'created_at' => $deliveryPerson->created_at,
-            'reviews_count' => $reviewsCount,
-            'delivered_orders_count' => $deliveredOrdersCount,
-            'cancelled_orders_count' => $cancelledOrdersCount,
-            'today_earnings' => $todayEarnings,
-        ],
-    ]);
-}
 public function show($id)
 {
     $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
@@ -154,6 +115,7 @@ public function show($id)
         'delivery_person' => [
             'id' => $deliveryPerson->id,
             'name' => $deliveryPerson->user->name ?? null,
+             'gender' => $deliveryPerson->user->gender ?? null,
             'phone' => $deliveryPerson->user->phone ?? null,
             'email' => $deliveryPerson->user->email ?? null,
             'vehicle_type' => $deliveryPerson->vehicle_type,

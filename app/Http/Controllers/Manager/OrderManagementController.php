@@ -9,6 +9,7 @@ use App\Models\DeliveryPerson;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class OrderManagementController extends Controller
 {
@@ -45,39 +46,6 @@ class OrderManagementController extends Controller
         'orders' => $orders
     ]);
 }
-public function showOrder($id)
-{
-    $manager = auth()->user();
-    
-    $branch = Branch::where('manager_id', $manager->id)->first();
-    
-    if (!$branch) {
-        return response()->json([
-            'status' => false,
-            'message' => 'لا يوجد فرع مرتبط بهذا المدير'
-        ], 403);
-    }
-
-    $order = Order::with(['orderDetails.package'])
-                ->where('id', $id)
-                ->where('branch_id', $branch->id)
-                ->first();
-
-    if (!$order) {
-        return response()->json([
-            'status' => false,
-            'message' => 'الطلب غير موجود أو لا ينتمي لفرعك',
-            'order_id' => $id,
-            'branch_id' => $branch->id
-        ], 404);
-    }
-
-    return response()->json([
-        'status' => true,
-        'order' => $order
-    ]);
-}
-
     public function approve($id)
 {
     $manager = auth()->user();
@@ -155,6 +123,7 @@ public function getAvailableDeliveryPersons()
         'available_delivery_persons' => $availableDeliveryPersons,
     ]);
 }
+
 
  public function stateOrder($status)
     {
@@ -236,4 +205,50 @@ public function assignDeliveryPerson(Request $request)
         ], 500);
     }
 }
+public function show($id)
+{
+    $manager = auth()->user();
+
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير'
+        ], 403);
+    }
+
+    try {
+        $order = Order::with([
+            'orderDetails.package.extras',
+            'orderDetails.package.occasionTypes',
+            
+        ])
+        ->where('id', $id)
+        ->where('branch_id', $branch->id)
+        ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'الطلب غير موجود أو لا ينتمي لفرعك',
+                'order_id' => $id,
+                'branch_id' => $branch->id
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => true,
+            'order' => $order
+        ]);
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'حدث خطأ أثناء تحميل الطلب.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
+}
+
+
 }
