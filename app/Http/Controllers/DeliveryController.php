@@ -159,5 +159,5 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-    
+
 }
