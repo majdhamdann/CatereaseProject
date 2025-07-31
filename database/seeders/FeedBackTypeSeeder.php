@@ -13,11 +13,12 @@ class FeedBackTypeSeeder extends Seeder
      */
     public function run(): void
     {
-        DB::table('feedback_types')->truncate();
+        DB::table('feedback_types')->delete();
 
         DB::table('feedback_types')->insert([
-       ['target_type' => 'restaurant', 'target_ref_id' => 1, 'created_at' => now(), 'updated_at' => now()],
-        ['target_type' => 'food_item', 'target_ref_id' => 2, 'created_at' => now(), 'updated_at' => now()],
-]);
+            ['target_type' => 'restaurant', 'target_ref_id' => 1, 'created_at' => now(), 'updated_at' => now()],
+            ['target_type' => 'food_item', 'target_ref_id' => 2, 'created_at' => now(), 'updated_at' => now()],
+        ]);
     }
+
 }

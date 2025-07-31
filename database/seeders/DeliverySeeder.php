@@ -25,7 +25,7 @@ class DeliverySeeder extends Seeder
             Delivery::create([
                 'order_id' => $order->id,
                 'delivery_person_id' => $faker->randomElement($deliveryPeople),
-                'status' => $faker->randomElement(['pending', 'assigned', 'in_progress', 'delivered', 'cancelled']),
+                'status' => $faker->randomElement(['pending', 'assigned', 'on_the_way_to_pickup', 'picked_up', 'delivered', 'on_the_way', 'cancelled','failed']),
                 'estimated_time' => now()->addMinutes(rand(20, 60)),
                 'delivered_at' => null,
                 'notes' => $faker->sentence()
