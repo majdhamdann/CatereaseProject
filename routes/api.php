@@ -76,6 +76,10 @@ Route::prefix('order')->middleware('auth:sanctum')->group(function () {
     Route::get('/user/orders', [OrderController::class, 'listUserOrders']);
     Route::post('/orders/{id}', [OrderController::class, 'updateOrder']);
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
+    Route::post('/{id}/submit', [OrderController::class, 'submitOrderToBranch']);
+    Route::post('/{id}/cancel-submit', [OrderController::class, 'cancelOrderSubmission']);
+
+
 
 });
 
@@ -131,7 +135,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::apiResource('packagesmangement', PackageExtraItemManageController::class);
     ////////////////////////
      Route::get('/branches/categories', [MenuManagementController::class, 'indexForManager']);
-     Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);   
+     Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
     Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
      Route::get('/order/manange/allorder', [OrderManagementController::class, 'index']);
      Route::get('/order/manange/assignDelivery', [OrderManagementController::class, 'assignDeliveryPerson']);

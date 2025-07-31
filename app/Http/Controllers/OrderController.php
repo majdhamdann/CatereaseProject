@@ -606,5 +606,127 @@ class OrderController extends Controller
         ]);
     }
 
+    public function submitOrderToBranch($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated.',
+                ], 401);
+            }
+
+            $order = Order::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$order) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Order not found.',
+                ], 404);
+            }
+
+            if ($order->is_submitted) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Order has already been submitted.',
+                ], 400);
+            }
+
+            if (!$order->branch_id) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Branch not assigned to this order.',
+                ], 400);
+            }
+
+            $order->is_submitted = true;
+            $order->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order submitted successfully to branch.',
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to submit order.',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+    public function cancelOrderSubmission($id)
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+            if (!$user) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unauthenticated.'
+                ], 401);
+            }
+
+            $order = Order::where('id', $id)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$order) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Order not found.'
+                ], 404);
+            }
+
+            if (!$order->is_submitted) {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Order is not submitted yet.'
+                ], 400);
+            }
+
+            if ($order->status !== 'pending') {
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Cannot cancel submitted order at this stage.'
+                ], 400);
+            }
+
+            $order->is_submitted = false;
+            $order->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Order submission canceled successfully.'
+            ]);
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Failed to cancel submission.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
+
+
+
 
 }
