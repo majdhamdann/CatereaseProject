@@ -140,8 +140,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/order/manange/allorder', [OrderManagementController::class, 'index']);
      Route::get('/order/manange/assignDelivery', [OrderManagementController::class, 'assignDeliveryPerson']);
      Route::get('/order/alldelivery/manange', [OrderManagementController::class, 'getAvailableDeliveryPersons']);
-     Route::get('/order/manange/{status}', [OrderManagementController::class, 'stateOrder']);
-     Route::get('/order/manange/{id}', [OrderManagementController::class, 'showOrder']);
+     Route::get('/order/manange/{status}/status', [OrderManagementController::class, 'stateOrder']);
+     Route::get('/order/manange/{id}/show', [OrderManagementController::class, 'show']);
      Route::post('/order/manange/{id}/approve', [OrderManagementController::class, 'approve']);
      Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
      Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
