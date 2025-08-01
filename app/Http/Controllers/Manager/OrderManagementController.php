@@ -19,7 +19,9 @@ class OrderManagementController extends Controller
 {
     $manager = auth()->user();
     
-    $branch = Branch::where('manager_id', $manager->id)->first();
+    $branch = Branch::where('manager_id', $manager->id)
+
+             ->first();
     if (!$branch) {
         return response()->json([
             'status' => false,
@@ -29,6 +31,7 @@ class OrderManagementController extends Controller
 
     $orders = Order::with(['orderDetails.package', 'branch'])
         ->where('branch_id', $branch->id)
+        ->where('is_submitted', true)
         ->orderBy('created_at', 'desc')
         ->get();
 
@@ -53,7 +56,8 @@ class OrderManagementController extends Controller
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
-    $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    $order = Order::where('id', $id)->where('is_submitted', true)
+    ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = true;
     $order->rejection_reason = null;
@@ -73,7 +77,8 @@ class OrderManagementController extends Controller
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
-    $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    $order = Order::where('id', $id)->where('is_submitted', true)
+           ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = false; 
     $order->rejection_reason = $request->rejection_reason;
@@ -94,6 +99,7 @@ class OrderManagementController extends Controller
 
     $order = Order::where('id', $id)
         ->where('branch_id', $branchId)
+        ->where('is_submitted', true)
         ->firstOrFail();
 
     $oldStatus = $order->status;
@@ -139,6 +145,7 @@ public function getAvailableDeliveryPersons()
         }
         $order = Order::with(['orderDetails.package'])
             ->where('branch_id', $branchId)
+            ->where('is_submitted', true)
             ->where('status',$status)
             ->firstOrFail();
 
@@ -160,6 +167,7 @@ public function assignDeliveryPerson(Request $request)
         $order = Order::where('id', $validated['order_id'])
                     ->where('branch_id', $branch->id)
                     ->where('is_approved', true)
+                    ->where('is_submitted', true)
                     ->lockForUpdate()
                     ->firstOrFail();
 
@@ -228,6 +236,7 @@ public function show($id)
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
+        ->where('is_submitted', true)
         ->first();
 
         if (!$order) {
