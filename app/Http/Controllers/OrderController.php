@@ -139,7 +139,7 @@ class OrderController extends Controller
                     'status'            => 'pending',
                     'is_approved'       => false,
                      // 'approval_deadline' => now()->addHours(3),
-                    'approval_deadline' => now()->addDays(1)->addHours(4),
+                    //'approval_deadline' => now()->addDays(1)->addHours(4),
                     'notes'             => $request->notes,
                     'delivery_time'     => $request->delivery_time,
                     'total_price'       => 0
@@ -645,7 +645,11 @@ class OrderController extends Controller
                 ], 400);
             }
 
+            $now = now();
             $order->is_submitted = true;
+            $order->submitted_at = $now;
+            $order->approval_deadline = now()->addDays(1)->addHours(4);
+
             $order->save();
 
             DB::commit();
@@ -653,6 +657,7 @@ class OrderController extends Controller
             return response()->json([
                 'status' => true,
                 'message' => 'Order submitted successfully to branch.',
+                'approval_deadline' => $order->approval_deadline->toDateTimeString(),
             ]);
 
         } catch (\Throwable $e) {
@@ -666,63 +671,57 @@ class OrderController extends Controller
         }
     }
 
-    public function cancelOrderSubmission($id)
+    public function checkOrderApprovalStatus($id)
     {
-        try {
-            DB::beginTransaction();
+        $user = Auth::user();
 
-            $user = Auth::user();
-            if (!$user) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Unauthenticated.'
-                ], 401);
+        $order = Order::with('orderDetails.package')
+            ->where('id', $id)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+        if ($order->status === 'cancelled') {
+            return response()->json([
+                'status' => false,
+                'message' => 'Order was rejected.',
+                'rejection_reason' => $order->rejection_reason,
+            ]);
+        }
+
+        if ($order->status === 'confirmed') {
+            $prepaymentRequired = false;
+            $prepaymentAmount = 0;
+
+            foreach ($order->orderDetails as $detail) {
+                $package = $detail->package;
+                if ($package && $package->prepayment_required) {
+                    $prepaymentRequired = true;
+                    $prepaymentAmount += ($order->total_price * ($package->prepayment_amount / 100));
+                }
             }
-
-            $order = Order::where('id', $id)
-                ->where('user_id', $user->id)
-                ->first();
-
-            if (!$order) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Order not found.'
-                ], 404);
-            }
-
-            if (!$order->is_submitted) {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Order is not submitted yet.'
-                ], 400);
-            }
-
-            if ($order->status !== 'pending') {
-                return response()->json([
-                    'status' => false,
-                    'message' => 'Cannot cancel submitted order at this stage.'
-                ], 400);
-            }
-
-            $order->is_submitted = false;
-            $order->save();
-
-            DB::commit();
 
             return response()->json([
                 'status' => true,
-                'message' => 'Order submission canceled successfully.'
+                'message' => 'Order approved. Please proceed to prepayment.',
+                'prepayment_required' => $prepaymentRequired,
+                'prepayment_amount' => round($prepaymentAmount, 2),
             ]);
-        } catch (\Throwable $e) {
-            DB::rollBack();
-
-            return response()->json([
-                'status' => false,
-                'message' => 'Failed to cancel submission.',
-                'error' => $e->getMessage()
-            ], 500);
         }
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Order is still under review.',
+            'current_status' => $order->status,
+        ]);
     }
+
 
 
 

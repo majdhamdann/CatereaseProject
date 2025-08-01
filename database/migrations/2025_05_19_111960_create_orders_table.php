@@ -21,6 +21,7 @@ return new class extends Migration
 
             $table->enum('status', ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled']);
             $table->boolean('is_submitted')->default(false);
+            $table->timestamp('submitted_at')->nullable();
             $table->unsignedBigInteger('promo_code_id')->nullable();
             $table->decimal('total_price', 10, 2);
             $table->boolean('prepayment_paid')->default(false);
