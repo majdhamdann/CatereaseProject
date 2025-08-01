@@ -20,6 +20,7 @@ return new class extends Migration
             $table->unsignedBigInteger('cart_id')->nullable();
 
             $table->enum('status', ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled','assigned']);
+            $table->boolean('is_submitted')->default(false);
             $table->unsignedBigInteger('promo_code_id')->nullable();
             $table->decimal('total_price', 10, 2);
             $table->boolean('prepayment_paid')->default(false);
