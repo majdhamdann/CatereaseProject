@@ -3,8 +3,11 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Branch;
+use App\Models\BranchServiceType;
 use App\Models\ServiceType;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class ServiceTypeManagementController extends Controller
 {
@@ -56,4 +59,26 @@ class ServiceTypeManagementController extends Controller
 
         return response()->json(['message' => 'Service Type deleted']);
     }
+    public function getBranchServiceTypes()
+{
+        $manager = auth()->user();
+        $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $serviceTypes = BranchServiceType::with('serviceType')
+                    ->where('branch_id', $branchId)
+                    ->get();
+
+    return response()->json([
+        'status' => true,
+        'service_types' => $serviceTypes
+    ]);
+}
+
 }

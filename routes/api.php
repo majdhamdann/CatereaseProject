@@ -149,6 +149,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
      Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
      Route::GET('/order/manange/getStatistics', [OrderManagementController::class, 'getBranchOrderStatistics']);
+     Route::GET('/order/manange/status/{status}', [OrderManagementController::class, 'stateOrderWithData']);
+    Route::GET('/ServiceType/manange/branch', [ServiceTypeManagementController::class, 'getBranchServiceTypes']);
 
      Route::get('/coupons-to-branch', [CouponManagementController::class, 'index']);
      Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);

@@ -288,5 +288,51 @@ public function getBranchOrderStatistics()
     ]);
 }
 
+public function stateOrderWithData(Request $request, $status)
+{
+    $request->validate([
+        'from_date' => 'nullable|date',
+        'to_date' => 'nullable|date|after_or_equal:from_date',
+    ]);
+
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $query = Order::with(['orderDetails.package'])
+        ->where('branch_id', $branchId)
+        ->where('is_submitted', true)
+        ->where('status', $status);
+
+    if ($request->filled('from_date')) {
+        $query->whereDate('created_at', '>=', $request->from_date);
+    }
+
+    if ($request->filled('to_date')) {
+        $query->whereDate('created_at', '<=', $request->to_date);
+    }
+
+    $orders = $query->get();
+
+    if ($orders->isEmpty()) {
+        return response()->json([
+            'status' => true,
+            'message' => 'لا توجد طلبات بهذه المعايير.',
+            'orders' => []
+        ]);
+    }
+
+    return response()->json([
+        'status' => true,
+        'count' => $orders->count(),
+        'orders' => $orders
+    ]);
+}
 
 }
