@@ -56,7 +56,7 @@ class OrderManagementController extends Controller
     $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = true;
-    $order->rejection_reason = null; // Clear rejection reason when approving
+    $order->rejection_reason = null;
     $order->approved_by = $manager->id;
     $order->approved_at = now();
     $order->save();
@@ -181,7 +181,7 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPerson->update(['is_available' => false]);
         
         $order->update([
-            'status' => 'assigned',
+            'status' => 'preparing',
             'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
@@ -265,20 +265,17 @@ public function getBranchOrderStatistics()
     }
 
 
-    $totalOrders = Order::where('branch_id', $branch->id)->count();
+    $totalOrders = Order::where('branch_id', $branch->id)
+     ->whereIn('status', ['delivered'])->count();
 
     $totalBalance = Order::where('branch_id', $branch->id)
         ->whereIn('status', ['confirmed', 'preparing', 'delivered'])
         ->sum('total_price');
 
-    /*$averageSatisfaction = Feedback::whereHas('order', function ($query) use ($branch) {
-        $query->where('branch_id', $branch->id);
-    })->avg('rating'); */
-
     return response()->json([
-        'total_orders' => $totalOrders,
+        'total_orders_delivered' => $totalOrders,
         'total_balance' => $totalBalance,
-        //'average_satisfaction' => round($averageSatisfaction, 2)
+
     ]);
 }
 
