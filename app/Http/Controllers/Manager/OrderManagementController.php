@@ -6,10 +6,12 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Delivery;
 use App\Models\DeliveryPerson;
+use App\Models\Feedback;
 use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Support\Facades\Auth;
 
 class OrderManagementController extends Controller
 {
@@ -73,7 +75,7 @@ class OrderManagementController extends Controller
 
     $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
 
-    $order->is_approved = false; // This is already 0/false
+    $order->is_approved = false; 
     $order->rejection_reason = $request->rejection_reason;
     $order->approved_by = $manager->id;
     $order->approved_at = now();
@@ -248,6 +250,36 @@ public function show($id)
             'error' => $e->getMessage(),
         ], 500);
     }
+}
+public function getBranchOrderStatistics()
+{
+   $manager = auth()->user();
+
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير'
+        ], 403);
+    }
+
+
+    $totalOrders = Order::where('branch_id', $branch->id)->count();
+
+    $totalBalance = Order::where('branch_id', $branch->id)
+        ->whereIn('status', ['confirmed', 'preparing', 'delivered'])
+        ->sum('total_price');
+
+    /*$averageSatisfaction = Feedback::whereHas('order', function ($query) use ($branch) {
+        $query->where('branch_id', $branch->id);
+    })->avg('rating'); */
+
+    return response()->json([
+        'total_orders' => $totalOrders,
+        'total_balance' => $totalBalance,
+        //'average_satisfaction' => round($averageSatisfaction, 2)
+    ]);
 }
 
 
