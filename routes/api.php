@@ -78,6 +78,9 @@ Route::prefix('order')->middleware('auth:sanctum')->group(function () {
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::post('/{id}/submit', [OrderController::class, 'submitOrderToBranch']);
     Route::post('/{id}/cancel-submit', [OrderController::class, 'cancelOrderSubmission']);
+    Route::get('{id}/approval-status', [OrderController::class, 'checkOrderApprovalStatus']);
+
+
 
 
 
