@@ -288,7 +288,7 @@ public function getBranchOrderStatistics()
     ]);
 }
 
-public function stateOrderWithData(Request $request, $status)
+public function OrderWithData(Request $request)
 {
     $request->validate([
         'from_date' => 'nullable|date',
@@ -307,8 +307,7 @@ public function stateOrderWithData(Request $request, $status)
 
     $query = Order::with(['orderDetails.package'])
         ->where('branch_id', $branchId)
-        ->where('is_submitted', true)
-        ->where('status', $status);
+        ->where('is_submitted', true);
 
     if ($request->filled('from_date')) {
         $query->whereDate('created_at', '>=', $request->from_date);
@@ -334,5 +333,53 @@ public function stateOrderWithData(Request $request, $status)
         'orders' => $orders
     ]);
 }
+public function allStatesOrders()
+{
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled'];
+
+    $ordersByStatus = [];
+
+    foreach ($statuses as $status) {
+        $ordersByStatus[$status] = Order::with(['orderDetails.package'])
+            ->where('branch_id', $branchId)
+            ->where('is_submitted', true)
+            ->where('status', $status)
+            ->get();
+    }
+
+    return response()->json($ordersByStatus);
+}
+public function latestDeliveredOrders()
+{
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $orders = Order::with(['orderDetails.package'])
+        ->where('branch_id', $branchId)
+        ->where('is_submitted', true)
+        ->where('status', 'delivered')
+        ->orderBy('created_at', 'desc') 
+        ->get();
+
+    return response()->json($orders);
+}
+
 
 }
