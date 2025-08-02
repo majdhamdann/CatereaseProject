@@ -261,7 +261,7 @@ public function show($id)
 }
 
 
-public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
+public function getDeliveryPersonOrdersInMyBranch1($deliveryPersonId)
 {
     $manager = auth()->user();
     $branch = Branch::where('manager_id', $manager->id)->first();
@@ -278,6 +278,59 @@ public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
     if ($deliveries->isEmpty()) {
         return response()->json(['message' => 'لا يوجد طلبات لهذا الموظف في فرعك.'], 404);
     }
+    $data = $deliveries->map(function ($delivery) {
+        $packages = $delivery->order->orderDetails->map(function ($detail) {
+            $package = $detail->package;
+            return [
+                'package_id' => $package->id ?? null,
+                'package_name' => $package->name ?? null,
+                'package_image' => $package->image_url ?? null, 
+                'package_rating' => round($package->feedbacks->avg('value'), 1) ?? null, 
+            ];
+        });
+
+        return [
+            'delivery_id' => $delivery->id,
+            'order_id' => $delivery->order->id ?? null,
+            'order_status' => $delivery->order->status ?? null,
+            'total_price' => $delivery->order->total_price ?? null,
+            'delivered_at' => $delivery->delivered_at ?? $delivery->created_at->toDateTimeString(),
+            'packages' => $packages,
+        ];
+    });
+
+    return response()->json([
+        'status' => true,
+        'delivery_person_id' => $deliveryPersonId,
+        'branch_id' => $branch->id,
+        'orders_count' => $data->count(),
+        'orders' => $data,
+    ]);
+}
+public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
+{
+    $manager = auth()->user();
+    $branch = Branch::where('manager_id', $manager->id)->first();
+    if (!$branch) {
+        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
+    }
+
+    $status = request()->query('status'); // قيمة حالة الطلب مثل delivered أو cancelled أو pending
+
+    $deliveries = Delivery::with(['order.orderDetails.package.feedbacks'])
+        ->where('delivery_person_id', $deliveryPersonId)
+        ->whereHas('order', function ($q) use ($branch, $status) {
+            $q->where('branch_id', $branch->id);
+            if ($status) {
+                $q->where('status', $status);
+            }
+        })
+        ->get();
+
+    if ($deliveries->isEmpty()) {
+        return response()->json(['message' => 'لا يوجد طلبات لهذا الموظف في فرعك.'], 404);
+    }
+
     $data = $deliveries->map(function ($delivery) {
         $packages = $delivery->order->orderDetails->map(function ($detail) {
             $package = $detail->package;
