@@ -143,7 +143,7 @@ public function getAvailableDeliveryPersons()
             'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
            ], 403);
         }
-        $order = Order::with(['orderDetails.package'])
+        $order = Order::with(['orderDetails.package','branch'])
             ->where('branch_id', $branchId)
             ->where('is_submitted', true)
             ->where('status',$status)
@@ -287,12 +287,10 @@ public function getBranchOrderStatistics()
 
     ]);
 }
-
 public function OrderWithData(Request $request)
 {
     $request->validate([
-        'from_date' => 'nullable|date',
-        'to_date' => 'nullable|date|after_or_equal:from_date',
+        'date' => 'required|date',
     ]);
 
     $manager = auth()->user();
@@ -305,34 +303,30 @@ public function OrderWithData(Request $request)
         ], 403);
     }
 
-    $query = Order::with(['orderDetails.package'])
+    $orders = Order::with(['orderDetails.package'])
         ->where('branch_id', $branchId)
-        ->where('is_submitted', true);
-
-    if ($request->filled('from_date')) {
-        $query->whereDate('created_at', '>=', $request->from_date);
-    }
-
-    if ($request->filled('to_date')) {
-        $query->whereDate('created_at', '<=', $request->to_date);
-    }
-
-    $orders = $query->get();
+        ->where('is_submitted', true)
+        ->whereDate('created_at', $request->date)
+        ->get();
 
     if ($orders->isEmpty()) {
         return response()->json([
             'status' => true,
-            'message' => 'لا توجد طلبات بهذه المعايير.',
-            'orders' => []
+            'message' => 'لا توجد طلبات في هذا التاريخ.',
+            'date' => $request->date,
+            'data' => []
         ]);
     }
 
+    $grouped = $orders->groupBy('status');
+
     return response()->json([
         'status' => true,
-        'count' => $orders->count(),
-        'orders' => $orders
+        'date' => $request->date,
+        'data' => $grouped
     ]);
 }
+
 public function allStatesOrders()
 {
     $manager = auth()->user();
