@@ -9,6 +9,7 @@ use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\Manager\DeliveryEmployeeManagementController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
+use App\Http\Controllers\PaymentController;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\RestaurantController;
@@ -80,11 +81,13 @@ Route::prefix('order')->middleware('auth:sanctum')->group(function () {
     Route::post('/{id}/cancel-submit', [OrderController::class, 'cancelOrderSubmission']);
     Route::get('{id}/approval-status', [OrderController::class, 'checkOrderApprovalStatus']);
 
-
-
+    Route::post('/orders/{id}/prepayment', [PaymentController::class, 'payPrepayment']);
 
 
 });
+
+Route::post('/create-payment-intent', [PaymentController::class, 'createPaymentIntent']);
+
 
 // delivery routes
 Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(function () {
