@@ -152,6 +152,10 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::post('/order/manange/{id}/reject', [OrderManagementController::class, 'reject']);
      Route::post('/order/manange/{id}/update-status', [OrderManagementController::class, 'updateStatus']);
      Route::GET('/order/manange/getStatistics', [OrderManagementController::class, 'getBranchOrderStatistics']);
+     Route::GET('/order/manange/data', [OrderManagementController::class, 'OrderWithData']);
+     Route::GET('/ServiceType/manange/branch', [ServiceTypeManagementController::class, 'getBranchServiceTypes']);
+     Route::GET('/Orders/manange/allStates', [OrderManagementController::class, 'allStatesOrders']);
+     Route::GET('/Orders/manange/latestDeliveredOrders', [OrderManagementController::class, 'latestDeliveredOrders']);
 
      Route::get('/coupons-to-branch', [CouponManagementController::class, 'index']);
      Route::put('/coupons/{id}', [CouponManagementController::class, 'update']);
@@ -160,6 +164,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/packages_to_category', [MenuManagementController::class, 'getPackagesByCategory']);
     ////////////////////////////////////////////reviews Management
     Route::get('/reviews/manage', [ReviewmanagerController::class, 'getBranchReviewsSummary']);
+    Route::get('/reviews/manage/DeliveryReviews', [ReviewmanagerController::class, 'getDeliveryPersonsReviewsSummary']);
 
 });
 Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);

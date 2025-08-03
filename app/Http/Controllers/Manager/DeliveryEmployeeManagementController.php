@@ -268,16 +268,23 @@ public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
     if (!$branch) {
         return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
     }
+
+    $status = request()->query('status'); // قيمة حالة الطلب مثل delivered أو cancelled أو pending
+
     $deliveries = Delivery::with(['order.orderDetails.package.feedbacks'])
         ->where('delivery_person_id', $deliveryPersonId)
-        ->whereHas('order', function ($q) use ($branch) {
+        ->whereHas('order', function ($q) use ($branch, $status) {
             $q->where('branch_id', $branch->id);
+            if ($status) {
+                $q->where('status', $status);
+            }
         })
         ->get();
 
     if ($deliveries->isEmpty()) {
         return response()->json(['message' => 'لا يوجد طلبات لهذا الموظف في فرعك.'], 404);
     }
+
     $data = $deliveries->map(function ($delivery) {
         $packages = $delivery->order->orderDetails->map(function ($detail) {
             $package = $detail->package;

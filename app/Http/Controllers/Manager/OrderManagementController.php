@@ -19,7 +19,9 @@ class OrderManagementController extends Controller
 {
     $manager = auth()->user();
     
-    $branch = Branch::where('manager_id', $manager->id)->first();
+    $branch = Branch::where('manager_id', $manager->id)
+
+             ->first();
     if (!$branch) {
         return response()->json([
             'status' => false,
@@ -29,6 +31,7 @@ class OrderManagementController extends Controller
 
     $orders = Order::with(['orderDetails.package', 'branch'])
         ->where('branch_id', $branch->id)
+        ->where('is_submitted', true)
         ->orderBy('created_at', 'desc')
         ->get();
 
@@ -53,10 +56,11 @@ class OrderManagementController extends Controller
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
-    $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    $order = Order::where('id', $id)->where('is_submitted', true)
+    ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = true;
-    $order->rejection_reason = null; // Clear rejection reason when approving
+    $order->rejection_reason = null;
     $order->approved_by = $manager->id;
     $order->approved_at = now();
     $order->save();
@@ -73,7 +77,8 @@ class OrderManagementController extends Controller
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
-    $order = Order::where('id', $id)->where('branch_id', $branchId)->firstOrFail();
+    $order = Order::where('id', $id)->where('is_submitted', true)
+           ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = false; 
     $order->rejection_reason = $request->rejection_reason;
@@ -94,6 +99,7 @@ class OrderManagementController extends Controller
 
     $order = Order::where('id', $id)
         ->where('branch_id', $branchId)
+        ->where('is_submitted', true)
         ->firstOrFail();
 
     $oldStatus = $order->status;
@@ -137,8 +143,9 @@ public function getAvailableDeliveryPersons()
             'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
            ], 403);
         }
-        $order = Order::with(['orderDetails.package'])
+        $order = Order::with(['orderDetails.package','branch'])
             ->where('branch_id', $branchId)
+            ->where('is_submitted', true)
             ->where('status',$status)
             ->firstOrFail();
 
@@ -160,6 +167,7 @@ public function assignDeliveryPerson(Request $request)
         $order = Order::where('id', $validated['order_id'])
                     ->where('branch_id', $branch->id)
                     ->where('is_approved', true)
+                    ->where('is_submitted', true)
                     ->lockForUpdate()
                     ->firstOrFail();
 
@@ -181,7 +189,7 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPerson->update(['is_available' => false]);
         
         $order->update([
-            'status' => 'assigned',
+            'status' => 'preparing',
             'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
@@ -228,6 +236,7 @@ public function show($id)
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
+        ->where('is_submitted', true)
         ->first();
 
         if (!$order) {
@@ -265,21 +274,105 @@ public function getBranchOrderStatistics()
     }
 
 
-    $totalOrders = Order::where('branch_id', $branch->id)->count();
+    $totalOrders = Order::where('branch_id', $branch->id)
+     ->whereIn('status', ['delivered'])->count();
 
     $totalBalance = Order::where('branch_id', $branch->id)
         ->whereIn('status', ['confirmed', 'preparing', 'delivered'])
         ->sum('total_price');
 
-    /*$averageSatisfaction = Feedback::whereHas('order', function ($query) use ($branch) {
-        $query->where('branch_id', $branch->id);
-    })->avg('rating'); */
+    return response()->json([
+        'total_orders_delivered' => $totalOrders,
+        'total_balance' => $totalBalance,
+
+    ]);
+}
+public function OrderWithData(Request $request)
+{
+    $request->validate([
+        'date' => 'required|date',
+    ]);
+
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $orders = Order::with(['orderDetails.package'])
+        ->where('branch_id', $branchId)
+        ->where('is_submitted', true)
+        ->whereDate('created_at', $request->date)
+        ->get();
+
+    if ($orders->isEmpty()) {
+        return response()->json([
+            'status' => true,
+            'message' => 'لا توجد طلبات في هذا التاريخ.',
+            'date' => $request->date,
+            'data' => []
+        ]);
+    }
+
+    $grouped = $orders->groupBy('status');
 
     return response()->json([
-        'total_orders' => $totalOrders,
-        'total_balance' => $totalBalance,
-        //'average_satisfaction' => round($averageSatisfaction, 2)
+        'status' => true,
+        'date' => $request->date,
+        'data' => $grouped
     ]);
+}
+
+public function allStatesOrders()
+{
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled'];
+
+    $ordersByStatus = [];
+
+    foreach ($statuses as $status) {
+        $ordersByStatus[$status] = Order::with(['orderDetails.package'])
+            ->where('branch_id', $branchId)
+            ->where('is_submitted', true)
+            ->where('status', $status)
+            ->get();
+    }
+
+    return response()->json($ordersByStatus);
+}
+public function latestDeliveredOrders()
+{
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    if (!$branchId) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+        ], 403);
+    }
+
+    $orders = Order::with(['orderDetails.package'])
+        ->where('branch_id', $branchId)
+        ->where('is_submitted', true)
+        ->where('status', 'delivered')
+        ->orderBy('created_at', 'desc') 
+        ->get();
+
+    return response()->json($orders);
 }
 
 
