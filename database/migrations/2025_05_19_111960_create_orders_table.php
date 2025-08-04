@@ -26,7 +26,15 @@ return new class extends Migration
             $table->decimal('total_price', 10, 2);
             $table->boolean('prepayment_paid')->default(false);
             $table->timestamp('prepayment_paid_at')->nullable();
+
+            $table->boolean('final_payment_paid')->default(false);
+            $table->timestamp('final_payment_paid_at')->nullable();
+
+
             $table->text('notes')->nullable();
+
+            $table->uuid('qr_token')->unique()->nullable();
+
             $table->timestamp('delivery_time')->nullable();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
