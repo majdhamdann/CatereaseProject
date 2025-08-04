@@ -215,6 +215,8 @@ public function assignDeliveryPerson(Request $request)
         ], 500);
     }
 }
+
+
 public function show($id)
 {
     $manager = auth()->user();
@@ -230,9 +232,10 @@ public function show($id)
 
     try {
         $order = Order::with([
-            'orderDetails.package.extras',
+             'orderDetails.package',
             'orderDetails.package.occasionTypes',
-            
+            'orderDetails.extras.extra',
+            'orderDetails.services.service.serviceType',
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
@@ -248,10 +251,47 @@ public function show($id)
             ], 404);
         }
 
+        $formatted = [
+            'id' => $order->id,
+            'customer_name' => $order->user->name ?? 'غير معروف',
+            'total_price' => $order->total_price,
+            'details' => $order->orderDetails->map(function ($detail) {
+                return [
+                    'package_name' => $detail->package->name ?? null,
+                    'quantity' => $detail->quantity,
+                    'unit_price' => $detail->unit_price,
+                    'extra_persons' => $detail->extra_persons,
+                    'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
+                    'extras' => $detail->extras->map(function ($extra) {
+                        return [
+                            'name' => $extra->extra->name ?? null,
+                            'quantity' => $extra->quantity,
+                            'unit_price' => $extra->unit_price,
+                            'total_price' => $extra->total_price,
+                        ];
+                    }),
+                    'services' => $detail->Services->map(function ($service) {
+                        return [
+                            'name' => $service->service->serviceType->name ?? null,
+                            'custom_price' => $service->custom_price,
+                        ];
+                    }),
+                ];
+            }),
+            'general_services' => $order->services->map(function ($service) {
+                return [
+                    'name' => $service->branchServiceType->serviceType->name ?? null,
+                    'quantity' => $service->quantity,
+                    'total_price' => $service->total_price,
+                ];
+            }),
+        ];
+
         return response()->json([
             'status' => true,
-            'order' => $order
+            'order' => $formatted
         ]);
+
     } catch (\Exception $e) {
         return response()->json([
             'status' => false,
@@ -260,6 +300,7 @@ public function show($id)
         ], 500);
     }
 }
+
 public function getBranchOrderStatistics()
 {
    $manager = auth()->user();

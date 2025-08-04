@@ -81,6 +81,10 @@ class OrderDetail extends Model
     {
         return $this->belongsTo(OccasionType::class, 'occasion_type_id');
     }
+  public function orderItemServices()
+{
+    return $this->hasMany(OrderItemServiceMap::class);
+}
 
 
 }
