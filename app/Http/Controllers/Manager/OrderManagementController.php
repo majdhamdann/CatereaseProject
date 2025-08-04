@@ -50,7 +50,7 @@ class OrderManagementController extends Controller
         'orders_count' => $orders->count(),
         'orders' => $orders
     ]);
-}
+    }
     public function approve($id)
 {
     $manager = auth()->user();
@@ -112,7 +112,7 @@ class OrderManagementController extends Controller
         'to' => $order->status,
     ]);
    }
-public function getAvailableDeliveryPersons()
+    public function getAvailableDeliveryPersons()
 {
     $availableDeliveryPersons = DeliveryPerson::with('user')
         ->where('is_available', 1)
@@ -130,10 +130,10 @@ public function getAvailableDeliveryPersons()
         'status' => true,
         'available_delivery_persons' => $availableDeliveryPersons,
     ]);
-}
+    }
 
 
- public function stateOrder($status)
+     public function stateOrder($status)
     {
         $manager = auth()->user();
         $branchId = Branch::where('manager_id', $manager->id)->value('id');
@@ -150,8 +150,8 @@ public function getAvailableDeliveryPersons()
             ->firstOrFail();
 
         return response()->json($order);
-    }
-public function assignDeliveryPerson(Request $request)
+      }
+     public function assignDeliveryPerson(Request $request)
 {
     $validated = $request->validate([
         'order_id' => 'required|exists:orders,id',
@@ -214,10 +214,10 @@ public function assignDeliveryPerson(Request $request)
             'message' => 'فشل التعيين: ' . $e->getMessage()
         ], 500);
     }
-}
+     }
 
 
-public function show($id)
+     public function show1($id)
 {
     $manager = auth()->user();
 
@@ -299,9 +299,123 @@ public function show($id)
             'error' => $e->getMessage(),
         ], 500);
     }
+     }
+public function show($id)
+{
+    $manager = auth()->user();
+
+    $branch = Branch::where('manager_id', $manager->id)->first();
+
+    if (!$branch) {
+        return response()->json([
+            'status' => false,
+            'message' => 'لا يوجد فرع مرتبط بهذا المدير'
+        ], 403);
+    }
+
+    try {
+        $order = Order::with([
+            'user',
+            'address.city',
+            'orderDetails.package',
+            'orderDetails.package.occasionTypes',
+            'orderDetails.extras.extra',
+            'orderDetails.services.service.serviceType',
+            'services.branchServiceType.serviceType',
+        ])
+        ->where('id', $id)
+        ->where('branch_id', $branch->id)
+        ->where('is_submitted', true)
+        ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status' => false,
+                'message' => 'الطلب غير موجود أو لا ينتمي لفرعك',
+                'order_id' => $id,
+                'branch_id' => $branch->id
+            ], 404);
+        }
+      /*  $totalServicesPrice = $order->services->sum('total_price');
+        $totalItemsPrice = $order->orderDetails->sum(function ($item) {
+            return $item->unit_price * $item->quantity;
+        });*/
+
+      // $basePrice = $totalServicesPrice + $totalItemsPrice;
+      //  $shippingCost = max(0, $order->total_price - $basePrice); 
+
+        $formatted = [
+            'id' => $order->id,
+            'customer' => [
+                'name' => $order->user->name ,
+                'phone' => $order->user->phone ?? null,
+                'email' => $order->user->email ?? null,
+                'gender' => $order->user->gender ?? null,
+                'address' => [
+                    'city' => $order->address->city->name ?? null,
+                    'street' => $order->address->street ?? null,
+                    'building' => $order->address->building ?? null,
+                    'floor' => $order->address->floor ?? null,
+                    'apartment' => $order->address->apartment ?? null,
+                    'latitude' => $order->address->latitude,
+                    'longitude' => $order->address->longitude,
+                ],
+                'delivery_time' => $order->delivery_time,
+                'notes_order' => $order->notes,
+            ],
+          /*  'payment' => [
+                'total_before_shipping' => number_format($basePrice, 2),
+                'shipping_cost' => number_format($shippingCost, 2),
+                'total_price' => number_format($order->total_price, 2),
+            ],*/
+            'details' => $order->orderDetails->map(function ($detail) {
+                return [
+                    'package_name' => $detail->package->name ?? null,
+                    'package_photo' => $detail->package->photo ?? null,
+                    'quantity' => $detail->quantity,
+                    'unit_price' => $detail->unit_price,
+                    'extra_persons' => $detail->extra_persons,
+                    'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
+                    'extras' => $detail->extras->map(function ($extra) {
+                        return [
+                            'name' => $extra->extra->name ?? null,
+                            'quantity' => $extra->quantity,
+                            'unit_price' => $extra->unit_price,
+                            'total_price' => $extra->total_price,
+                        ];
+                    }),
+                    'services' => $detail->services->map(function ($service) {
+                        return [
+                            'name' => $service->service->serviceType->name ?? null,
+                            'custom_price' => $service->custom_price,
+                        ];
+                    }),
+                ];
+            }),
+            'general_services' => $order->services->map(function ($service) {
+                return [
+                    'name' => $service->branchServiceType->serviceType->name ?? null,
+                    'quantity' => $service->quantity,
+                    'total_price' => $service->total_price,
+                ];
+            }),
+        ];
+
+        return response()->json([
+            'status' => true,
+            'order' => $formatted
+        ]);
+
+    } catch (\Exception $e) {
+        return response()->json([
+            'status' => false,
+            'message' => 'حدث خطأ أثناء تحميل الطلب.',
+            'error' => $e->getMessage(),
+        ], 500);
+    }
 }
 
-public function getBranchOrderStatistics()
+     public function getBranchOrderStatistics()
 {
    $manager = auth()->user();
 
@@ -327,8 +441,8 @@ public function getBranchOrderStatistics()
         'total_balance' => $totalBalance,
 
     ]);
-}
-public function OrderWithData(Request $request)
+     }
+     public function OrderWithData(Request $request)
 {
     $request->validate([
         'date' => 'required|date',
@@ -366,9 +480,9 @@ public function OrderWithData(Request $request)
         'date' => $request->date,
         'data' => $grouped
     ]);
-}
+      }
 
-public function allStatesOrders()
+     public function allStatesOrders()
 {
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
@@ -393,8 +507,8 @@ public function allStatesOrders()
     }
 
     return response()->json($ordersByStatus);
-}
-public function latestDeliveredOrders()
+      }
+     public function latestDeliveredOrders()
 {
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
@@ -414,7 +528,7 @@ public function latestDeliveredOrders()
         ->get();
 
     return response()->json($orders);
-}
+     }
 
 
 }
