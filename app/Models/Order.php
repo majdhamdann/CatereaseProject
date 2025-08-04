@@ -104,6 +104,11 @@ class Order extends Model
     public function bill() {
         return $this->hasOne(Bill::class);
     }
+     public function deliveryArea()
+    {
+      return $this->belongsTo(BranchDeliveryArea::class, 'branch_delivery_area_id');
+    }
+
 
     public function cart() {
         return $this->belongsTo(Cart::class, 'cart_id');

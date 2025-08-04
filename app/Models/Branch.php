@@ -76,6 +76,10 @@ class Branch extends Model
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
+    public function deliveryAreas()
+    {
+       return $this->hasMany(BranchDeliveryArea::class);
+    }
 
     public function foodItems()
     {

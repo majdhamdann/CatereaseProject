@@ -41,4 +41,9 @@ class City extends Model
     {
         return $this->hasMany(Branch::class, 'city_id');
     }
+    public function deliveryBranches()
+    {
+      return $this->hasMany(BranchDeliveryArea::class);
+    }
+
 }

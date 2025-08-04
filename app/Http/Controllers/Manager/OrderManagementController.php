@@ -336,6 +336,8 @@ public function show($id)
                 'branch_id' => $branch->id
             ], 404);
         }
+         $deliveryPrice = $order->deliveryArea?->delivery_price;
+         $orderPrice = $order->total_price;
       /*  $totalServicesPrice = $order->services->sum('total_price');
         $totalItemsPrice = $order->orderDetails->sum(function ($item) {
             return $item->unit_price * $item->quantity;
@@ -362,12 +364,15 @@ public function show($id)
                 ],
                 'delivery_time' => $order->delivery_time,
                 'notes_order' => $order->notes,
+                'deliveryPrice' => $deliveryPrice,
+            //   
+
             ],
-          /*  'payment' => [
-                'total_before_shipping' => number_format($basePrice, 2),
-                'shipping_cost' => number_format($shippingCost, 2),
+            'payment' => [
+               //G 'total_before_shipping' => number_format($basePrice, 2),
+                 'deliveryPrice' => $deliveryPrice,
                 'total_price' => number_format($order->total_price, 2),
-            ],*/
+            ],
             'details' => $order->orderDetails->map(function ($detail) {
                 return [
                     'package_name' => $detail->package->name ?? null,
