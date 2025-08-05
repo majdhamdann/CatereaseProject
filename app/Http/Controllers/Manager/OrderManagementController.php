@@ -376,7 +376,12 @@ public function show($id)
                     'package_name' => $detail->package->name ?? null,
                     'package_photo' => $detail->package->photo ?? null,
                     'quantity' => $detail->quantity,
-                     'categories' =>  $detail->package->categories->pluck('name'),
+                      'categories' => $detail->package->categories->map(function ($categories) {
+                        return [
+                          'id' => $categories->id,
+                          'name' => $categories->name,
+                       ];
+                      }),
                     'unit_price' => $detail->unit_price,
                     'extra_persons' => $detail->extra_persons,
                     'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
@@ -388,6 +393,7 @@ public function show($id)
                             'total_price' => $extra->total_price,
                         ];
                     }),
+                    
                     'services' => $detail->services->map(function ($service) {
                         return [
                             'name' => $service->service->serviceType->name ?? null,

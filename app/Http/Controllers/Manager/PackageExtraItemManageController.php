@@ -86,8 +86,6 @@ class PackageExtraItemManageController extends Controller
         'cancellation_policy' => $package->cancellation_policy,
         'prepayment_required' => $package->prepayment_required,
         'prepayment_amount' => $package->prepayment_amount,
-
-       'categories' =>  $package->categories->pluck('name'),        
        'occasion_types' => $package->occasionTypes->pluck('name'),
         
        'branch_service_types' => $package->extraServices->map(function ($bst) {
@@ -109,6 +107,13 @@ class PackageExtraItemManageController extends Controller
                 'is_optional' => $item->is_optional,
             ];
         }),
+        'categories' => $package->categories->map(function ($categories) {
+            return [
+                'id' => $categories->id,
+                'name' => $categories->name,
+            ];
+        }),
+
 
         'extras' => $package->extras->map(function ($extra) {
             return [
