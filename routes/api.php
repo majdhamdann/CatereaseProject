@@ -72,7 +72,7 @@ Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
 
 Route::prefix('order')->middleware('auth:sanctum')->group(function () {
 
-    Route::post('/init', [OrderController::class, 'initOrder']);
+   // Route::post('/init', [OrderController::class, 'initOrder']);
     Route::post('/create', [OrderController::class, 'createOrder']);
     Route::get('/{id}', [OrderController::class, 'show']);
     Route::get('/user/orders', [OrderController::class, 'listUserOrders']);

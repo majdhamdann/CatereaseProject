@@ -15,68 +15,68 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 class OrderController extends Controller
 {
-    public function initOrder(Request $request)
-    {
-        $validator = Validator::make($request->all(), [
-            'address_id'     => 'nullable|exists:addresses,id',
-            'street'         => 'required_without:address_id|string',
-            'building'       => 'required_without:address_id|string',
-            'floor'          => 'nullable|string',
-            'apartment'      => 'nullable|string',
-            'city_id'        => 'required_without:address_id|exists:cities,id',
-            'latitude'       => 'nullable|numeric',
-            'longitude'      => 'nullable|numeric',
-            'notes'          => 'nullable|string',
-            'delivery_time'  => 'nullable|date_format:Y-m-d H:i:s',
-        ]);
-
-        if ($validator->fails()) {
-            return response()->json([
-                'status'  => false,
-                'message' => 'Validation error',
-                'errors'  => $validator->errors()
-            ], 422);
-        }
-
-        $user = Auth::user();
-
-        if ($request->address_id) {
-
-            $address = Address::where('id', $request->address_id)
-                ->where('user_id', $user->id)
-                ->first();
-
-            if (!$address) {
-                return response()->json([
-                    'status'  => false,
-                    'message' => 'Address not found or unauthorized.'
-                ], 404);
-            }
-        } else {
-
-            $address = Address::create([
-                'user_id'   => $user->id,
-                'city_id'   => $request->city_id,
-                'street'    => $request->street,
-                'building'  => $request->building,
-                'floor'     => $request->floor,
-                'apartment' => $request->apartment,
-                'latitude'  => $request->latitude,
-                'longitude' => $request->longitude,
-                'is_default'=> false,
-            ]);
-        }
-
-        return response()->json([
-            'status'  => true,
-            'message' => 'Address is ready for order.',
-            'data'    => [
-                'address_id'     => $address->id,
-                'notes'          => $request->notes,
-                'delivery_time'  => $request->delivery_time,
-            ]
-        ]);
-    }
+//    public function initOrder(Request $request)
+//    {
+//        $validator = Validator::make($request->all(), [
+//            'address_id'     => 'nullable|exists:addresses,id',
+//            'street'         => 'required_without:address_id|string',
+//            'building'       => 'required_without:address_id|string',
+//            'floor'          => 'nullable|string',
+//            'apartment'      => 'nullable|string',
+//            'city_id'        => 'required_without:address_id|exists:cities,id',
+//            'latitude'       => 'nullable|numeric',
+//            'longitude'      => 'nullable|numeric',
+//            'notes'          => 'nullable|string',
+//            'delivery_time'  => 'nullable|date_format:Y-m-d H:i:s',
+//        ]);
+//
+//        if ($validator->fails()) {
+//            return response()->json([
+//                'status'  => false,
+//                'message' => 'Validation error',
+//                'errors'  => $validator->errors()
+//            ], 422);
+//        }
+//
+//        $user = Auth::user();
+//
+//        if ($request->address_id) {
+//
+//            $address = Address::where('id', $request->address_id)
+//                ->where('user_id', $user->id)
+//                ->first();
+//
+//            if (!$address) {
+//                return response()->json([
+//                    'status'  => false,
+//                    'message' => 'Address not found or unauthorized.'
+//                ], 404);
+//            }
+//        } else {
+//
+//            $address = Address::create([
+//                'user_id'   => $user->id,
+//                'city_id'   => $request->city_id,
+//                'street'    => $request->street,
+//                'building'  => $request->building,
+//                'floor'     => $request->floor,
+//                'apartment' => $request->apartment,
+//                'latitude'  => $request->latitude,
+//                'longitude' => $request->longitude,
+//                'is_default'=> false,
+//            ]);
+//        }
+//
+//        return response()->json([
+//            'status'  => true,
+//            'message' => 'Address is ready for order.',
+//            'data'    => [
+//                'address_id'     => $address->id,
+//                'notes'          => $request->notes,
+//                'delivery_time'  => $request->delivery_time,
+//            ]
+//        ]);
+//    }
 
     public function createOrder(Request $request)
     {
