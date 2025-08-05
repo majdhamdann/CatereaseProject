@@ -358,6 +358,8 @@ public function show($id)
                     'longitude' => $order->address->longitude,
                 ],
                 'delivery_time' => $order->delivery_time,
+                 'created_at' => $order->created_at,
+                 'updated_at' => $order->updated_at,
                 'notes_order' => $order->notes,
                 'deliveryPrice' => $deliveryPrice,
         
@@ -370,9 +372,11 @@ public function show($id)
             ],
             'details' => $order->orderDetails->map(function ($detail) {
                 return [
+                     'package_id' => $detail->package->id ,
                     'package_name' => $detail->package->name ?? null,
                     'package_photo' => $detail->package->photo ?? null,
                     'quantity' => $detail->quantity,
+                     'categories' => $detail->package->categories->pluck('name'),
                     'unit_price' => $detail->unit_price,
                     'extra_persons' => $detail->extra_persons,
                     'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
