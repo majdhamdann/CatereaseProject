@@ -87,8 +87,7 @@ class PackageExtraItemManageController extends Controller
         'prepayment_required' => $package->prepayment_required,
         'prepayment_amount' => $package->prepayment_amount,
 
-        'categories' => $package->categories->pluck('name'),
-        'occasion_types' => $package->occasionTypes->pluck('name'),
+       'categories' => implode(', ', $package->categories->pluck('name')->toArray()),        'occasion_types' => $package->occasionTypes->pluck('name'),
         
        'branch_service_types' => $package->extraServices->map(function ($bst) {
          return [
