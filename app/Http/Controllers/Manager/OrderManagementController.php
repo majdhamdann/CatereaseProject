@@ -376,7 +376,7 @@ public function show($id)
                     'package_name' => $detail->package->name ?? null,
                     'package_photo' => $detail->package->photo ?? null,
                     'quantity' => $detail->quantity,
-                     'categories' => implode(', ', $detail->package->categories->pluck('name')->toArray()),
+                     'categories' =>  $detail->package->categories->pluck('name'),
                     'unit_price' => $detail->unit_price,
                     'extra_persons' => $detail->extra_persons,
                     'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
