@@ -29,6 +29,7 @@ use App\Http\Controllers\Manager\PackageExtraItemManageController ;
 use App\Http\Controllers\Manager\ReviewmanagerController;
 use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
+use App\Http\Controllers\Owner\BranchDeliveryAreaController;
 use App\Http\Controllers\Owner\BranchStatisticsController;
 use App\Http\Controllers\Owner\branchtatisticsontroller;
 use App\Http\Controllers\Owner\WorkingDayController;
@@ -200,6 +201,10 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::get('/BranchFoodItemStats', [BranchStatisticsController::class, 'getBranchFoodItemStats']);
      Route::get('/Summary', [BranchStatisticsController::class, 'getOwnerSummary']);
      Route::get('/branch/{id}/statistics', [BranchStatisticsController::class, 'getBranchStatistics']);
+     Route::get('branches/{branch}/delivery-areas', [BranchDeliveryAreaController::class, 'index']);
+     Route::post('branches/{branch}/delivery-areas', [BranchDeliveryAreaController::class, 'store']);
+     Route::put('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'update']);
+     Route::delete('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'destroy']);
 });
 
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);

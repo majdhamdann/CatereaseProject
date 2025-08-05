@@ -338,13 +338,8 @@ public function show($id)
         }
          $deliveryPrice = $order->deliveryArea?->delivery_price;
          $orderPrice = $order->total_price;
-      /*  $totalServicesPrice = $order->services->sum('total_price');
-        $totalItemsPrice = $order->orderDetails->sum(function ($item) {
-            return $item->unit_price * $item->quantity;
-        });*/
-
-      // $basePrice = $totalServicesPrice + $totalItemsPrice;
-      //  $shippingCost = max(0, $order->total_price - $basePrice); 
+         $totalPriceWithDelivery = $deliveryPrice +$orderPrice ;
+    
 
         $formatted = [
             'id' => $order->id,
@@ -365,13 +360,13 @@ public function show($id)
                 'delivery_time' => $order->delivery_time,
                 'notes_order' => $order->notes,
                 'deliveryPrice' => $deliveryPrice,
-            //   
+        
 
             ],
             'payment' => [
-               //G 'total_before_shipping' => number_format($basePrice, 2),
+                'totalPriceWithDelivery' => $totalPriceWithDelivery,
                  'deliveryPrice' => $deliveryPrice,
-                'total_price' => number_format($order->total_price, 2),
+                 'orderPrice' =>$orderPrice,
             ],
             'details' => $order->orderDetails->map(function ($detail) {
                 return [
