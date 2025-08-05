@@ -118,12 +118,12 @@ class PackageExtraItemManageController extends Controller
         }),
 
         'extra_services' => $package->extraServices->map(function ($service) {
-            return [
-                'id' => $service->id,
-                'name' => $service->name,
-                'price' => $service->price,
-            ];
+              return [
+                'name' => $service->servicetype->name, 
+                'price' => $service->custom_price,     
+             ];
         }),
+
 
         'discounts' => $package->discounts->map(function ($discount) {
             return [
