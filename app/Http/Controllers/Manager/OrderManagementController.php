@@ -294,8 +294,8 @@ class OrderManagementController extends Controller
                 'estimated_time' => $order->delivery->estimated_time,
                 'delivery_person_id' => $order->delivery->deliveryPerson->id ,
                 'delivery_person' => $order->delivery->deliveryPerson ? [
-                    'name' => $order->delivery->deliveryPerson->name,
-                    'phone' => $order->delivery->deliveryPerson->phone
+                    'name' => $order->delivery->deliveryPerson->user->name,
+                    'phone' => $order->delivery->deliveryPerson->user->phone
                 ] : null
             ] : null,
             'details' => $order->orderDetails->map(function ($detail) {
