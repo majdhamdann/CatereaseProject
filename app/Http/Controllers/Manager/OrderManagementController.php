@@ -157,7 +157,6 @@ class OrderManagementController extends Controller
     $validated = $request->validate([
         'order_id' => 'required|exists:orders,id',
         'delivery_person_id' => 'required|exists:delivery_people,id',
-        'estimated_minutes' => 'required|integer|min:10' 
     ]);
 
     DB::beginTransaction();
@@ -177,13 +176,12 @@ class OrderManagementController extends Controller
                                     ->lockForUpdate()
                                     ->firstOrFail();
 
-        $estimatedTime = now()->addMinutes($validated['estimated_minutes']);
 
         $delivery = Delivery::create([
             'order_id' => $order->id,
             'delivery_person_id' => $deliveryPerson->id,
             'status' => 'assigned',
-            'estimated_time' => $estimatedTime, 
+           // 'estimated_time' => $estimatedTime, 
             'assigned_at' => now(),
         ]);
 
@@ -200,7 +198,7 @@ class OrderManagementController extends Controller
         return response()->json([
             'status' => true,
             'message' => 'تم تعيين موظف التوصيل بنجاح',
-            'estimated_delivery_time' => $estimatedTime->format('Y-m-d H:i:s'),
+          //  'estimated_delivery_time' => $estimatedTime->format('Y-m-d H:i:s'),
             'data' => [
                 'order' => $order->fresh(),
                 'delivery' => $delivery,
@@ -217,7 +215,8 @@ class OrderManagementController extends Controller
     }
      }
 
-public function show($id)
+
+     public function show($id)
 {
     $manager = auth()->user();
 
@@ -239,6 +238,7 @@ public function show($id)
             'orderDetails.extras.extra',
             'orderDetails.services.service.serviceType',
             'services.branchServiceType.serviceType',
+            'delivery.deliveryPerson' 
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
@@ -253,15 +253,15 @@ public function show($id)
                 'branch_id' => $branch->id
             ], 404);
         }
-         $deliveryPrice = $order->deliveryArea?->delivery_price;
-         $orderPrice = $order->total_price;
-         $totalPriceWithDelivery = $deliveryPrice +$orderPrice ;
+        
+        $deliveryPrice = $order->deliveryArea?->delivery_price;
+        $orderPrice = $order->total_price;
+        $totalPriceWithDelivery = $deliveryPrice + $orderPrice;
     
-
         $formatted = [
             'id' => $order->id,
             'customer' => [
-                'name' => $order->user->name ,
+                'name' => $order->user->name,
                 'phone' => $order->user->phone ?? null,
                 'email' => $order->user->email ?? null,
                 'gender' => $order->user->gender ?? null,
@@ -276,32 +276,39 @@ public function show($id)
                 ],
                 'delivery_time' => $order->delivery_time,
                 'is_approved' => $order->is_approved,
-                 'approved_at' => $order->approved_at,
-                 'rejection_reason' => $order->rejection_reason,
-                 'created_at' => $order->created_at,
-                 'updated_at' => $order->updated_at,
+                'approved_at' => $order->approved_at,
+                'rejection_reason' => $order->rejection_reason,
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
                 'notes_order' => $order->notes,
                 'deliveryPrice' => $deliveryPrice,
-        
-
             ],
             'payment' => [
                 'totalPriceWithDelivery' => $totalPriceWithDelivery,
-                 'deliveryPrice' => $deliveryPrice,
-                 'orderPrice' =>$orderPrice,
+                'deliveryPrice' => $deliveryPrice,
+                'orderPrice' => $orderPrice,
             ],
+            'delivery_info' => $order->delivery ? [
+                'status' => $order->delivery->status,
+                'assigned_at' => $order->delivery->assigned_at,
+                'estimated_time' => $order->delivery->estimated_time, 
+                'delivery_person' => $order->delivery->deliveryPerson ? [
+                    'name' => $order->delivery->deliveryPerson->name,
+                    'phone' => $order->delivery->deliveryPerson->phone
+                ] : null
+            ] : null,
             'details' => $order->orderDetails->map(function ($detail) {
                 return [
-                     'package_id' => $detail->package->id ,
+                    'package_id' => $detail->package->id,
                     'package_name' => $detail->package->name ?? null,
                     'package_photo' => $detail->package->photo ?? null,
                     'quantity' => $detail->quantity,
-                      'categories' => $detail->package->categories->map(function ($categories) {
+                    'categories' => $detail->package->categories->map(function ($categories) {
                         return [
-                          'id' => $categories->id,
-                          'name' => $categories->name,
-                       ];
-                      }),
+                            'id' => $categories->id,
+                            'name' => $categories->name,
+                        ];
+                    }),
                     'unit_price' => $detail->unit_price,
                     'extra_persons' => $detail->extra_persons,
                     'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
@@ -313,7 +320,6 @@ public function show($id)
                             'total_price' => $extra->total_price,
                         ];
                     }),
-                    
                     'services' => $detail->services->map(function ($service) {
                         return [
                             'name' => $service->service->serviceType->name ?? null,
@@ -344,7 +350,6 @@ public function show($id)
         ], 500);
     }
 }
-
      public function getBranchOrderStatistics()
 {
    $manager = auth()->user();
