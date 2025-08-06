@@ -87,7 +87,7 @@ class PackageExtraItemManageController extends Controller
         'prepayment_required' => $package->prepayment_required,
         'prepayment_amount' => $package->prepayment_amount,
         'name_branch' => $package->branch->restaurant->name,
-
+        'branch_id' => $package->branch->id,
         'occasion_types' => $package->occasionTypes->map(function ($occasionTypes) {
             return [
                 'id' => $occasionTypes->id,
