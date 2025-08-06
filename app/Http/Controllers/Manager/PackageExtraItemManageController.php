@@ -86,8 +86,14 @@ class PackageExtraItemManageController extends Controller
         'cancellation_policy' => $package->cancellation_policy,
         'prepayment_required' => $package->prepayment_required,
         'prepayment_amount' => $package->prepayment_amount,
-       'occasion_types' => $package->occasionTypes->pluck('name'),
-        
+        'name_branch' => $package->branch->restaurant->name,
+
+        'occasion_types' => $package->occasionTypes->map(function ($occasionTypes) {
+            return [
+                'id' => $occasionTypes->id,
+                'name' => $occasionTypes->name,
+            ];
+        }),
        'branch_service_types' => $package->extraServices->map(function ($bst) {
          return [
             'id' => $bst->id,
@@ -134,7 +140,7 @@ class PackageExtraItemManageController extends Controller
         'discounts' => $package->discounts->map(function ($discount) {
             return [
                 'id' => $discount->id,
-                'amount' => $discount->amount,
+                'amount' => $discount->value,
                 'start_date' => $discount->start_date,
                 'end_date' => $discount->end_date,
             ];

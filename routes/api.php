@@ -145,7 +145,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::apiResource('branch-service-types', BranchServiceTypeManagementController::class);
     Route::post('/coupons/create', [CouponManagementController::class, 'createCoupon']);
      Route::get('/order/manange/allorder', [OrderManagementController::class, 'index']);
-     Route::get('/order/manange/assignDelivery', [OrderManagementController::class, 'assignDeliveryPerson']);
+     Route::post('/order/manange/assignDelivery', [OrderManagementController::class, 'assignDeliveryPerson']);
      Route::get('/order/alldelivery/manange', [OrderManagementController::class, 'getAvailableDeliveryPersons']);
      Route::get('/order/manange/{status}/status', [OrderManagementController::class, 'stateOrder']);
      Route::get('/order/manange/{id}/show', [OrderManagementController::class, 'show']);
