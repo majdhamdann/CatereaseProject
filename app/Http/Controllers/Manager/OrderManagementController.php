@@ -291,7 +291,8 @@ class OrderManagementController extends Controller
             'delivery_info' => $order->delivery ? [
                 'status' => $order->delivery->status,
                 'assigned_at' => $order->delivery->assigned_at,
-                'estimated_time' => $order->delivery->estimated_time, 
+                'estimated_time' => $order->delivery->estimated_time,
+                'delivery_person_id' => $order->delivery->deliveryPerson->id ,
                 'delivery_person' => $order->delivery->deliveryPerson ? [
                     'name' => $order->delivery->deliveryPerson->name,
                     'phone' => $order->delivery->deliveryPerson->phone

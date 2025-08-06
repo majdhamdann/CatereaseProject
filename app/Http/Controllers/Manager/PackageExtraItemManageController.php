@@ -4,10 +4,6 @@ namespace App\Http\Controllers\Manager;
 
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\packageManagement\StorePackageRequest;
-use App\Http\Requests\packageManagement\UpdatePackagemanageRequest;
-use App\Http\Requests\packageManagement\StorePackageItemRequest;
-use App\Http\Requests\packageManagement\StorePackageExtraRequest;
 use App\Models\Branch;
 use App\Models\FoodItem;
 use App\Models\Package;
@@ -62,7 +58,6 @@ class PackageExtraItemManageController extends Controller
         'extras',
         'categories',
         'occasionTypes',
-       // 'branchServiceType.serviceType',
         'branch',
         'discounts',
         'coupons',
