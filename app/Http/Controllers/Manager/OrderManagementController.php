@@ -152,7 +152,7 @@ class OrderManagementController extends Controller
 
         return response()->json($order);
       }
-      public function assignDeliveryPerson1(Request $request)
+      public function assignDeliveryPerson(Request $request)
 {
     $validated = $request->validate([
         'order_id' => 'required|exists:orders,id',
@@ -197,109 +197,6 @@ class OrderManagementController extends Controller
 
             $message = 'تم تعيين موظف التوصيل بنجاح';
       
-
-        DB::commit();
-
-        return response()->json([
-            'status' => true,
-            'message' => $message,
-            'data' => [
-                'order' => $order->fresh(),
-                'delivery' => $delivery ?? null,
-                'delivery_person' => $deliveryPerson->fresh()
-            ]
-        ]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'status' => false,
-            'message' => 'فشل العملية: ' . $e->getMessage()
-        ], 500);
-    }
-}
-    public function assignDeliveryPerson(Request $request)
-{
-    $validated = $request->validate([
-        'order_id' => 'required|exists:orders,id',
-        'delivery_person_id' => 'required|exists:delivery_people,id',
-        'action' => 'required|in:assign,unassign'
-    ]);
-
-    DB::beginTransaction();
-    try {
-        $manager = auth()->user();
-        $branch = Branch::where('manager_id', $manager->id)->firstOrFail();
-
-        $order = Order::where('id', $validated['order_id'])
-                    ->where('branch_id', $branch->id)
-                    ->where('is_approved', true)
-                    ->where('is_submitted', true)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-        $deliveryPerson = DeliveryPerson::where('id', $validated['delivery_person_id'])
-                                    ->lockForUpdate()
-                                    ->firstOrFail();
-
-        if ($validated['action'] === 'assign') {
-            $previousDelivery = Delivery::where('order_id', $order->id)
-                                    ->where('status', 'assigned')
-                                    ->first();
-            
-            if ($previousDelivery) {
-                $previousDeliveryPerson = DeliveryPerson::find($previousDelivery->delivery_person_id);
-                if ($previousDeliveryPerson) {
-                    $previousDeliveryPerson->update(['is_available' => true]);
-                }
-                
-                $previousDelivery->update([
-                    'status' => 'cancelled',
-                    'cancelled_at' => now()
-                ]);
-            }
-
-            if (!$deliveryPerson->is_available) {
-                throw new \Exception('موظف التوصيل غير متاح حالياً');
-            }
-
-            $delivery = Delivery::create([
-                'order_id' => $order->id,
-                'delivery_person_id' => $deliveryPerson->id,
-                'status' => 'assigned',
-                'assigned_at' => now(),
-            ]);
-
-            $deliveryPerson->update(['is_available' => false]);
-            
-            $order->update([
-                'status' => 'preparing',
-                'delivery_id' => $delivery->deliveryPerson->id,
-                'updated_at' => now()
-            ]);
-
-            $message = 'تم تعيين موظف التوصيل بنجاح';
-        } else {
-            $delivery = Delivery::where('order_id', $order->id)
-                            ->where('delivery_person_id', $deliveryPerson->id)
-                            ->where('status', 'assigned')
-                            ->firstOrFail();
-
-            $delivery->update([
-                'status' => 'cancelled',
-                'cancelled_at' => now()
-            ]);
-
-            $deliveryPerson->update(['is_available' => true]);
-            
-            $order->update([
-                'status' => 'pending',
-                'delivery_id' => null,
-                'updated_at' => now()
-            ]);
-
-            $message = 'تم إلغاء تعيين موظف التوصيل بنجاح';
-        }
 
         DB::commit();
 
@@ -398,7 +295,7 @@ class OrderManagementController extends Controller
             'delivery_info' => $order->delivery ? [
                 'status' => $order->delivery->status,
                 'assigned_at' => $order->delivery->assigned_at,
-                'estimated_time' => $order->delivery->estimated_time,
+              //  'estimated_time' => $order->delivery->estimated_time,
                 'delivery_person_id' => $order->delivery->deliveryPerson->id ,
                 'delivery_person' => $order->delivery ? [
                     'name' => $order->delivery->deliveryPerson->user->name,
