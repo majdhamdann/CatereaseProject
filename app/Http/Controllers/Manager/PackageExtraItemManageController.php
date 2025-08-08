@@ -66,7 +66,6 @@ class PackageExtraItemManageController extends Controller
     ])
     ->where('branch_id', $branch->id)
     ->findOrFail($id);
-
     return response()->json([
         'id' => $package->id,
         'name' => $package->name,
@@ -152,9 +151,12 @@ class PackageExtraItemManageController extends Controller
         }),
 
         'feedbacks' => $package->feedbacks->map(function ($feedback) {
+           $averageRating = $feedback->avg('score') ?? 0;
+
             return [
                 'id' => $feedback->id,
                 'rating' => $feedback->rating,
+                'average_rating' => round($averageRating, 2),
                 'comment' => $feedback->comment,
                 'user_name' => $feedback->user->name ?? null,
                 'created_at' => $feedback->created_at->toDateTimeString(),

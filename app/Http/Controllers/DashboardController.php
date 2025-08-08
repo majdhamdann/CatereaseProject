@@ -31,9 +31,7 @@ class DashboardController extends Controller
     {
      $branch = $this->analytics->getMyBranch();
 
-        return response()->json([
-            'branch' => $branch
-        ]);
+        return $branch ;
     }
 
 
@@ -180,7 +178,6 @@ class DashboardController extends Controller
         }
     }
 
-    // ترتيب حسب عدد الطلبات
     $result = array_values($packageStats);
     usort($result, fn($a, $b) => $b['order_count'] <=> $a['order_count']);
 
@@ -290,59 +287,7 @@ public function getCustomerWithOrders($user_id)
 }
 
 
- public function getCustomerWithOrder61($user_id)
-{
-    $manager = Auth::user();
-
-    $branch = Branch::where('manager_id', $manager->id)->first();
-
-    if (!$branch) {
-        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
-    }
-
-    $user = User::find($user_id);
-
-    if (!$user) {
-        return response()->json(['message' => 'المستخدم غير موجود.'], 404);
-    }
-
-    $orders = $user->orders()
-        ->where('branch_id', $branch->id)
-        ->with(['orderDetails.package', 'branch'])
-        ->get();
-
-    return response()->json([
-        'user' => [
-            'id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-            'status' => $user->status,
-            'phone' => $user->phone ?? null,
-            'created_at' => $user->created_at,
-        ],
-        'orders' => $orders->map(function ($order) {
-            return [
-                'order_id' => $order->id,
-                'status' => $order->status,
-                'total_price' => $order->total_price,
-                'created_at' => $order->created_at,
-                'items' => $order->orderDetails->map(function ($detail) {
-                    $package = $detail->package;
-
-                    return [
-                        'package_name' => $package->name ?? 'غير معروف',
-                        'quantity' => $detail->quantity,
-                        'unit_price' => $detail->unit_price,
-                        'photo' => $package->photo 
-                            ? asset('storage/' . $package->photo)
-                            : null,
-                    ];
-                }),
-            ];
-        }),
-    ]);
- }
-
+ 
 
  public function getBranchCustomers($branch_id)
 {

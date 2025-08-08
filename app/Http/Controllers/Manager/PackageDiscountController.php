@@ -21,7 +21,8 @@ class PackageDiscountController extends Controller
            })
           ->with([
             'discounts', 
-            'categories'    
+            'categories',
+            'feedbacks'    
         ])
            ->get();
 
@@ -30,6 +31,15 @@ class PackageDiscountController extends Controller
               $discount->value = number_format($discount->value, 2) . '%';
            });
        });
+       $packages->each(function ($package) {
+      $averageRating = $package->feedbacks->avg('score') ?? 0;
+      $package->average_rating = round($averageRating, 1);
+
+      $package->discounts->each(function ($discount) {
+          $discount->value = number_format($discount->value, 2) . '%';
+       });
+   });
+
 
       return response()->json([
          'status' => true,
