@@ -33,8 +33,10 @@ class PackageDiscountController extends Controller
            });
        });
        $packages->each(function ($package) {
-      $averageRating = $package->feedbacks->avg('score') ?? 0;
-      $package->average_rating = round($averageRating, 1);
+       $averageRating = $package->feedbacks->avg('score') ?? 0;
+       $reviewsCount = $package->feedbacks->count();
+       $package->average_rating = round($averageRating, 1);
+       $package->reviewsCount =  $reviewsCount ;
 
    });
 
