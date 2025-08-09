@@ -22,7 +22,8 @@ class PackageDiscountController extends Controller
           ->with([
             'discounts', 
             'categories',
-            'feedbacks'    
+            'feedbacks',
+            'complaint'    
         ])
            ->get();
 
