@@ -269,7 +269,7 @@ public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
         return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
     }
 
-    $status = request()->query('status'); // قيمة حالة الطلب مثل delivered أو cancelled أو pending
+    $status = request()->query('status');
 
     $deliveries = Delivery::with(['order.orderDetails.package.feedbacks'])
         ->where('delivery_person_id', $deliveryPersonId)

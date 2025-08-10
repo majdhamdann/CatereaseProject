@@ -241,7 +241,7 @@ class OrderManagementController extends Controller
             'orderDetails.package.occasionTypes',
             'orderDetails.extras.extra',
             'orderDetails.services.service.serviceType',
-            'services.branchServiceType.serviceType',
+          //  'services.branchServiceType.serviceType',
             'delivery.deliveryPerson' 
         ])
         ->where('id', $id)
@@ -333,13 +333,7 @@ class OrderManagementController extends Controller
                     }),
                 ];
             }),
-            'general_services' => $order->services->map(function ($service) {
-                return [
-                    'name' => $service->branchServiceType->serviceType->name ?? null,
-                    'quantity' => $service->quantity,
-                    'total_price' => $service->total_price,
-                ];
-            }),
+            
         ];
 
         return response()->json([
