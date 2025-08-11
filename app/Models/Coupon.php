@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\SoftDeletes;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $branch_id
@@ -43,6 +43,7 @@ class Coupon extends Model
 {
     use HasFactory;
       protected $guarded = ['id'];
+
      public function branch() {
         return $this->belongsTo(Branch::class);
     }
@@ -50,9 +51,11 @@ class Coupon extends Model
     public function promoCode() {
         return $this->belongsTo(PromoCode::class, 'promo_code_id');
     }
+
     public function packages() {
         return $this->belongsToMany(Package::class, 'package_coupon');
     }
+
     public function user()
 {
     return $this->belongsTo(User::class);

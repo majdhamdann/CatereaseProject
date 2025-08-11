@@ -80,6 +80,85 @@ class DeliveryController extends Controller
         }
     }
 
+//    public function assignedOrderDetails($orderId)
+//    {
+//        try {
+//            DB::beginTransaction();
+//
+//            $user = Auth::user();
+//            $deliveryPerson = $user->deliveryPerson;
+//
+//            if (!$deliveryPerson) {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'You are not a delivery person.'
+//                ], 403);
+//            }
+//
+//            $delivery = Delivery::with([
+//                'order.orderDetails.package',
+//                'order.user',
+//                'order.address.city',
+//                'order.branch.restaurant',
+//            ])
+//                ->where('delivery_person_id', $deliveryPerson->id)
+//                ->whereHas('order', fn($q) => $q->where('id', $orderId))
+//                ->first();
+//
+//            if (!$delivery) {
+//                return response()->json([
+//                    'status' => 'error',
+//                    'message' => 'Order not found or not assigned to you.'
+//                ], 404);
+//            }
+//
+//            $order = $delivery->order;
+//            $address = $order->address;
+//            $city = optional($address->city);
+//            $branch = $order->branch;
+//            $restaurant = optional($branch)->restaurant;
+//
+//            $itemsSummary = $order->orderDetails->map(function ($detail) {
+//                return optional($detail->package)->name . ' (' . $detail->quantity . ')';
+//            })->implode(', ');
+//
+//            DB::commit();
+//
+//            return response()->json([
+//                'status' => 'success',
+//                'data' => [
+//                    'order_id'        => $order->id,
+//                    'status'          => $delivery->status,
+//                    'total_price'     => number_format($order->total_price, 2),
+//                    'created_at'      => $order->created_at->format('Y-m-d H:i'),
+//                    'created_since'   => $order->created_at->diffForHumans(),
+//                    'customer_name'   => $order->user->name ?? 'Unknown',
+//                    'branch_name'     => $branch->description ?? 'N/A',
+//                    'restaurant_name' => $restaurant->name ?? 'N/A',
+//                    'items'           => $itemsSummary,
+//                    'address' => [
+//                        'address_id' => $address->id ?? null,
+//                        'city'       => $city->name ?? null,
+//                        'country'    => $city->country ?? null,
+//                        'street'     => $address->street ?? null,
+//                        'building'   => $address->building ?? null,
+//                        'floor'      => $address->floor ?? null,
+//                        'apartment'  => $address->apartment ?? null,
+//                        'latitude'   => $address->latitude ?? null,
+//                        'longitude'  => $address->longitude ?? null,
+//                    ]
+//                ]
+//            ]);
+//        } catch (\Throwable $e) {
+//            DB::rollBack();
+//
+//            return response()->json([
+//                'status' => 'error',
+//                'message' => 'Failed to fetch order details.',
+//                'error' => $e->getMessage(),
+//            ], 500);
+//        }
+//    }
     public function assignedOrderDetails($orderId)
     {
         try {
@@ -112,43 +191,14 @@ class DeliveryController extends Controller
                 ], 404);
             }
 
-            $order = $delivery->order;
-            $address = $order->address;
-            $city = optional($address->city);
-            $branch = $order->branch;
-            $restaurant = optional($branch)->restaurant;
-
-            $itemsSummary = $order->orderDetails->map(function ($detail) {
-                return optional($detail->package)->name . ' (' . $detail->quantity . ')';
-            })->implode(', ');
-
             DB::commit();
+
 
             return response()->json([
                 'status' => 'success',
-                'data' => [
-                    'order_id'        => $order->id,
-                    'status'          => $delivery->status,
-                    'total_price'     => number_format($order->total_price, 2),
-                    'created_at'      => $order->created_at->format('Y-m-d H:i'),
-                    'created_since'   => $order->created_at->diffForHumans(),
-                    'customer_name'   => $order->user->name ?? 'Unknown',
-                    'branch_name'     => $branch->description ?? 'N/A',
-                    'restaurant_name' => $restaurant->name ?? 'N/A',
-                    'items'           => $itemsSummary,
-                    'address' => [
-                        'address_id' => $address->id ?? null,
-                        'city'       => $city->name ?? null,
-                        'country'    => $city->country ?? null,
-                        'street'     => $address->street ?? null,
-                        'building'   => $address->building ?? null,
-                        'floor'      => $address->floor ?? null,
-                        'apartment'  => $address->apartment ?? null,
-                        'latitude'   => $address->latitude ?? null,
-                        'longitude'  => $address->longitude ?? null,
-                    ]
-                ]
+                'data'   => $delivery
             ]);
+
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -159,5 +209,6 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
+
 
 }

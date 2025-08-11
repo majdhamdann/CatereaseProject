@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $user_id
@@ -70,6 +70,7 @@ class Order extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
     public function user()
     {
         return $this->belongsTo(User::class);
@@ -79,10 +80,10 @@ class Order extends Model
     {
         return $this->belongsTo(Branch::class, 'branch_id');
     }
+
     public function delivery() {
         return $this->hasOne(Delivery::class);
     }
-
 
     public function orderDetails()
     {
@@ -93,10 +94,12 @@ class Order extends Model
     {
         return $this->belongsTo(Address::class, 'address_id');
     }
+
     public function orderServiceTypes()
     {
         return $this->hasMany(OrderServiceType::class, 'order_id');
     }
+
     public function services() {
         return $this->hasMany(OrderServiceType::class);
     }
@@ -104,11 +107,11 @@ class Order extends Model
     public function bill() {
         return $this->hasOne(Bill::class);
     }
+
      public function deliveryArea()
     {
       return $this->belongsTo(BranchDeliveryArea::class, 'branch_delivery_area_id');
     }
-
 
     public function cart() {
         return $this->belongsTo(Cart::class, 'cart_id');

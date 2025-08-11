@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $branch_id
@@ -52,10 +52,12 @@ class BranchServiceType extends Model
     {
         return $this->belongsTo(ServiceType::class, 'service_type_id');
     }
-    public function orderServiceTypes()
-    {
-        return $this->hasMany(OrderServiceType::class, 'branch_service_type_id');
-    }
+
+//    public function orderServiceTypes()
+//    {
+//        return $this->hasMany(OrderServiceType::class, 'branch_service_type_id');
+//    }
+
     public function packagesWithExtra()
     {
         return $this->belongsToMany(

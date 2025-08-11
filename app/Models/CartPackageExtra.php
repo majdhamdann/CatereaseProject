@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $cart_item_id
@@ -40,6 +40,7 @@ class CartPackageExtra extends Model
     {
         return $this->belongsTo(CartItem::class);
     }
+
     public function extra()
     {
         return $this->belongsTo(PackageExtra::class, 'extra_id');

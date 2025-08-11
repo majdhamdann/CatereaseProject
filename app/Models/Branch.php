@@ -8,7 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $Restaurant_id
@@ -65,8 +65,9 @@ use Illuminate\Database\Eloquent\Model;
 class Branch extends Model
 {
     use HasFactory;
-    
+
     protected $guarded = ['id'];
+
     public function restaurant()
     {
         return $this->belongsTo(Restaurant::class);
@@ -76,6 +77,7 @@ class Branch extends Model
     {
         return $this->belongsTo(User::class, 'manager_id');
     }
+
     public function deliveryAreas()
     {
        return $this->hasMany(BranchDeliveryArea::class);
@@ -94,6 +96,7 @@ class Branch extends Model
     {
         return $this->hasMany(FoodCategory::class);
     }
+
     public function reports()
     {
        return $this->hasMany(Report::class);
@@ -108,28 +111,33 @@ class Branch extends Model
     {
         return $this->belongsTo(City::class, 'city_id');
     }
+
     public function branch ()
     {
         return $this->hasMany(Category::class, 'branch_id');
     }
+
     public function branchServiceTypes()
     {
         return $this->hasMany(BranchServiceType::class, 'branch_id');
     }
+
      public function workingDays() {
+
         return $this->hasMany(WorkingDay::class);
     }
 
-    public function categories()
-{
+    public function categories(){
+
     return $this->belongsToMany(Category::class, 'food_categories', 'branch_id', 'category_id');
-}
+
+    }
 
     public function packages()
     {
         return $this->hasMany(Package::class, 'branch_id');
     }
-   
+
 
 
 

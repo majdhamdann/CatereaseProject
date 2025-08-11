@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $user_id
@@ -57,34 +57,36 @@ class DeliveryPerson extends Model
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'FeedbackType_id',  
-        'id',              
-        'id'                 
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'delivery_person')
      ->where('feedback.type', 'rating');
 }
-public function complaint()
-{
+
+    public function complaint(){
+
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'FeedbackType_id',  
-        'id',              
-        'id'                 
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'delivery_person')
      ->where('feedback.type', 'complaint');
 }
-public function allFeedbacks()
+
+    public function allFeedbacks()
 {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'feedbackType_id',  
-        'id',                
-        'id'                
+        'target_ref_id',
+        'feedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'delivery_person');
 }
 

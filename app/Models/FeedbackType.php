@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property string $target_type
@@ -30,12 +30,13 @@ class FeedbackType extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
-  
+
 
     public function target()
     {
         return $this->morphTo(__FUNCTION__, 'target_type', 'target_ref_id');
     }
+
     public function feedbacks()
     {
         return $this->hasMany(Feedback::class, 'FeedbackType_id');

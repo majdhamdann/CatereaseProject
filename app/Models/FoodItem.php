@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
+ *
  *
  * @property int $id
  * @property int $branch_id
@@ -56,6 +56,7 @@ class FoodItem extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
     public function branch()
     {
         return $this->belongsTo(Branch::class, 'branch_id');
@@ -76,7 +77,7 @@ class FoodItem extends Model
                 ->where('target_type', 'food_item');
 }
 
-public function feedbacks()
+    public function feedbacks()
 {
     return $this->hasManyThrough(
         Feedback::class,
