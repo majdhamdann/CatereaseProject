@@ -11,7 +11,6 @@ use Illuminate\Support\Facades\Auth;
 
 class BranchDeliveryAreaController extends Controller
 {
-    // ✅ عرض جميع مناطق التوصيل لفرع معين
     public function index($branchId)
     {
         $owner = Auth::user();
@@ -28,7 +27,6 @@ class BranchDeliveryAreaController extends Controller
         return response()->json($areas);
     }
 
-    // ✅ إضافة منطقة توصيل لفرع
     public function store(Request $request, $branchId)
 {
     $request->validate([
@@ -45,7 +43,6 @@ class BranchDeliveryAreaController extends Controller
                         $q->where('owner_id', $owner->id);
                     })->firstOrFail();
 
-    // البحث أو الإنشاء للمدينة
     $city = City::firstOrCreate(
         [
             'name' => $request->city_name,
@@ -53,7 +50,6 @@ class BranchDeliveryAreaController extends Controller
         ]
     );
 
-    // التحقق من عدم تكرار المدينة لنفس الفرع
     $exists = BranchDeliveryArea::where('branch_id', $branch->id)
                 ->where('city_id', $city->id)
                 ->exists();
@@ -62,7 +58,6 @@ class BranchDeliveryAreaController extends Controller
         return response()->json(['message' => 'هذه المدينة مضافة مسبقًا لهذا الفرع.'], 422);
     }
 
-    // إنشاء منطقة التوصيل
     $area = BranchDeliveryArea::create([
         'branch_id' => $branch->id,
         'city_id' => $city->id,
@@ -75,7 +70,6 @@ class BranchDeliveryAreaController extends Controller
     ]);
 }
 
-    // ✅ تعديل سعر التوصيل لمنطقة
     public function update(Request $request, $areaId)
     {
         $request->validate([
@@ -86,7 +80,6 @@ class BranchDeliveryAreaController extends Controller
 
         $area = BranchDeliveryArea::findOrFail($areaId);
 
-        // التأكد من ملكية الفرع للمطعم
         $this->authorizeOwner($owner->id, $area->branch_id);
 
         $area->update([
@@ -96,7 +89,6 @@ class BranchDeliveryAreaController extends Controller
         return response()->json(['message' => 'تم التحديث بنجاح', 'area' => $area]);
     }
 
-    // ✅ حذف منطقة توصيل
     public function destroy($areaId)
     {
         $owner = Auth::user();

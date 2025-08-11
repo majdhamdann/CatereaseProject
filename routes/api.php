@@ -131,7 +131,6 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
      Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
      Route::post('/report', [ReportController::class, 'store']);;
-     Route::get('/report', [ReportController::class, 'index']);
      Route::apiResource('delivery-people/manage', DeliveryEmployeeManagementController::class);
      Route::get('/delivery/manage', [DeliveryEmployeeManagementController::class, 'getDeliveryPersons']);
      Route::get('/descount/manage/all', [PackageDiscountController::class, 'getDiscountedPackages']);
@@ -205,7 +204,10 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::post('branches/{branch}/delivery-areas', [BranchDeliveryAreaController::class, 'store']);
      Route::put('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'update']);
      Route::delete('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'destroy']);
-});
+     Route::get('/report', [ReportController::class, 'index']);
+     Route::get('/BranchesWithPackages', [OwnerBranchController::class, 'getOwnerBranchesWithPackages']);
+
+    });
 
 Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
 Route::get('/restaurant', [RestaurantController::class, 'index']);
