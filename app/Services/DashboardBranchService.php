@@ -35,41 +35,7 @@ class DashboardBranchService
         'total_income' => (float) $totalIncome,
     ]);
 }
-  public function getMyBranch1()
-{
-    $user = auth()->user();
-
-    $branch = Branch::with([
-        'categories:id,name',                           
-        'branchServiceTypes.serviceType:id,name,description', 
-        'manager:id,phone'                              
-    ])
-    ->where('manager_id', $user->id)
-    ->first();
-
-    if (!$branch) {
-        return response()->json(['message' => 'No branch found for this manager'], 404);
-    }
-
-    return response()->json([
-        'branch' => [
-            'id' => $branch->id,
-            'location_note' => $branch->location_note,
-            'description' => $branch->description,
-            'phone' => $branch->manager->phone ?? null,
-
-            'categories' => $branch->categories->pluck('name'),
-
-            'delivery_regions' => $branch->branchServiceTypes->map(function ($service) {
-                return [
-                    'name' => $service->serviceType->name ?? 'غير معروف',
-                    'description' => $service->serviceType->description ?? '',
-                    'price' => $service->custom_price ?? $service->service_cost ?? 0,
-                ];
-            }),
-        ]
-    ]);
-}
+ 
 public function getMyBranch()
 {
     $user = auth()->user();
@@ -77,7 +43,13 @@ public function getMyBranch()
     $branch = Branch::with([
         'categories:id,name',                             
         'branchServiceTypes.serviceType:id,name,description', 
-        'manager:id,phone,name'                       
+        'manager:id,phone,name',
+         'workingDays',
+        'packages.occasionTypes:id,name',
+        'packages.extraServices.serviceType:id,name' ,
+        'deliveryAreas.city:id,name,country'
+
+
     ])
     ->where('manager_id', $user->id)
     ->first();
@@ -85,6 +57,24 @@ public function getMyBranch()
     if (!$branch) {
         return response()->json(['message' => 'No branch found for this manager'], 404);
     }
+        $uniqueOccasions = $branch->packages
+        ->pluck('occasionTypes')
+        ->flatten()
+        ->unique('id')
+        ->values();
+
+    $uniqueServices = $branch->packages
+        ->pluck('extraServices')
+        ->flatten()
+        ->map(function ($service) {
+            return [
+                'id' => $service->serviceType->id ?? null,
+                'name' => $service->serviceType->name ?? 'غير معروف',
+                'price' => $service->custom_price ?? $service->service_cost ?? 0
+            ];
+        })
+        ->unique('id')
+        ->values();
 
     return response()->json([
         'branch' => [
@@ -97,13 +87,36 @@ public function getMyBranch()
             
             'categories' => $branch->categories->pluck('name'),
 
-            'delivery_regions' => $branch->branchServiceTypes->map(function ($service) {
+            'service_types' => $branch->branchServiceTypes->map(function ($service) {
                 return [
                     'name' => $service->serviceType->name ?? 'غير معروف',
                     'description' => $service->serviceType->description ?? '',
                     'price' => $service->custom_price ?? $service->service_cost ?? 0,
                 ];
             }),
+            'working_days' => $branch->workingDays->map(function ($day) {
+                return [
+                    'day' => $day->day_of_week,
+                    'opening_time' => $day->open_time,
+                    'closing_time' => $day->close_time,
+                    'is_open' => $day->is_closed
+                ];
+            }),
+            'delivery_areas' => $branch->deliveryAreas->map(function ($area) {
+                return [
+                    'city_name' => $area->city->name ?? 'غير معروف',
+                    'country' => $area->city->country ?? 'غير معروف'
+                ];
+            }),
+            
+            'occasion_types' => $uniqueOccasions->map(function ($occasion) {
+                return [
+                    'id' => $occasion->id,
+                    'name' => $occasion->name
+                ];
+            }),
+            
+          
         ]
     ]);
 }

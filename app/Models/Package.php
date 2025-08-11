@@ -91,7 +91,7 @@ class Package extends Model
     }
     public function branchServiceType()
     {
-        return $this->belongsTo(BranchServiceType::class);
+        return $this->belongsToMany(BranchServiceType::class);
     }
 
 

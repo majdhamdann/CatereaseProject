@@ -174,4 +174,26 @@ class BranchController extends Controller
 
         return response()->json(['message' => 'Branch deleted']);
     }
+      public function getOwnerBranchesWithPackages()
+{
+    $owner = auth()->user(); 
+
+    $branches = Branch::with([
+        'packages.categories',           
+        'packages.extraServices.serviceType', 
+        'packages.occasionTypes',        
+        'branchServiceTypes.serviceType' ,
+        'deliveryAreas.city'  
+    ])
+    ->whereHas('restaurant', function ($q) use ($owner) {
+        $q->where('owner_id', $owner->id);
+    })
+    ->get();
+
+    return response()->json([
+        'status' => true,
+        'data' => $branches
+    ]);
+}
+
 }

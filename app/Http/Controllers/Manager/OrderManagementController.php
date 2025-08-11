@@ -60,6 +60,7 @@ class OrderManagementController extends Controller
     ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = true;
+    $order->status = 'preparing';
     $order->rejection_reason = null;
     $order->approved_by = $manager->id;
     $order->approved_at = now();
@@ -151,12 +152,11 @@ class OrderManagementController extends Controller
 
         return response()->json($order);
       }
-     public function assignDeliveryPerson(Request $request)
+      public function assignDeliveryPerson(Request $request)
 {
     $validated = $request->validate([
         'order_id' => 'required|exists:orders,id',
         'delivery_person_id' => 'required|exists:delivery_people,id',
-        'estimated_minutes' => 'required|integer|min:10' 
     ]);
 
     DB::beginTransaction();
@@ -172,37 +172,40 @@ class OrderManagementController extends Controller
                     ->firstOrFail();
 
         $deliveryPerson = DeliveryPerson::where('id', $validated['delivery_person_id'])
-                                    ->where('is_available', true)
                                     ->lockForUpdate()
                                     ->firstOrFail();
 
-        $estimatedTime = now()->addMinutes($validated['estimated_minutes']);
+       
+            if (!$deliveryPerson->is_available) {
+                throw new \Exception('موظف التوصيل غير متاح حالياً');
+            }
 
-        $delivery = Delivery::create([
-            'order_id' => $order->id,
-            'delivery_person_id' => $deliveryPerson->id,
-            'status' => 'assigned',
-            'estimated_time' => $estimatedTime, 
-            'assigned_at' => now(),
-        ]);
+            $delivery = Delivery::create([
+                'order_id' => $order->id,
+                'delivery_person_id' => $deliveryPerson->id,
+                'status' => 'assigned',
+                'assigned_at' => now(),
+            ]);
 
-        $deliveryPerson->update(['is_available' => false]);
-        
-        $order->update([
-            'status' => 'preparing',
-            'delivery_id' => $delivery->id,
-            'updated_at' => now()
-        ]);
+            $deliveryPerson->update(['is_available' => false]);
+            
+            $order->update([
+                'status' => 'preparing',
+                'delivery_id' => $delivery->id,
+                'updated_at' => now()
+            ]);
+
+            $message = 'تم تعيين موظف التوصيل بنجاح';
+      
 
         DB::commit();
 
         return response()->json([
             'status' => true,
-            'message' => 'تم تعيين موظف التوصيل بنجاح',
-            'estimated_delivery_time' => $estimatedTime->format('Y-m-d H:i:s'),
+            'message' => $message,
             'data' => [
                 'order' => $order->fresh(),
-                'delivery' => $delivery,
+                'delivery' => $delivery ?? null,
                 'delivery_person' => $deliveryPerson->fresh()
             ]
         ]);
@@ -211,96 +214,13 @@ class OrderManagementController extends Controller
         DB::rollBack();
         return response()->json([
             'status' => false,
-            'message' => 'فشل التعيين: ' . $e->getMessage()
+            'message' => 'فشل العملية: ' . $e->getMessage()
         ], 500);
     }
-     }
+}
 
 
-     public function show1($id)
-{
-    $manager = auth()->user();
-
-    $branch = Branch::where('manager_id', $manager->id)->first();
-
-    if (!$branch) {
-        return response()->json([
-            'status' => false,
-            'message' => 'لا يوجد فرع مرتبط بهذا المدير'
-        ], 403);
-    }
-
-    try {
-        $order = Order::with([
-             'orderDetails.package',
-            'orderDetails.package.occasionTypes',
-            'orderDetails.extras.extra',
-            'orderDetails.services.service.serviceType',
-        ])
-        ->where('id', $id)
-        ->where('branch_id', $branch->id)
-        ->where('is_submitted', true)
-        ->first();
-
-        if (!$order) {
-            return response()->json([
-                'status' => false,
-                'message' => 'الطلب غير موجود أو لا ينتمي لفرعك',
-                'order_id' => $id,
-                'branch_id' => $branch->id
-            ], 404);
-        }
-
-        $formatted = [
-            'id' => $order->id,
-            'customer_name' => $order->user->name ?? 'غير معروف',
-            'total_price' => $order->total_price,
-            'details' => $order->orderDetails->map(function ($detail) {
-                return [
-                    'package_name' => $detail->package->name ?? null,
-                    'quantity' => $detail->quantity,
-                    'unit_price' => $detail->unit_price,
-                    'extra_persons' => $detail->extra_persons,
-                    'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
-                    'extras' => $detail->extras->map(function ($extra) {
-                        return [
-                            'name' => $extra->extra->name ?? null,
-                            'quantity' => $extra->quantity,
-                            'unit_price' => $extra->unit_price,
-                            'total_price' => $extra->total_price,
-                        ];
-                    }),
-                    'services' => $detail->Services->map(function ($service) {
-                        return [
-                            'name' => $service->service->serviceType->name ?? null,
-                            'custom_price' => $service->custom_price,
-                        ];
-                    }),
-                ];
-            }),
-            'general_services' => $order->services->map(function ($service) {
-                return [
-                    'name' => $service->branchServiceType->serviceType->name ?? null,
-                    'quantity' => $service->quantity,
-                    'total_price' => $service->total_price,
-                ];
-            }),
-        ];
-
-        return response()->json([
-            'status' => true,
-            'order' => $formatted
-        ]);
-
-    } catch (\Exception $e) {
-        return response()->json([
-            'status' => false,
-            'message' => 'حدث خطأ أثناء تحميل الطلب.',
-            'error' => $e->getMessage(),
-        ], 500);
-    }
-     }
-public function show($id)
+     public function show($id)
 {
     $manager = auth()->user();
 
@@ -321,7 +241,8 @@ public function show($id)
             'orderDetails.package.occasionTypes',
             'orderDetails.extras.extra',
             'orderDetails.services.service.serviceType',
-            'services.branchServiceType.serviceType',
+          //  'services.branchServiceType.serviceType',
+            'delivery.deliveryPerson' 
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
@@ -336,15 +257,15 @@ public function show($id)
                 'branch_id' => $branch->id
             ], 404);
         }
-         $deliveryPrice = $order->deliveryArea?->delivery_price;
-         $orderPrice = $order->total_price;
-         $totalPriceWithDelivery = $deliveryPrice +$orderPrice ;
+        
+        $deliveryPrice = $order->deliveryArea?->delivery_price;
+        $orderPrice = $order->total_price;
+        $totalPriceWithDelivery = $deliveryPrice + $orderPrice;
     
-
         $formatted = [
             'id' => $order->id,
             'customer' => [
-                'name' => $order->user->name ,
+                'name' => $order->user->name,
                 'phone' => $order->user->phone ?? null,
                 'email' => $order->user->email ?? null,
                 'gender' => $order->user->gender ?? null,
@@ -358,21 +279,41 @@ public function show($id)
                     'longitude' => $order->address->longitude,
                 ],
                 'delivery_time' => $order->delivery_time,
+                'is_approved' => $order->is_approved,
+                'approved_at' => $order->approved_at,
+                'rejection_reason' => $order->rejection_reason,
+                'created_at' => $order->created_at,
+                'updated_at' => $order->updated_at,
                 'notes_order' => $order->notes,
                 'deliveryPrice' => $deliveryPrice,
-        
-
             ],
             'payment' => [
                 'totalPriceWithDelivery' => $totalPriceWithDelivery,
-                 'deliveryPrice' => $deliveryPrice,
-                 'orderPrice' =>$orderPrice,
+                'deliveryPrice' => $deliveryPrice,
+                'orderPrice' => $orderPrice,
             ],
+            'delivery_info' => $order->delivery ? [
+                'status' => $order->delivery->status,
+                'assigned_at' => $order->delivery->assigned_at,
+              //  'estimated_time' => $order->delivery->estimated_time,
+                'delivery_person_id' => $order->delivery->deliveryPerson->id ,
+                'delivery_person' => $order->delivery ? [
+                    'name' => $order->delivery->deliveryPerson->user->name,
+                    'phone' => $order->delivery->deliveryPerson->user->phone
+                ] : null
+            ] : null,
             'details' => $order->orderDetails->map(function ($detail) {
                 return [
+                    'package_id' => $detail->package->id,
                     'package_name' => $detail->package->name ?? null,
                     'package_photo' => $detail->package->photo ?? null,
                     'quantity' => $detail->quantity,
+                    'categories' => $detail->package->categories->map(function ($categories) {
+                        return [
+                            'id' => $categories->id,
+                            'name' => $categories->name,
+                        ];
+                    }),
                     'unit_price' => $detail->unit_price,
                     'extra_persons' => $detail->extra_persons,
                     'occasion_type' => $detail->package->occasionTypes->first()->name ?? null,
@@ -392,13 +333,7 @@ public function show($id)
                     }),
                 ];
             }),
-            'general_services' => $order->services->map(function ($service) {
-                return [
-                    'name' => $service->branchServiceType->serviceType->name ?? null,
-                    'quantity' => $service->quantity,
-                    'total_price' => $service->total_price,
-                ];
-            }),
+            
         ];
 
         return response()->json([
@@ -414,7 +349,6 @@ public function show($id)
         ], 500);
     }
 }
-
      public function getBranchOrderStatistics()
 {
    $manager = auth()->user();

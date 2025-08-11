@@ -12,7 +12,7 @@ use Illuminate\Http\Request;
 
 class DeliveryEmployeeManagementController extends Controller
 {
-        public function index()
+    public function index()
     {
         $deliveryPeople = DeliveryPerson::with('user')->get();
         return response()->json([
@@ -56,10 +56,10 @@ class DeliveryEmployeeManagementController extends Controller
         'user' => $user,
         'delivery_person' => $deliveryPerson,
     ], 201);
-   }
+    }
 
 
-public function show($id)
+    public function show($id)
 {
     $deliveryPerson = DeliveryPerson::with('user')->findOrFail($id);
 
@@ -128,7 +128,7 @@ public function show($id)
         ],
         'branch_deliveries' => $branchDeliveries,
     ]);
-}
+    }
 
 
 
@@ -172,7 +172,7 @@ public function show($id)
         'message' => 'Delivery person updated.',
         'delivery_person' => $deliveryPerson->load('user'),
     ]);
-}
+    }
 
 
     public function destroy($id)
@@ -226,7 +226,7 @@ public function show($id)
         ];
     });
     return response()->json($data);
-}
+    }
  public function getBranchDeliveries()
 {
     $manager = auth()->user();
@@ -269,7 +269,7 @@ public function getDeliveryPersonOrdersInMyBranch($deliveryPersonId)
         return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
     }
 
-    $status = request()->query('status'); // قيمة حالة الطلب مثل delivered أو cancelled أو pending
+    $status = request()->query('status');
 
     $deliveries = Delivery::with(['order.orderDetails.package.feedbacks'])
         ->where('delivery_person_id', $deliveryPersonId)

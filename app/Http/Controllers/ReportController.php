@@ -33,9 +33,9 @@ class ReportController extends Controller
 }
 public function index()
 {
-    $user = auth()->user(); // يجب أن يكون مالك مطعم
+    $user = auth()->user(); 
 
-    $reports = Report::whereIn('branch_id', $user->ownedBranches->pluck('id'))->with(['branch', 'manager'])->get();
+    $reports = Report::whereIn('branch_id', $user->restaurant->pluck('id'))->with(['branch'])->get();
 
     return response()->json($reports);
 }

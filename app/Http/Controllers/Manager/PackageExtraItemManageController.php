@@ -4,10 +4,6 @@ namespace App\Http\Controllers\Manager;
 
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\packageManagement\StorePackageRequest;
-use App\Http\Requests\packageManagement\UpdatePackagemanageRequest;
-use App\Http\Requests\packageManagement\StorePackageItemRequest;
-use App\Http\Requests\packageManagement\StorePackageExtraRequest;
 use App\Models\Branch;
 use App\Models\FoodItem;
 use App\Models\Package;
@@ -33,7 +29,6 @@ class PackageExtraItemManageController extends Controller
         'extras',
         'categories',
         'occasionTypes',
-        'branchServiceType',
         'branch',
         'discounts',
         'coupons',
@@ -48,12 +43,14 @@ class PackageExtraItemManageController extends Controller
 
 
 
+
    public function show($id)
 {
-    $branch = Branch::where('manager_id', Auth::id())->first();
+    $manager = auth()->user();
+    $branch = Branch::where('manager_id', $manager->id)->first();
 
     if (!$branch) {
-        return response()->json(['error' => 'No branch found for this manager'], 403);
+        return response()->json(['error' => 'لا يوجد فرع مرتبط بهذا المدير'], 403);
     }
 
     $package = Package::with([
@@ -61,20 +58,115 @@ class PackageExtraItemManageController extends Controller
         'extras',
         'categories',
         'occasionTypes',
-        'branchServiceType',
         'branch',
         'discounts',
         'coupons',
         'extraServices',
-        'feedbacks'
+        'feedbacks.user',
     ])
     ->where('branch_id', $branch->id)
     ->findOrFail($id);
+      $averageRating =  $package-> feedbacks->avg('score') ?? 0;
+      $reviews_count =  $package-> feedbacks->count() ;
+    return response()->json([
+        'id' => $package->id,
+        'name' => $package->name,
+        'description' => $package->description,
+        'photo' => $package->photo,
+        'base_price' => $package->base_price,
+        'serves_count' => $package->serves_count,
+        'max_extra_persons' => $package->max_extra_persons,
+        'price_per_extra_person' => $package->price_per_extra_person,
+        'is_active' => $package->is_active,
+        'notes' => $package->notes,
+        'cancellation_policy' => $package->cancellation_policy,
+        'prepayment_required' => $package->prepayment_required,
+        'prepayment_amount' => $package->prepayment_amount,
+        'name_branch' => $package->branch->restaurant->name,
+        'branch_id' => $package->branch->id,
+        'occasion_types' => $package->occasionTypes->map(function ($occasionTypes) {
+            return [
+                'id' => $occasionTypes->id,
+                'name' => $occasionTypes->name,
+            ];
+        }),
+       'branch_service_types' => $package->extraServices->map(function ($bst) {
+         return [
+            'id' => $bst->id,
+            'service_type_id' => $bst->service_type_id,
+            'service_type_name' => $bst->serviceType->name ?? null,
+            'custom_price' => $bst->custom_price,
+            'service_cost' => $bst->service_cost,
+            'is_available' => $bst->is_available,
+           ];
+       }),
 
-    return response()->json(['package' => $package]);
+        'items' => $package->items->map(function ($item) {
+            return [
+                'id' => $item->id,
+                'food_item_name' => $item->foodItem->name ?? null,
+                'quantity' => $item->quantity,
+                'is_optional' => $item->is_optional,
+            ];
+        }),
+        'categories' => $package->categories->map(function ($categories) {
+            return [
+                'id' => $categories->id,
+                'name' => $categories->name,
+            ];
+        }),
+
+
+        'extras' => $package->extras->map(function ($extra) {
+            return [
+                'id' => $extra->id,
+                'name' => $extra->name,
+                'price' => $extra->price,
+            ];
+        }),
+
+        'extra_services' => $package->extraServices->map(function ($service) {
+              return [
+                'name' => $service->servicetype->name, 
+                'price' => $service->custom_price,     
+             ];
+        }),
+
+
+        'discounts' => $package->discounts->map(function ($discount) {
+            return [
+                'id' => $discount->id,
+                'amount' => $discount->value,
+                'start_date' => $discount->start_date,
+                'end_date' => $discount->end_date,
+            ];
+        }),
+
+        'coupons' => $package->coupons->map(function ($coupon) {
+            return [
+                'id' => $coupon->id,
+                'code' => $coupon->code,
+                'discount_type' => $coupon->discount_type,
+                'discount_value' => $coupon->discount_value,
+                'expiration_date' => $coupon->expiration_date,
+            ];
+        }),
+
+        'feedbacks' => $package->feedbacks->map(function ($feedback) {
+
+            return [
+                'id' => $feedback->id,
+                'rating' => $feedback->rating,
+                'comment' => $feedback->comment,
+                'user_name' => $feedback->user->name ?? null,
+                'created_at' => $feedback->created_at->toDateTimeString(),
+            ];
+        }),
+        'average_rating' => round($averageRating, 2),
+        'reviews_count' =>$reviews_count,
+    ]);
 }
 
-   
 public function store(Request $request)
 {
     $branch = Branch::where('manager_id', Auth::id())->first();
