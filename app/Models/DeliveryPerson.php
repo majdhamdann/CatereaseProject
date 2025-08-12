@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property int $user_id
  * @property string $vehicle_type
@@ -30,6 +28,12 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|DeliveryPerson whereVehicleType($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
  * @property-read int|null $feedbacks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $allFeedbacks
+ * @property-read int|null $all_feedbacks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Branch> $branches
+ * @property-read int|null $branches_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $complaint
+ * @property-read int|null $complaint_count
  * @mixin \Eloquent
  */
 class DeliveryPerson extends Model
@@ -52,40 +56,52 @@ class DeliveryPerson extends Model
     {
         return $this->hasMany(DeliveryTracking::class);
     }
+
     public function feedbacks()
 {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'FeedbackType_id',  
-        'id',              
-        'id'                 
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'delivery_person')
      ->where('feedback.type', 'rating');
 }
-public function complaint()
-{
+
+    public function complaint(){
+
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'FeedbackType_id',  
-        'id',              
-        'id'                 
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'delivery_person')
      ->where('feedback.type', 'complaint');
 }
-public function allFeedbacks()
+
+    public function allFeedbacks()
 {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'feedbackType_id',  
-        'id',                
-        'id'                
+        'target_ref_id',
+        'feedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'delivery_person');
 }
+
+    public function branches()
+    {
+        return $this->belongsToMany(Branch::class, 'delivery_branch', 'delivery_person_id', 'branch_id');
+    }
+
+
+
+
 
 }

@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
- *
  * @property int $id
  * @property int $order_id
  * @property int|null $delivery_person_id
@@ -44,10 +42,6 @@ class Delivery extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
-
-
-
-
 
     public function order()
     {

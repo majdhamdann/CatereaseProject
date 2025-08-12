@@ -7,8 +7,6 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- * 
- *
  * @property int $id
  * @property int $delivery_id
  * @property int $delivery_person_id

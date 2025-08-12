@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\CartItem> $items
  * @property-read int|null $items_count
  * @property-read \App\Models\User|null $user

@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property string $name
  * @property string|null $description
@@ -44,12 +42,13 @@ class FoodCategory extends Model
         return $this->belongsTo(Category::class);
     }
 
-
     public function branch()
     {
         return $this->belongsTo(Branch::class);
     }
-    public function foodItems() {
+
+    public function foodItems()
+    {
         return $this->hasMany(FoodItem::class);
     }
 

@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property string $name
  * @property string $country
@@ -25,6 +23,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|City whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Branch> $branches
  * @property-read int|null $branches_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchDeliveryArea> $deliveryBranches
+ * @property-read int|null $delivery_branches_count
  * @mixin \Eloquent
  */
 class City extends Model
@@ -37,10 +37,12 @@ class City extends Model
     {
         return $this->hasMany(Address::class, 'city_id');
     }
+
     public function branches()
     {
         return $this->hasMany(Branch::class, 'city_id');
     }
+
     public function deliveryBranches()
     {
       return $this->hasMany(BranchDeliveryArea::class);

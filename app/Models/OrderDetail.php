@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property int $order_id
  * @property int $food_item_id
@@ -45,6 +43,7 @@ class OrderDetail extends Model
 {
     use HasFactory;
     protected $guarded = ['id'];
+
     public function order()
     {
         return $this->belongsTo(Order::class, 'order_id');
@@ -58,6 +57,7 @@ class OrderDetail extends Model
     {
         return $this->belongsTo(Package::class);
     }
+
     public function foodItem()
    {
       return $this->belongsTo(FoodItem::class, 'food_item_id');
@@ -67,6 +67,7 @@ class OrderDetail extends Model
     {
         return $this->hasMany(OrderPackageExtra::class, 'order_detail_id');
     }
+
 //    public function services()
 //    {
 //        return $this->belongsToMany(BranchServiceType::class, 'order_item_service_map')
@@ -77,11 +78,13 @@ class OrderDetail extends Model
     {
         return $this->hasMany(OrderItemService::class, 'order_detail_id');
     }
+
     public function occasionType()
     {
         return $this->belongsTo(OccasionType::class, 'occasion_type_id');
     }
-  public function orderItemServices()
+
+    public function orderItemServices()
 {
     return $this->hasMany(OrderItemServiceMap::class);
 }

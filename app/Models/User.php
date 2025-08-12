@@ -10,8 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
- * 
- *
  * @property int $id
  * @property string $Full_Name
  * @property int $role_id
@@ -92,14 +90,17 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'remember_token',
     ];
+
     public function deliveryPerson()
     {
         return $this->hasOne(DeliveryPerson::class,'user_id');
     }
+
     public function role()
     {
         return $this->belongsTo(Role::class);
     }
+
     public function addresses()
     {
         return $this->hasMany(Address::class);
@@ -109,10 +110,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasMany(Order::class);
     }
+
     public function reports()
     {
         return $this->hasMany(Report::class, 'manager_id');
     }
+
     public function managedBranch()
     {
        return $this->hasOne(\App\Models\Branch::class, 'Manager_id');
@@ -121,11 +124,10 @@ class User extends Authenticatable implements MustVerifyEmail
      public function cart() {
         return $this->hasOne(Cart::class);
     }
+
     public function feedbacks() {
         return $this->hasMany(Feedback::class);
     }
-    
-
 
     public function payments() {
         return $this->hasMany(Payment::class);

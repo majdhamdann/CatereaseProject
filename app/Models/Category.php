@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property int $branch_id
  * @property int $food_category_id
@@ -57,6 +55,7 @@ class Category extends Model
     {
         return $this->hasMany(Category::class);
     }
+
     public function branches()
 {
     return $this->belongsToMany(Branch::class, 'food_categories', 'category_id', 'branch_id');

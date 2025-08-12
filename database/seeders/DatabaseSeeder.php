@@ -51,7 +51,8 @@ class DatabaseSeeder extends Seeder
         DeliveryTrackingSeeder::class,
         //FeedbackTypeSeeder::class,
         //FeedbackSeeder::class,
-       
+        BranchDeliveryAreasSeeder::class,
+
     ]);
 
     }

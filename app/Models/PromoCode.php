@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property string $code
  * @property string $discount_percent
@@ -39,6 +37,7 @@ class PromoCode extends Model
 {
     use HasFactory;
      protected $guarded = ['id'];
+
       public function orders() {
         return $this->hasMany(Order::class, 'promo_code_id');
     }

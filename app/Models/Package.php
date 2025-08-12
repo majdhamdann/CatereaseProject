@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property int $branch_id
  * @property int|null $category_id
@@ -75,6 +73,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $occasion_types_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
  * @property-read int|null $feedbacks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $allFeedbacks
+ * @property-read int|null $all_feedbacks_count
+ * @property-read int|null $branch_service_type_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $complaint
+ * @property-read int|null $complaint_count
  * @mixin \Eloquent
  */
 class Package extends Model
@@ -98,31 +101,32 @@ class Package extends Model
     public function categories() {
         return $this->belongsToMany(Category::class, 'package_categories', 'package_id', 'category_id');
     }
+
     public function orderDetails()
     {
         return $this->hasMany(OrderDetail::class);
     }
+
     public function serviceType()
     {
         return $this->belongsTo(ServiceType::class);
     }
-//    public function occasionType()
-//    {
-//        return $this->belongsTo(OccasionType::class);
-//    }
+
     public function occasionTypes()
     {
         return $this->belongsToMany(OccasionType::class, 'package_occasion_map', 'package_id', 'occasion_type_id');
     }
+
     public function branch()
     {
         return $this->belongsTo(Branch::class);
     }
 
-      public function coupon()
-    {
+      public function coupon(){
+
         return $this->belongsToMany(Coupon::class, 'package_coupon');
     }
+
     public function extraServices()
     {
         return $this->belongsToMany(
@@ -143,39 +147,41 @@ class Package extends Model
     {
         return $this->hasMany(PackageDiscount::class);
     }
-  public function feedbacks()
+    public function feedbacks()
 {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'FeedbackType_id',  
-        'id',              
-        'id'                 
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'package')
      ->where('feedback.type', 'rating');
 }
-public function complaint()
+
+    public function complaint()
 {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'FeedbackType_id',  
-        'id',              
-        'id'                 
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'package')
      ->where('feedback.type', 'complaint');
 }
-public function allFeedbacks()
+
+    public function allFeedbacks()
 {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',     
-        'feedbackType_id',  
-        'id',                
-        'id'                
+        'target_ref_id',
+        'feedbackType_id',
+        'id',
+        'id'
     )->where('feedback_types.target_type', 'package');
 }
 

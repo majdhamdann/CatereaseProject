@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property int $id
  * @property int $cart_id
  * @property int $package_id
@@ -45,37 +43,37 @@ class CartItem extends Model
 {
     use HasFactory;
      protected $guarded = ['id'];
+
     public function cart() {
         return $this->belongsTo(Cart::class, 'cart_id');
     }
-//    public function cart() {
-//        return $this->belongsTo(Cart::class);
-//    }
 
     public function package() {
         return $this->belongsTo(Package::class);
     }
-//    public function packageExtras()
-//    {
-//        return $this->hasMany(CartPackageExtra::class);
-//    }
+
     public function extras()
     {
         return $this->hasMany(CartPackageExtra::class);
     }
+
+// delete relationship user
     public function user() {
         return $this->belongsTo(User::class);
     }
+
     public function packageExtras()
     {
         return $this->hasMany(CartPackageExtra::class, 'cart_item_id')->with('extra');
     }
+
     public function services()
     {
         return $this->belongsToMany(BranchServiceType::class, 'cart_item_service_map')
             ->withPivot('custom_price')
             ->withTimestamps();
     }
+
     public function occasionType()
     {
         return $this->belongsTo(OccasionType::class);
