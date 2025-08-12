@@ -130,7 +130,7 @@ public function getMyBranch()
         abort(403, 'Unauthorized access');
     }
 
-    $orders = Order::with(['orderDetails.foodItem']) // eager load to avoid N+1 queries
+    $orders = Order::with(['orderDetails.foodItem'])
         ->where('branch_id', $branch_id)
         ->where('status', 'delivered')
         ->orderBy('created_at', 'desc')
