@@ -3,6 +3,7 @@
 namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
+use App\Models\Bill;
 use App\Models\Branch;
 use App\Models\Delivery;
 use App\Models\DeliveryPerson;
@@ -65,6 +66,12 @@ class OrderManagementController extends Controller
     $order->approved_by = $manager->id;
     $order->approved_at = now();
     $order->save();
+    Bill::create([
+        'order_id' => $order->id,
+        'user_id' => $order->user_id,
+        'amount' => $order->total_price, 
+        'issued_at' => now(),
+    ]);
 
     return response()->json(['message' => 'Order approved successfully']);
     }
