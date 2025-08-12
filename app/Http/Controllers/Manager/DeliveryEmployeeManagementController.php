@@ -391,7 +391,7 @@ class DeliveryEmployeeManagementController extends Controller
                 return [
                     'package_id' => $package->id ?? null,
                     'package_name' => $package->name ?? null,
-                    'package_image' => $package->photot ?? null,
+                    'package_image' => $package->photo ?? null,
                     'package_rating' => round($package->feedbacks->avg('score'), 1) ?? null,
                 ];
             });
