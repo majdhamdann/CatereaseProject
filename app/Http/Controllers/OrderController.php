@@ -215,12 +215,13 @@ class OrderController extends Controller
 
 
 
+
+
     public function createOrder(Request $request)
     {
         $validator = Validator::make($request->all(), [
             'cart_item_ids'   => 'required|array|min:1',
             'cart_item_ids.*' => 'exists:cart_items,id',
-
 
             'address' => 'required|array',
             'address.type' => 'required|in:existing,new',
@@ -247,7 +248,6 @@ class OrderController extends Controller
 
         $user = Auth::user();
         $cart = $user->cart;
-
 
         if ($request->address['type'] === 'existing') {
             $address = Address::where('id', $request->address['existing_id'])
@@ -289,7 +289,6 @@ class OrderController extends Controller
             ], 404);
         }
 
-
         foreach ($cartItems as $item) {
             $branch = $item->package->branch;
             if (!$branch->deliveryAreas->contains('city_id', $address->city_id)) {
@@ -318,9 +317,15 @@ class OrderController extends Controller
                     $unitPrice -= ($unitPrice * ($discount->value / 100));
                 }
 
+
+                $deliveryArea = \App\Models\BranchDeliveryArea::where('branch_id', $package->branch_id)
+                    ->where('city_id', $address->city_id)
+                    ->first();
+
                 $order = Order::create([
                     'user_id'       => $user->id,
                     'branch_id'     => $package->branch_id,
+                    'branch_delivery_area_id' => $deliveryArea?->id,
                     'address_id'    => $address->id,
                     'cart_id'       => $cart->id,
                     'status'        => 'pending',
@@ -367,13 +372,18 @@ class OrderController extends Controller
                     $total += $extra->total_price;
                 }
 
+
+                if ($deliveryArea) {
+                    $total += $deliveryArea->delivery_price;
+                }
+
                 $order->update(['total_price' => $total]);
 
-                $order->bill()->create([
-                    'user_id'   => $user->id,
-                    'amount'    => $total,
-                    'issued_at' => now(),
-                ]);
+//                $order->bill()->create([
+//                    'user_id'   => $user->id,
+//                    'amount'    => $total,
+//                    'issued_at' => now(),
+//                ]);
 
                 $item->delete();
             }
@@ -397,7 +407,6 @@ class OrderController extends Controller
             ], 500);
         }
     }
-
 
 
 
