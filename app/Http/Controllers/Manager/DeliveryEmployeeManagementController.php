@@ -23,6 +23,7 @@ class DeliveryEmployeeManagementController extends Controller
 
     public function store(Request $request)
   {
+    
     $request->validate([
         'name' => 'required|string',
         'email' => 'required|email|unique:users,email',
@@ -187,6 +188,7 @@ class DeliveryEmployeeManagementController extends Controller
     }
     public function getDeliveryPersons(Request $request)
 {
+    
     $query = DeliveryPerson::with('user')
         ->withCount(['deliveries as orders_count' => function ($q) {
             $q->whereHas('order', function ($q2) {
