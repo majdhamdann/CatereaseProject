@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- *
- *
  * @property int $id
  * @property int $user_id
  * @property int $branch_id
@@ -64,6 +62,19 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Order whereNotes($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order wherePrepaymentPaid($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Order wherePrepaymentPaidAt($value)
+ * @property int|null $branch_delivery_area_id
+ * @property int $is_submitted
+ * @property string|null $submitted_at
+ * @property int $final_payment_paid
+ * @property string|null $final_payment_paid_at
+ * @property string|null $qr_token
+ * @property-read \App\Models\BranchDeliveryArea|null $deliveryArea
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereBranchDeliveryAreaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereFinalPaymentPaid($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereFinalPaymentPaidAt($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereIsSubmitted($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereQrToken($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Order whereSubmittedAt($value)
  * @mixin \Eloquent
  */
 class Order extends Model

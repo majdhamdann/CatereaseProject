@@ -8,8 +8,6 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- *
- *
  * @property int $id
  * @property int $Restaurant_id
  * @property string $location
@@ -60,6 +58,10 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $packages_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Report> $reports
  * @property-read int|null $reports_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchDeliveryArea> $deliveryAreas
+ * @property-read int|null $delivery_areas_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeliveryPerson> $deliveryPeople
+ * @property-read int|null $delivery_people_count
  * @mixin \Eloquent
  */
 class Branch extends Model
@@ -137,6 +139,11 @@ class Branch extends Model
     {
         return $this->hasMany(Package::class, 'branch_id');
     }
+    public function deliveryPeople()
+    {
+        return $this->belongsToMany(DeliveryPerson::class, 'delivery_branch', 'branch_id', 'delivery_person_id');
+    }
+
 
 
 

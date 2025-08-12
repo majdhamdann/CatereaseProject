@@ -9,8 +9,6 @@ use Illuminate\Database\Eloquent\Model;
 
 
 /**
- *
- *
  * @property int $id
  * @property int $order_id
  * @property int|null $delivery_person_id

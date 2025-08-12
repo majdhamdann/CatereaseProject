@@ -10,8 +10,6 @@ use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 
 /**
- *
- *
  * @property int $id
  * @property string $Full_Name
  * @property int $role_id

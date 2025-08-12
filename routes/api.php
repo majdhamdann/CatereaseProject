@@ -6,6 +6,7 @@ use App\Http\Controllers\CartController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
+use App\Http\Controllers\DeliveryProfileController;
 use App\Http\Controllers\Manager\DeliveryEmployeeManagementController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
@@ -95,6 +96,7 @@ Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(funct
 
     Route::get('/orders', [DeliveryController::class, 'assignedOrders']);
     Route::get('/assigned-orders/{order}', [DeliveryController::class, 'assignedOrderDetails']);
+    Route::get('/profile', [DeliveryController::class, 'show']);
 
 });
 

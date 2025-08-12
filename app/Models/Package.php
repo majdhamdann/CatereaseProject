@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- *
- *
  * @property int $id
  * @property int $branch_id
  * @property int|null $category_id
@@ -75,6 +73,11 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $occasion_types_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
  * @property-read int|null $feedbacks_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $allFeedbacks
+ * @property-read int|null $all_feedbacks_count
+ * @property-read int|null $branch_service_type_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $complaint
+ * @property-read int|null $complaint_count
  * @mixin \Eloquent
  */
 class Package extends Model

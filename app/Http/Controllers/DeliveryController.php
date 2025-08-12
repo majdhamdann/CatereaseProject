@@ -210,5 +210,50 @@ class DeliveryController extends Controller
         }
     }
 
+    public function show()
+    {
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+            $deliveryPerson = $user->deliveryPerson;
+
+            if (!$deliveryPerson) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are not registered as a delivery person.'
+                ], 403);
+            }
+
+
+            $branches = $deliveryPerson->branches()->with('restaurant')->get();
+
+
+            $restaurants = $branches->pluck('restaurant')->filter();
+
+            DB::commit();
+
+            return response()->json([
+                'status' => 'success',
+                'data' => [
+                    'user' => $user,
+                    'delivery_person' => $deliveryPerson,
+                    'branches' => $branches,
+                    'restaurants' => $restaurants
+                ]
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to fetch profile details.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
 }

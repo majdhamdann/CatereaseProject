@@ -6,8 +6,6 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
 /**
- * 
- *
  * @property-read \App\Models\OrderDetail|null $orderDetail
  * @property-read \App\Models\BranchServiceType|null $service
  * @method static \Illuminate\Database\Eloquent\Builder|OrderItemService newModelQuery()
