@@ -86,7 +86,7 @@ class CartController extends Controller
 
         foreach ($request->input('service_type', []) as $service) {
             $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
-            $price = (float) $serviceModel->service_cost;
+            $price = (float) $serviceModel->custom_price;
             $serviceTypesCost += $price;
 
             $serviceTypesDetails[] = [
@@ -277,7 +277,7 @@ class CartController extends Controller
 
             foreach ($request->input('service_type', []) as $service) {
                 $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
-                $price = (float) $serviceModel->service_cost;
+                $price = (float) $serviceModel->custom_price;
                 $serviceTypesCost += $price;
 
                 $cartItem->services()->attach($service['id'], [
@@ -413,24 +413,32 @@ class CartController extends Controller
 
             $allServices = collect();
 
+//
+//            if ($package->branchServiceType) {
+//                $allServices->push([
+//                    'id' => $package->branchServiceType->id,
+//                    'name' => $package->branchServiceType->serviceType->name ?? null,
+//                    'custom_price' => $package->branchServiceType->custom_price
+//                ]);
+//            }
 
+
+//            foreach ($package->extraServices as $service) {
+//                $allServices->push([
+//                    'id' => $service->id,
+//                    'name' => $service->serviceType->name ?? null,
+//                    'custom_price' => $service->custom_price
+//                ]);
+//            }
             if ($package->branchServiceType) {
-                $allServices->push([
-                    'id' => $package->branchServiceType->id,
-                    'name' => $package->branchServiceType->serviceType->name ?? null,
-                    'custom_price' => $package->branchServiceType->custom_price
-                ]);
-            }
-
-
-            foreach ($package->extraServices as $service) {
-                $allServices->push([
+                 foreach ($package->extraServices as $service) {
+                    $allServices->push([
                     'id' => $service->id,
                     'name' => $service->serviceType->name ?? null,
                     'custom_price' => $service->custom_price
                 ]);
             }
-
+         }
 
             $now = now();
             $currentDiscount = $package->discounts
