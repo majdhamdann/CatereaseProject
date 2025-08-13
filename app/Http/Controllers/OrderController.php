@@ -15,207 +15,6 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 class OrderController extends Controller
 {
-//    public function initOrder(Request $request)
-//    {
-//        $validator = Validator::make($request->all(), [
-//            'address_id'     => 'nullable|exists:addresses,id',
-//            'street'         => 'required_without:address_id|string',
-//            'building'       => 'required_without:address_id|string',
-//            'floor'          => 'nullable|string',
-//            'apartment'      => 'nullable|string',
-//            'city_id'        => 'required_without:address_id|exists:cities,id',
-//            'latitude'       => 'nullable|numeric',
-//            'longitude'      => 'nullable|numeric',
-//            'notes'          => 'nullable|string',
-//            'delivery_time'  => 'nullable|date_format:Y-m-d H:i:s',
-//        ]);
-//
-//        if ($validator->fails()) {
-//            return response()->json([
-//                'status'  => false,
-//                'message' => 'Validation error',
-//                'errors'  => $validator->errors()
-//            ], 422);
-//        }
-//
-//        $user = Auth::user();
-//
-//        if ($request->address_id) {
-//
-//            $address = Address::where('id', $request->address_id)
-//                ->where('user_id', $user->id)
-//                ->first();
-//
-//            if (!$address) {
-//                return response()->json([
-//                    'status'  => false,
-//                    'message' => 'Address not found or unauthorized.'
-//                ], 404);
-//            }
-//        } else {
-//
-//            $address = Address::create([
-//                'user_id'   => $user->id,
-//                'city_id'   => $request->city_id,
-//                'street'    => $request->street,
-//                'building'  => $request->building,
-//                'floor'     => $request->floor,
-//                'apartment' => $request->apartment,
-//                'latitude'  => $request->latitude,
-//                'longitude' => $request->longitude,
-//                'is_default'=> false,
-//            ]);
-//        }
-//
-//        return response()->json([
-//            'status'  => true,
-//            'message' => 'Address is ready for order.',
-//            'data'    => [
-//                'address_id'     => $address->id,
-//                'notes'          => $request->notes,
-//                'delivery_time'  => $request->delivery_time,
-//            ]
-//        ]);
-//    }
-
-//    public function createOrder(Request $request)
-//    {
-//        $validator = Validator::make($request->all(), [
-//            'cart_item_ids'   => 'required|array|min:1',
-//            'cart_item_ids.*' => 'exists:cart_items,id',
-//            'address_id'      => 'required|exists:addresses,id',
-//            'notes'           => 'nullable|string',
-//            'delivery_time'   => 'nullable|date_format:Y-m-d H:i:s',
-//        ]);
-//
-//        if ($validator->fails()) {
-//            return response()->json([
-//                'status'  => false,
-//                'message' => 'Validation error',
-//                'errors'  => $validator->errors()
-//            ], 422);
-//        }
-//
-//        $user = Auth::user();
-//        $cart = $user->cart;
-//
-//        $cartItems = CartItem::with([
-//            'package.discounts',
-//            'extras.extra',
-//            'services',
-//            'occasionType'
-//        ])->whereIn('id', $request->cart_item_ids)->get();
-//
-//        if ($cartItems->isEmpty()) {
-//            return response()->json([
-//                'status'  => false,
-//                'message' => 'No valid items found in cart.'
-//            ], 404);
-//        }
-//
-//        DB::beginTransaction();
-//
-//        try {
-//            $createdOrderIds = [];
-//
-//            foreach ($cartItems as $item) {
-//                $package = $item->package;
-//                $discount = $package->discounts()
-//                    ->where('is_active', true)
-//                    ->where('start_at', '<=', now())
-//                    ->where('end_at', '>=', now())
-//                    ->first();
-//
-//                $unitPrice = $package->base_price;
-//                if ($discount) {
-//                    $unitPrice -= ($unitPrice * ($discount->value / 100));
-//                }
-//
-//                $order = Order::create([
-//                    'user_id'           => $user->id,
-//                    'branch_id'         => $package->branch_id,
-//                    'address_id'        => $request->address_id,
-//                    'cart_id'           => $cart->id,
-//                    'status'            => 'pending',
-//                    'is_approved'       => false,
-//                     // 'approval_deadline' => now()->addHours(3),
-//                    //'approval_deadline' => now()->addDays(1)->addHours(4),
-//                    'notes'             => $request->notes,
-//                    'delivery_time'     => $request->delivery_time,
-//                    'total_price'       => 0
-//                ]);
-//
-//                $createdOrderIds[] = $order->id;
-//
-//                $orderDetail = OrderDetail::create([
-//                    'order_id'          => $order->id,
-//                    'package_id'        => $package->id,
-//                    'extra_persons'     => $item->extra_persons,
-//                    'occasion_type_id'  => $item->occasionType?->id,
-//                    'quantity'          => $item->quantity,
-//                    'unit_price'        => $unitPrice
-//                ]);
-//
-//                $total = $unitPrice * $item->quantity;
-//                $extraPersonsCost = $item->extra_persons * $package->price_per_extra_person;
-//                $total += $extraPersonsCost;
-//
-//                foreach ($item->services as $service) {
-//                    \App\Models\OrderItemService::create([
-//                        'order_detail_id'        => $orderDetail->id,
-//                        'branch_service_type_id' => $service->id,
-//                        'custom_price'           => $service->pivot->custom_price,
-//                    ]);
-//                    $total += $service->pivot->custom_price;
-//                }
-//
-//                foreach ($item->extras as $extra) {
-//                    DB::table('order_package_extras')->insert([
-//                        'order_detail_id' => $orderDetail->id,
-//                        'extra_id'        => $extra->extra_id,
-//                        'quantity'        => $extra->quantity,
-//                        'unit_price'      => $extra->unit_price,
-//                        'total_price'     => $extra->total_price,
-//                        'created_at'      => now(),
-//                        'updated_at'      => now()
-//                    ]);
-//                    $total += $extra->total_price;
-//                }
-//
-//                $order->update(['total_price' => $total]);
-//
-//                $order->bill()->create([
-//                    'user_id'   => $user->id,
-//                    'amount'    => $total,
-//                    'issued_at' => now(),
-//                ]);
-//
-//                $item->delete();
-//            }
-//
-//            $cart->total_price = $cart->items()->sum('total_price');
-//            $cart->save();
-//
-//            DB::commit();
-//
-//            return response()->json([
-//                'status'   => true,
-//                'message'  => 'Orders created successfully.',
-//                'orders' => collect($createdOrderIds)->map(fn($id) => ['order_id' => $id])
-//            ]);
-//        } catch (\Exception $e) {
-//            DB::rollBack();
-//            return response()->json([
-//                'status' => false,
-//                'message' => 'Failed to create orders.',
-//                'error'   => $e->getMessage()
-//            ], 500);
-//        }
-//    }
-
-
-
-
 
     public function createOrder(Request $request)
     {
@@ -235,7 +34,7 @@ class OrderController extends Controller
             'address.new_longitude' => 'nullable|numeric',
 
             'notes'           => 'nullable|string',
-            'delivery_time'   => 'nullable|date_format:Y-m-d H:i:s',
+            'delivery_time'   => 'nullable|date_format:Y-m-d H:i:s|after:now',
         ]);
 
         if ($validator->fails()) {
@@ -408,8 +207,6 @@ class OrderController extends Controller
         }
     }
 
-
-
     public function listUserOrders()
     {
         $user = Auth::user();
@@ -466,152 +263,215 @@ class OrderController extends Controller
     public function updateOrder(Request $request, $id)
     {
         $request->validate([
-            'address_id'     => 'required|exists:addresses,id',
-            'delivery_time'  => 'required|date|after:now',
-            'notes'          => 'nullable|string|max:1000',
+            'delivery_time'               => 'required|date_format:Y-m-d H:i:s|after:now',
+            'notes'                       => 'nullable|string|max:1000',
+            'reprice'                     => 'sometimes|boolean',
 
-            'packages' => 'required|array|min:1',
-            'packages.*.order_detail_id' => 'required|exists:order_details,id',
-            'packages.*.quantity' => 'required|integer|min:1',
-            'packages.*.extra_persons' => 'required|integer|min:0',
-            'packages.*.occasion_type_id' => 'required|exists:occasion_types,id',
+            'address'                     => 'nullable|array',
+            'address.type'                => 'required_with:address|in:existing,new',
+            'address.existing_id'         => 'required_if:address.type,existing|exists:addresses,id',
+            'address.new_city_id'         => 'required_if:address.type,new|exists:cities,id',
+            'address.new_street'          => 'required_if:address.type,new|string|max:255',
+            'address.new_building'        => 'nullable|string|max:255',
+            'address.new_floor'           => 'nullable|string|max:255',
+            'address.new_apartment'       => 'nullable|string|max:255',
+            'address.new_latitude'        => 'nullable|numeric|between:-90,90',
+            'address.new_longitude'       => 'nullable|numeric|between:-180,180',
 
-            'packages.*.services' => 'nullable|array',
-            'packages.*.services.*.branch_service_type_id' => 'required|exists:branch_service_types,id',
+            'packages'                             => 'nullable|array|min:1',
+            'packages.*.order_detail_id'           => 'required|exists:order_details,id',
+            'packages.*.quantity'                  => 'required|integer|min:1',
+            'packages.*.extra_persons'             => 'required|integer|min:0',
+            'packages.*.occasion_type_id'          => 'required|exists:occasion_types,id',
 
-            'packages.*.extras' => 'nullable|array',
-            'packages.*.extras.*.extra_id' => 'required|exists:package_extras,id',
-            'packages.*.extras.*.quantity' => 'required|integer|min:1',
+            'packages.*.services'                           => 'nullable|array',
+            'packages.*.services.*.branch_service_type_id'  => 'required|exists:branch_service_types,id',
+
+            'packages.*.extras'                     => 'nullable|array',
+            'packages.*.extras.*.extra_id'          => 'required|exists:package_extras,id',
+            'packages.*.extras.*.quantity'          => 'required|integer|min:1',
         ]);
 
         try {
             DB::beginTransaction();
-            $user = Auth::user();
 
-            $order = Order::where('id', $id)->where('user_id', auth()->id())->firstOrFail();
+            $user  = Auth::user();
+            $order = Order::where('id', $id)
+                ->where('user_id', $user->id)
+                ->firstOrFail();
 
-            $order->update([
-                'address_id'    => $request->address_id,
-                'delivery_time' => $request->delivery_time,
-                'notes'         => $request->notes,
-            ]);
+            $address       = $order->address;
+            $deliveryArea  = null;
 
-            $totalOrderPrice = 0;
-
-            foreach ($request->packages as $pkg) {
-                $orderDetail = OrderDetail::with('package')->findOrFail($pkg['order_detail_id']);
-                $package = $orderDetail->package;
-
-
-                if ($pkg['extra_persons'] > $package->max_extra_persons) {
-                    throw ValidationException::withMessages([
-                        'packages' => ["The number of extra persons exceeds the allowed limit for package: {$package->name}."]
+            if ($request->has('address')) {
+                if ($request->address['type'] === 'existing') {
+                    $address = Address::where('id', $request->address['existing_id'])
+                        ->where('user_id', $user->id)
+                        ->firstOrFail();
+                } else {
+                    $address = Address::create([
+                        'user_id'   => $user->id,
+                        'city_id'   => $request->address['new_city_id'],
+                        'street'    => $request->address['new_street'],
+                        'building'  => $request->address['new_building'] ?? null,
+                        'floor'     => $request->address['new_floor'] ?? null,
+                        'apartment' => $request->address['new_apartment'] ?? null,
+                        'latitude'  => $request->address['new_latitude'] ?? null,
+                        'longitude' => $request->address['new_longitude'] ?? null,
+                        'is_default'=> false,
                     ]);
                 }
 
+                $firstDetail = $order->orderDetails()->with('package.branch.restaurant','package.branch.deliveryAreas')->first();
+                $branch      = $firstDetail->package->branch;
 
-                $allowedOccasions = $package->occasionTypes->pluck('id')->toArray();
-                if (!in_array($pkg['occasion_type_id'], $allowedOccasions)) {
-                    throw ValidationException::withMessages([
-                        'packages' => ["Selected occasion is not allowed for package: {$package->name}."]
-                    ]);
+                if (!$branch->deliveryAreas->contains('city_id', $address->city_id)) {
+                    return response()->json([
+                        'status'  => false,
+                        'message' => "Branch '{$branch->restaurant->name}' doesn't deliver to this address"
+                    ], 400);
                 }
 
-
-                if (!empty($pkg['services'])) {
-                    $allowedServiceIds = $package->extraServices->pluck('id')->toArray();
-                    foreach ($pkg['services'] as $srv) {
-                        if (!in_array($srv['branch_service_type_id'], $allowedServiceIds)) {
-                            throw ValidationException::withMessages([
-                                'packages' => ["One or more services are not valid for package: {$package->name}."]
-                            ]);
-                        }
-                    }
-                }
-
-
-                if (!empty($pkg['extras'])) {
-                    $allowedExtraIds = $package->extras->pluck('id')->toArray();
-                    foreach ($pkg['extras'] as $extra) {
-                        if (!in_array($extra['extra_id'], $allowedExtraIds)) {
-                            throw ValidationException::withMessages([
-                                'packages' => ["One or more extras are not valid for package: {$package->name}."]
-                            ]);
-                        }
-                    }
-                }
-
-                $orderDetail->update([
-                    'quantity'          => $pkg['quantity'],
-                    'extra_persons'     => $pkg['extra_persons'],
-                    'occasion_type_id'  => $pkg['occasion_type_id'],
-                ]);
-
-                $orderDetail->services()->delete();
-                $orderDetail->extras()->delete();
-
-                $servicesTotal = 0;
-                if (!empty($pkg['services'])) {
-                    foreach ($pkg['services'] as $srv) {
-                        $serviceModel = \App\Models\BranchServiceType::find($srv['branch_service_type_id']);
-                        $cost = $serviceModel->service_cost ?? 0;
-
-                        $orderDetail->services()->create([
-                            'branch_service_type_id' => $srv['branch_service_type_id'],
-                            'custom_price' => $cost,
-                        ]);
-
-                        $servicesTotal += $cost;
-                    }
-                }
-
-                $extrasTotal = 0;
-                if (!empty($pkg['extras'])) {
-                    foreach ($pkg['extras'] as $extra) {
-                        $extraModel = \App\Models\PackageExtra::find($extra['extra_id']);
-                        $unitPrice = $extraModel->price;
-                        $total = $unitPrice * $extra['quantity'];
-
-                        $orderDetail->extras()->create([
-                            'extra_id'    => $extraModel->id,
-                            'quantity'    => $extra['quantity'],
-                            'unit_price'  => $unitPrice,
-                            'total_price' => $total,
-                        ]);
-
-                        $extrasTotal += $total;
-                    }
-                }
-
-                $discount = $package->discounts
-                    ->where('is_active', true)
-                    ->where('start_at', '<=', now())
-                    ->where('end_at', '>=', now())
+                $deliveryArea = \App\Models\BranchDeliveryArea::where('branch_id', $branch->id)
+                    ->where('city_id', $address->city_id)
                     ->first();
 
-                $basePrice = $package->base_price;
-                $discounted = $discount ? $basePrice * (1 - $discount->value / 100) : $basePrice;
-
-                $baseCost = $discounted * $pkg['quantity'];
-                $extraPersonsCost = $pkg['extra_persons'] * $package->price_per_extra_person;
-
-                $finalPackageTotal = $baseCost + $extraPersonsCost + $servicesTotal + $extrasTotal;
-                $totalOrderPrice += $finalPackageTotal;
+                $order->address_id = $address->id;
+                $order->branch_delivery_area_id = $deliveryArea?->id;
+            } else {
+                if ($order->branch_delivery_area_id) {
+                    $deliveryArea = \App\Models\BranchDeliveryArea::find($order->branch_delivery_area_id);
+                }
+                if (!$deliveryArea) {
+                    $firstDetail = $order->orderDetails()->with('package.branch')->first();
+                    if ($firstDetail && $address) {
+                        $deliveryArea = \App\Models\BranchDeliveryArea::where('branch_id', $firstDetail->package->branch_id)
+                            ->where('city_id', $address->city_id)
+                            ->first();
+                    }
+                }
             }
 
-            $order->update(['total_price' => $totalOrderPrice]);
+            $order->delivery_time = $request->delivery_time;
+            $order->notes         = $request->notes;
+            $order->save();
 
-            $order->bill()->update([
-                'user_id'   => $user->id,
-                'amount'    => $totalOrderPrice,
-                'issued_at' => now(),
-            ]);
+            $totalOrderPrice = 0;
+            $reprice         = $request->boolean('reprice', false);
+
+            if ($request->has('packages')) {
+                foreach ($request->packages as $pkg) {
+                    $orderDetail = OrderDetail::with(['package.occasionTypes', 'services', 'extras'])
+                        ->where('order_id', $order->id)
+                        ->findOrFail($pkg['order_detail_id']);
+
+                    $package = $orderDetail->package;
+
+                    if ($pkg['extra_persons'] > $package->max_extra_persons) {
+                        throw ValidationException::withMessages([
+                            'packages' => ["The number of extra persons exceeds the allowed limit for package: {$package->name}."]
+                        ]);
+                    }
+
+                    $allowedOccasions = $package->occasionTypes->pluck('id')->toArray();
+                    if (!in_array($pkg['occasion_type_id'], $allowedOccasions)) {
+                        throw ValidationException::withMessages([
+                            'packages' => ["Selected occasion is not allowed for package: {$package->name}."]
+                        ]);
+                    }
+
+                    $unitPrice = (float) $orderDetail->unit_price;
+
+                    if ($reprice) {
+                        $discount = $package->discounts()
+                            ->where('is_active', true)
+                            ->where('start_at', '<=', now())
+                            ->where('end_at', '>=', now())
+                            ->first();
+
+                        $basePrice       = (float) $package->base_price;
+                        $discountedPrice = $discount ? $basePrice * (1 - ($discount->value / 100)) : $basePrice;
+
+                        $unitPrice = $discountedPrice;
+
+                        $orderDetail->unit_price = $unitPrice;
+                    }
+
+                    $orderDetail->quantity         = (int) $pkg['quantity'];
+                    $orderDetail->extra_persons    = (int) $pkg['extra_persons'];
+                    $orderDetail->occasion_type_id = (int) $pkg['occasion_type_id'];
+                    $orderDetail->save();
+
+
+                    $servicesTotal = 0.0;
+                    if (array_key_exists('services', $pkg)) {
+                        $orderDetail->services()->delete();
+                        foreach ($pkg['services'] as $srv) {
+                            $serviceModel = \App\Models\BranchServiceType::findOrFail($srv['branch_service_type_id']);
+                            $price = (float) $serviceModel->custom_price;
+                            $orderDetail->services()->create([
+                                'branch_service_type_id' => $serviceModel->id,
+                                'custom_price'           => $price,
+                            ]);
+                            $servicesTotal += $price;
+                        }
+                    } else {
+                        $servicesTotal = (float) $orderDetail->services->sum('custom_price');
+                    }
+
+
+                    $extrasTotal = 0.0;
+                    if (array_key_exists('extras', $pkg)) {
+                        $orderDetail->extras()->delete();
+                        foreach ($pkg['extras'] as $ex) {
+                            $extraModel = \App\Models\PackageExtra::findOrFail($ex['extra_id']);
+                            $qty        = (int) $ex['quantity'];
+                            $unitPriceEx= (float) $extraModel->price;
+                            $totalEx    = $unitPriceEx * $qty;
+
+                            $orderDetail->extras()->create([
+                                'extra_id'    => $extraModel->id,
+                                'quantity'    => $qty,
+                                'unit_price'  => $unitPriceEx,
+                                'total_price' => $totalEx,
+                            ]);
+                            $extrasTotal += $totalEx;
+                        }
+                    } else {
+                        $extrasTotal = (float) $orderDetail->extras->sum('total_price');
+                    }
+
+                    $baseCost         = $unitPrice * (int) $orderDetail->quantity;
+                    $extraPersonsCost = (float) ($orderDetail->extra_persons * $package->price_per_extra_person);
+                    $finalPackageTotal= $baseCost + $extraPersonsCost + $servicesTotal + $extrasTotal;
+
+                    $totalOrderPrice += $finalPackageTotal;
+                }
+            } else {
+                $totalOrderPrice = $order->orderDetails()
+                    ->with(['package','services','extras'])
+                    ->get()
+                    ->sum(function ($detail) {
+                        $servicesTotal = (float) $detail->services->sum('custom_price'); // استخدام custom_price
+                        $extrasTotal   = (float) $detail->extras->sum('total_price');
+
+                        $baseCost         = (float) $detail->unit_price * (int) $detail->quantity;
+                        $extraPersonsCost = (float) ($detail->extra_persons * $detail->package->price_per_extra_person);
+
+                        return $baseCost + $extraPersonsCost + $servicesTotal + $extrasTotal;
+                    });
+            }
+
+            $deliveryPrice = $deliveryArea ? (float) $deliveryArea->delivery_price : 0.0;
+            $totalOrderPrice += $deliveryPrice;
+
+            $order->update(['total_price' => $totalOrderPrice]);
 
             DB::commit();
 
             return response()->json([
                 'status'  => true,
-                'message' => 'Order updated and recalculated successfully.',
+                'message' => 'Order updated successfully.',
             ]);
 
         } catch (\Throwable $e) {
@@ -624,6 +484,7 @@ class OrderController extends Controller
             ], 500);
         }
     }
+
 
     public function show($id)
     {
