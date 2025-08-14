@@ -98,6 +98,7 @@ Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(funct
     Route::get('/assigned-orders/{order}', [DeliveryController::class, 'assignedOrderDetails']);
     Route::get('/profile', [DeliveryController::class, 'show']);
     Route::post('/orders/{orderId}/delivery-status', [DeliveryController::class, 'updateDeliveryStatus']);
+    Route::post('/confirm-by-qr', [DeliveryController::class, 'confirmByQr']);
 
 });
 

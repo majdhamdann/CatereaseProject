@@ -86,7 +86,7 @@ class CartController extends Controller
 
         foreach ($request->input('service_type', []) as $service) {
             $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
-            $price = (float) $serviceModel->service_cost;
+            $price = (float) $serviceModel->custom_price;
             $serviceTypesCost += $price;
 
             $serviceTypesDetails[] = [
@@ -123,7 +123,7 @@ class CartController extends Controller
         foreach ($request->input('service_type', []) as $service) {
             $serviceModel = \App\Models\BranchServiceType::findOrFail($service['id']);
             $cartItem->services()->attach($service['id'], [
-                'custom_price' => $serviceModel->service_cost
+                'custom_price' => $serviceModel->custom_price
             ]);
         }
 
@@ -171,6 +171,184 @@ class CartController extends Controller
         ]);
     }
 
+//    public function updateCartItem(Request $request, $id)
+//    {
+//        $validator = Validator::make($request->all(), [
+//            'quantity' => 'sometimes|integer|min:1',
+//            'extra_persons' => 'sometimes|integer|min:0',
+//            'occasion_type_id' => 'sometimes|exists:occasion_types,id',
+//            'service_type' => 'sometimes|array',
+//            'service_type.*.id' => 'required|exists:branch_service_types,id',
+//            'extras' => 'sometimes|array',
+//            'extras.*.extra_id' => 'required|exists:package_extras,id',
+//            'extras.*.quantity' => 'required|integer|min:1',
+//        ]);
+//
+//        if ($validator->fails()) {
+//            return response()->json([
+//                'status' => false,
+//                'message' => 'Validation error',
+//                'errors' => $validator->errors()
+//            ], 422);
+//        }
+//
+//        DB::beginTransaction();
+//
+//        try {
+//            $cartItem = CartItem::with(['package', 'cart', 'packageExtras.extra', 'services'])->findOrFail($id);
+//
+//            if ($cartItem->cart->user_id !== Auth::id()) {
+//                return response()->json([
+//                    'status' => false,
+//                    'message' => 'Unauthorized action'
+//                ], 403);
+//            }
+//
+//            $package = $cartItem->package;
+//            $originalTotal = $cartItem->total_price;
+//
+//
+//            $cartItem->quantity = $request->input('quantity', $cartItem->quantity);
+//            $cartItem->extra_persons = $request->input('extra_persons', $cartItem->extra_persons);
+//            $cartItem->occasion_type_id = $request->input('occasion_type_id', $cartItem->occasion_type_id);
+//
+//            if ($cartItem->extra_persons > $package->max_extra_persons) {
+//                throw new \Exception('You cannot add more than ' . $package->max_extra_persons . ' extra persons.');
+//            }
+//
+//
+//            $activeDiscount = $package->discounts()
+//                ->where('is_active', true)
+//                ->where('start_at', '<=', now())
+//                ->where('end_at', '>=', now())
+//                ->first();
+//
+//            $originalPrice = (float) $package->base_price;
+//            $discountPercentage = $activeDiscount ? (float) $activeDiscount->value : 0;
+//            $discountedPrice = $originalPrice * (1 - ($discountPercentage / 100));
+//            $discountedPrice = max($discountedPrice, 0);
+//
+//            $baseCost = $discountedPrice * $cartItem->quantity;
+//            $extraPersonsCost = $cartItem->extra_persons * (float) $package->price_per_extra_person;
+//
+//
+//            $extrasCost = 0;
+//            $existingExtras = $cartItem->packageExtras->keyBy('extra_id');
+//            $newExtraIds = [];
+//            $extrasDetails = [];
+//
+//            foreach ($request->input('extras', []) as $ex) {
+//                $extraModel = PackageExtra::findOrFail($ex['extra_id']);
+//                $total = $extraModel->price * $ex['quantity'];
+//                $extrasCost += $total;
+//                $newExtraIds[] = $ex['extra_id'];
+//
+//                if (isset($existingExtras[$ex['extra_id']])) {
+//                    $existingExtras[$ex['extra_id']]->update([
+//                        'quantity' => $ex['quantity'],
+//                        'total_price' => $total
+//                    ]);
+//                } else {
+//                    CartPackageExtra::create([
+//                        'cart_item_id' => $cartItem->id,
+//                        'extra_id' => $ex['extra_id'],
+//                        'quantity' => $ex['quantity'],
+//                        'unit_price' => $extraModel->price,
+//                        'total_price' => $total
+//                    ]);
+//                }
+//
+//                $extrasDetails[] = [
+//                    'id' => $extraModel->id,
+//                    'name' => $extraModel->name,
+//                    'price' => $extraModel->price,
+//                    'quantity' => $ex['quantity'],
+//                    'total' => $total
+//                ];
+//            }
+//
+//
+//            $cartItem->packageExtras()->whereNotIn('extra_id', $newExtraIds)->delete();
+//
+//
+//            $serviceTypesCost = 0;
+//            $serviceTypesDetails = [];
+//            $cartItem->services()->detach();
+//
+//            foreach ($request->input('service_type', []) as $service) {
+//                $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
+//                $price = (float) $serviceModel->custom_price;
+//                $serviceTypesCost += $price;
+//
+//                $cartItem->services()->attach($service['id'], [
+//                    'custom_price' => $price
+//                ]);
+//
+//                $serviceTypesDetails[] = [
+//                    'id' => $serviceModel->id,
+//                    'name' => $serviceModel->serviceType->name ?? 'Unknown',
+//                    'price' => $price,
+//                ];
+//            }
+//
+//
+//            $totalCost = $baseCost + $extraPersonsCost + $extrasCost + $serviceTypesCost;
+//            $cartItem->total_price = $totalCost;
+//            $cartItem->save();
+//
+//
+//            $cart = $cartItem->cart;
+//            $cart->total_price = $cart->items()->sum('total_price');
+//            $cart->save();
+//
+//            DB::commit();
+//
+//
+//            $occasionName = null;
+//            if ($cartItem->occasion_type_id) {
+//                $occasion = OccasionType::find($cartItem->occasion_type_id);
+//                $occasionName = $occasion->name ?? null;
+//            }
+//
+//
+//            $details = [
+//                'package' => $package->name,
+//                'quantity' => $cartItem->quantity,
+//                'extra_persons' => $cartItem->extra_persons,
+//                'extra_persons_cost' => number_format($extraPersonsCost, 2),
+//                'extras' => $extrasDetails,
+//                'service_type' => $serviceTypesDetails,
+//                'service_type_cost' => number_format($serviceTypesCost, 2),
+//                'occasion_type_id' => $cartItem->occasion_type_id,
+//                'occasion_type_name' => $occasionName,
+//                'total' => number_format($totalCost, 2),
+//            ];
+//
+//            if ($discountPercentage > 0) {
+//                $details['original_price'] = number_format($originalPrice, 2);
+//                $details['discount_percentage'] = number_format($discountPercentage, 0) . '%';
+//                $details['discounted_price'] = number_format($discountedPrice, 2);
+//            }
+//
+//            return response()->json([
+//                'status' => true,
+//                'message' => 'Cart item updated successfully.',
+//                'data' => [
+//                    'cart_item_id' => $cartItem->id,
+//                    'total_price' => $cartItem->total_price,
+//                    'cart_total' => $cart->total_price,
+//                    'details' => $details
+//                ]
+//            ]);
+//        } catch (\Exception $e) {
+//            DB::rollBack();
+//            return response()->json([
+//                'status' => false,
+//                'message' => 'Failed to update cart item',
+//                'error' => $e->getMessage()
+//            ], 500);
+//        }
+//    }
     public function updateCartItem(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
@@ -205,7 +383,6 @@ class CartController extends Controller
             }
 
             $package = $cartItem->package;
-            $originalTotal = $cartItem->total_price;
 
 
             $cartItem->quantity = $request->input('quantity', $cartItem->quantity);
@@ -225,70 +402,100 @@ class CartController extends Controller
 
             $originalPrice = (float) $package->base_price;
             $discountPercentage = $activeDiscount ? (float) $activeDiscount->value : 0;
-            $discountedPrice = $originalPrice * (1 - ($discountPercentage / 100));
-            $discountedPrice = max($discountedPrice, 0);
+            $discountedPrice = max($originalPrice * (1 - ($discountPercentage / 100)), 0);
+
 
             $baseCost = $discountedPrice * $cartItem->quantity;
             $extraPersonsCost = $cartItem->extra_persons * (float) $package->price_per_extra_person;
 
 
             $extrasCost = 0;
-            $existingExtras = $cartItem->packageExtras->keyBy('extra_id');
-            $newExtraIds = [];
             $extrasDetails = [];
 
-            foreach ($request->input('extras', []) as $ex) {
-                $extraModel = PackageExtra::findOrFail($ex['extra_id']);
-                $total = $extraModel->price * $ex['quantity'];
-                $extrasCost += $total;
-                $newExtraIds[] = $ex['extra_id'];
+            if ($request->has('extras')) {
+                $existingExtras = $cartItem->packageExtras->keyBy('extra_id');
+                $newExtraIds = [];
 
-                if (isset($existingExtras[$ex['extra_id']])) {
-                    $existingExtras[$ex['extra_id']]->update([
+                foreach ($request->extras as $ex) {
+                    $extraModel = PackageExtra::findOrFail($ex['extra_id']);
+                    $total = $extraModel->price * $ex['quantity'];
+                    $extrasCost += $total;
+                    $newExtraIds[] = $ex['extra_id'];
+
+                    if (isset($existingExtras[$ex['extra_id']])) {
+                        $existingExtras[$ex['extra_id']]->update([
+                            'quantity' => $ex['quantity'],
+                            'total_price' => $total
+                        ]);
+                    } else {
+                        CartPackageExtra::create([
+                            'cart_item_id' => $cartItem->id,
+                            'extra_id' => $ex['extra_id'],
+                            'quantity' => $ex['quantity'],
+                            'unit_price' => $extraModel->price,
+                            'total_price' => $total
+                        ]);
+                    }
+
+                    $extrasDetails[] = [
+                        'id' => $extraModel->id,
+                        'name' => $extraModel->name,
+                        'price' => $extraModel->price,
                         'quantity' => $ex['quantity'],
-                        'total_price' => $total
-                    ]);
-                } else {
-                    CartPackageExtra::create([
-                        'cart_item_id' => $cartItem->id,
-                        'extra_id' => $ex['extra_id'],
-                        'quantity' => $ex['quantity'],
-                        'unit_price' => $extraModel->price,
-                        'total_price' => $total
-                    ]);
+                        'total' => $total
+                    ];
                 }
 
-                $extrasDetails[] = [
-                    'id' => $extraModel->id,
-                    'name' => $extraModel->name,
-                    'price' => $extraModel->price,
-                    'quantity' => $ex['quantity'],
-                    'total' => $total
-                ];
+
+                $cartItem->packageExtras()->whereNotIn('extra_id', $newExtraIds)->delete();
+
+            } else {
+
+                foreach ($cartItem->packageExtras as $oldExtra) {
+                    $extrasCost += $oldExtra->total_price;
+                    $extrasDetails[] = [
+                        'id' => $oldExtra->extra_id,
+                        'name' => $oldExtra->extra->name ?? '',
+                        'price' => $oldExtra->unit_price,
+                        'quantity' => $oldExtra->quantity,
+                        'total' => $oldExtra->total_price
+                    ];
+                }
             }
-
-
-            $cartItem->packageExtras()->whereNotIn('extra_id', $newExtraIds)->delete();
 
 
             $serviceTypesCost = 0;
             $serviceTypesDetails = [];
-            $cartItem->services()->detach();
 
-            foreach ($request->input('service_type', []) as $service) {
-                $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
-                $price = (float) $serviceModel->service_cost;
-                $serviceTypesCost += $price;
+            if ($request->has('service_type')) {
+                $cartItem->services()->detach();
 
-                $cartItem->services()->attach($service['id'], [
-                    'custom_price' => $price
-                ]);
+                foreach ($request->service_type as $service) {
+                    $serviceModel = \App\Models\BranchServiceType::with('serviceType')->findOrFail($service['id']);
+                    $price = (float) $serviceModel->custom_price;
+                    $serviceTypesCost += $price;
 
-                $serviceTypesDetails[] = [
-                    'id' => $serviceModel->id,
-                    'name' => $serviceModel->serviceType->name ?? 'Unknown',
-                    'price' => $price,
-                ];
+                    $cartItem->services()->attach($service['id'], [
+                        'custom_price' => $price
+                    ]);
+
+                    $serviceTypesDetails[] = [
+                        'id' => $serviceModel->id,
+                        'name' => $serviceModel->serviceType->name ?? 'Unknown',
+                        'price' => $price,
+                    ];
+                }
+            } else {
+
+                foreach ($cartItem->services as $oldService) {
+                    $price = (float) $oldService->pivot->custom_price;
+                    $serviceTypesCost += $price;
+                    $serviceTypesDetails[] = [
+                        'id' => $oldService->id,
+                        'name' => $oldService->serviceType->name ?? 'Unknown',
+                        'price' => $price
+                    ];
+                }
             }
 
 
@@ -309,7 +516,6 @@ class CartController extends Controller
                 $occasion = OccasionType::find($cartItem->occasion_type_id);
                 $occasionName = $occasion->name ?? null;
             }
-
 
             $details = [
                 'package' => $package->name,
@@ -413,24 +619,32 @@ class CartController extends Controller
 
             $allServices = collect();
 
+//
+//            if ($package->branchServiceType) {
+//                $allServices->push([
+//                    'id' => $package->branchServiceType->id,
+//                    'name' => $package->branchServiceType->serviceType->name ?? null,
+//                    'custom_price' => $package->branchServiceType->custom_price
+//                ]);
+//            }
 
+
+//            foreach ($package->extraServices as $service) {
+//                $allServices->push([
+//                    'id' => $service->id,
+//                    'name' => $service->serviceType->name ?? null,
+//                    'custom_price' => $service->custom_price
+//                ]);
+//            }
             if ($package->branchServiceType) {
-                $allServices->push([
-                    'id' => $package->branchServiceType->id,
-                    'name' => $package->branchServiceType->serviceType->name ?? null,
-                    'custom_price' => $package->branchServiceType->custom_price
-                ]);
-            }
-
-
-            foreach ($package->extraServices as $service) {
-                $allServices->push([
+                 foreach ($package->extraServices as $service) {
+                    $allServices->push([
                     'id' => $service->id,
                     'name' => $service->serviceType->name ?? null,
                     'custom_price' => $service->custom_price
                 ]);
             }
-
+         }
 
             $now = now();
             $currentDiscount = $package->discounts
