@@ -40,8 +40,13 @@ class Restaurant extends Model
     protected $guarded = ['id'];
     public function branches()
     {
-        return $this->hasMany(Branch::class, 'Restaurant_id');
+        return $this->hasMany(Branch::class, 'restaurant_id');
     }
+//    public function branches()
+//    {
+//        return $this->hasMany(Branch::class, 'Restaurant_id');
+//    }
+
 
     public function owner()
     {
@@ -58,10 +63,10 @@ public function feedbacks()
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
-        'target_ref_id',      
-        'FeedbackType_id',    
-        'id',                 
-        'id'                  
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
     )->where('target_type', 'restaurant');
 }
 }

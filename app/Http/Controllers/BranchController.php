@@ -44,6 +44,7 @@ class BranchController extends Controller
             'data' => $branches
         ]);
     }
+
     public function getItems($branchId)
     {
         $response = $this->branchService->getBranchItems($branchId);
