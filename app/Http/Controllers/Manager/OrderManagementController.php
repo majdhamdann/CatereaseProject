@@ -271,7 +271,7 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPerson->update(['is_available' => false]);
         
         $order->update([
-            'status' => 'assigned',
+             'status' => 'preparing',
             'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
