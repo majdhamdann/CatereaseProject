@@ -256,13 +256,9 @@ public function assignDeliveryPerson(Request $request)
         $previousDelivery = Delivery::where('order_id', $order->id)->first();
         
         if ($previousDelivery) {
-            $previousDelivery->update([
-                'status' => 'reassigned',
-                'reassigned_at' => now(),
-            ]);
+            $previousDelivery->deliveryPerson->update(['is_available' => true]);
             
-            $previousDeliveryPerson = $previousDelivery->deliveryPerson;
-            $previousDeliveryPerson->update(['is_available' => true]);
+            $previousDelivery->delete();
         }
 
         $delivery = Delivery::create([
@@ -275,7 +271,7 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPerson->update(['is_available' => false]);
         
         $order->update([
-            'status' => 'preparing',
+            'status' => 'assigned',
             'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
@@ -293,7 +289,6 @@ public function assignDeliveryPerson(Request $request)
             'data' => [
                 'order' => $order->fresh(),
                 'delivery' => $delivery,
-                'previous_delivery' => $previousDelivery ?? null,
                 'delivery_person' => $deliveryPerson->fresh()
             ]
         ]);
