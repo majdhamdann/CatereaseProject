@@ -13,6 +13,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
+use Illuminate\Support\Str;
+
 class OrderController extends Controller
 {
 
@@ -131,7 +133,8 @@ class OrderController extends Controller
                     'is_approved'   => false,
                     'notes'         => $request->notes,
                     'delivery_time' => $request->delivery_time,
-                    'total_price'   => 0
+                    'total_price'   => 0,
+                    'qr_token'      => (string) Str::uuid(),
                 ]);
 
                 $createdOrderIds[] = $order->id;
@@ -485,7 +488,6 @@ class OrderController extends Controller
         }
     }
 
-
     public function show($id)
     {
         $user = Auth::user();
@@ -563,7 +565,7 @@ class OrderController extends Controller
                     'food_item_id'   => $item->food_item_id,
                     'food_item_name' => $item->foodItem->name ?? null,
                     'quantity'       => $item->quantity,
-                    'is_optional'    => $item->is_optional,
+                   // 'is_optional'    => $item->is_optional,
                 ]),
 
                 'services' => $detail->services->map(function ($service) {
