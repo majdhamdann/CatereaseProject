@@ -89,6 +89,7 @@ class OrderManagementController extends Controller
            ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = false; 
+    $order->status = 'cancelled';
     $order->rejection_reason = $request->rejection_reason;
     $order->approved_by = $manager->id;
     $order->approved_at = now();
