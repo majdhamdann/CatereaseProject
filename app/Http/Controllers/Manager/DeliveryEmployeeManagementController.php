@@ -147,23 +147,17 @@ class DeliveryEmployeeManagementController extends Controller
             ->whereHas('order', fn($q) => $q->where('branch_id', $branch->id))
             ->with('order')
             ->get()
-            ->map(function ($delivery) {
-                $status = match ($delivery->order->status) {
-                    'delivered' => 'paid',
-                    'cancelled' => 'cancelled',
-                    default => $delivery->order->status ?? 'unknown',
-                };
-
-                return [
+               ->map(function ($delivery) {
+                  return [
                     'delivery_id' => $delivery->id,
                     'order_id' => $delivery->order->id ?? null,
-                    'status' => $status,
+                    'status' => $delivery->order->status,
                     'notes' => $delivery->notes,
                     'estimated_time' => $delivery->estimated_time,
                     'total_price' => $delivery->order->total_price ?? 0,
-                    'delivered_at' => $delivery->delivered_at,
-                ];
-            });
+                   'delivered_at' => $delivery->delivered_at,
+               ];
+        });
 
         return response()->json([
             'status' => true,
