@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\Delivery;
+use App\Models\Order;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -312,6 +313,69 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
+
+    public function confirmByQr(Request $request)
+    {
+        $request->validate([
+            'qr_string' => 'required|string'
+        ]);
+
+        try {
+            $user = Auth::user();
+            $deliveryPerson = $user->deliveryPerson;
+
+            if (!$deliveryPerson) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'You are not a delivery person.'
+                ], 403);
+            }
+
+            $order = Order::where('qr_token', $request->qr_string)->first();
+
+            if (!$order) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Invalid QR code or order not found.'
+                ], 404);
+            }
+
+            $delivery = Delivery::where('order_id', $order->id)
+                ->where('delivery_person_id', $deliveryPerson->id)
+                ->first();
+
+            if (!$delivery) {
+                return response()->json([
+                    'status' => 'error',
+                    'message' => 'Order not assigned to you.'
+                ], 403);
+            }
+
+            DB::transaction(function () use ($delivery, $order, $request) {
+               // $delivery->qr_scanned_string = $request->qr_string;
+                $delivery->status = 'delivered';
+                $delivery->delivered_at = now();
+                $delivery->save();
+
+                $order->status = 'delivered';
+                $order->save();
+            });
+
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Delivery confirmed by QR successfully.',
+                //'data' => $delivery
+            ]);
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Failed to confirm delivery.',
+                'error' => $e->getMessage()
+            ], 500);
+        }
+    }
+
+
 
 
 
