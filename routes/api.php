@@ -109,6 +109,9 @@ Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(funct
     Route::get('/profile', [DeliveryController::class, 'show']);
     Route::post('/orders/{orderId}/delivery-status', [DeliveryController::class, 'updateDeliveryStatus']);
     Route::post('/confirm-by-qr', [DeliveryController::class, 'confirmByQr']);
+    Route::get('/rejection-reasons', [DeliveryController::class, 'getRejectionReasons']);
+    Route::post('/{orderId}/decide', [DeliveryController::class, 'decide']);
+
 
 });
 

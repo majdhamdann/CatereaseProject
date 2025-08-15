@@ -17,7 +17,16 @@ return new class extends Migration
             $table->unsignedBigInteger('delivery_person_id')->nullable();
 
             $table->string('status');
-            $table->dateTime('estimated_time')->nullable();
+            $table->boolean('acceptance_status')->nullable();
+            $table->enum('rejection_reason', [
+                'vehicle_breakdown',
+                'vehicle_accident',
+                'traffic_jam',
+                'health_emergency',
+                'personal_emergency',
+                'other'
+            ])->nullable();
+           // $table->dateTime('estimated_time')->nullable();
             $table->dateTime('delivered_at')->nullable();
             $table->text('notes')->nullable();
             $table->foreign('order_id')->references('id')->on('orders')->onDelete('cascade');
