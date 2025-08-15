@@ -144,7 +144,18 @@ class Branch extends Model
         return $this->belongsToMany(DeliveryPerson::class, 'delivery_branch', 'branch_id', 'delivery_person_id');
     }
 
-
+    public function feedbacks()
+{
+    return $this->hasManyThrough(
+        Feedback::class,
+        FeedbackType::class,
+        'target_ref_id',
+        'FeedbackType_id',
+        'id',
+        'id'
+    )->where('feedback_types.target_type', 'branch')
+     ->where('feedback.type', 'rating');
+}
 
 
 

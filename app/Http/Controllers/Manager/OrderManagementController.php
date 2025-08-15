@@ -265,7 +265,7 @@ public function assignDeliveryPerson(Request $request)
             'order_id' => $order->id,
             'delivery_person_id' => $deliveryPerson->id,
             'status' => 'assigned',
-            'assigned_at' => now(),
+            'updated_at' => now(),
         ]);
 
         $deliveryPerson->update(['is_available' => false]);
@@ -376,7 +376,7 @@ public function assignDeliveryPerson(Request $request)
             ],
             'delivery_info' => $order->delivery ? [
                 'status' => $order->delivery->status,
-                'assigned_at' => $order->delivery->assigned_at,
+                'delivered_at' => $order->delivery->delivered_at,
               //  'estimated_time' => $order->delivery->estimated_time,
                 'delivery_person_id' => $order->delivery->deliveryPerson->id ,
                 'delivery_person' => $order->delivery ? [

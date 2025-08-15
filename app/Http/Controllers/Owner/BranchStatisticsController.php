@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Owner;
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Order;
+use App\Models\OrderDetail;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -13,7 +14,8 @@ use Carbon\Carbon;
 class BranchStatisticsController extends Controller
 {
 
-   public function getOrdersCountbranches()
+  
+public function getOrdersCountbranches()
 {
     $owner = Auth::user();
 
@@ -28,13 +30,11 @@ class BranchStatisticsController extends Controller
     $stats = [];
 
     foreach ($branches as $branch) {
-        $monthlyData = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as orders_count, SUM(total_price) as revenue')
+        $ordersData = Order::selectRaw('COUNT(*) as orders_count, SUM(total_price) as revenue')
             ->where('branch_id', $branch->id)
             ->where('status', 'delivered')
-            ->groupBy(DB::raw('MONTH(created_at)'))
-            ->get();
+            ->first();
 
-        // ✅ متوسط التقييم لهذا الفرع
         $averageRating = DB::table('feedback')
             ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
             ->where('feedback.type', 'rating')
@@ -42,20 +42,12 @@ class BranchStatisticsController extends Controller
             ->where('feedback_types.target_ref_id', $branch->id)
             ->avg('feedback.score');
 
-        $monthlyStats = [];
-        foreach ($monthlyData as $data) {
-            $monthName = Carbon::create()->month($data->month)->locale('en')->isoFormat('MMMM');
-            $monthlyStats[$monthName] = [
-                'orders_count' => $data->orders_count,
-                'revenue' => (float) $data->revenue,
-            ];
-        }
-
         $stats[] = [
             'branch_id' => $branch->id,
             'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
             'average_rating' => round($averageRating, 2),
-            'monthly_stats' => $monthlyStats,
+            'total_orders' => $ordersData->orders_count ?? 0,
+            'total_revenue' => (float) ($ordersData->revenue ?? 0),
         ];
     }
 
@@ -64,7 +56,6 @@ class BranchStatisticsController extends Controller
         'branches' => $stats,
     ]);
 }
-
 public function getStatistics()
 {
     $owner = Auth::user();
@@ -201,31 +192,73 @@ public function getBranchFoodItemStats()
         'branches' => $result,
     ]);
 }
-public function getOwnerSummary()
+public function getBranchPackageStats()
 {
-    $owner = Auth::user();
+    $owner = auth()->user();
 
-    // جلب المطعم التابع للمالك
     $restaurant = Restaurant::where('owner_id', $owner->id)->first();
 
     if (!$restaurant) {
         return response()->json(['message' => 'لا يوجد مطعم لهذا المالك'], 404);
     }
 
-    // عدد الفروع التابعة للمطعم
+    $branches = Branch::where('restaurant_id', $restaurant->id)->get();
+
+    $result = [];
+
+    foreach ($branches as $branch) {
+        $packageStats = OrderDetail::whereHas('order', function($query) use ($branch) {
+                $query->where('branch_id', $branch->id)
+                      ->where('status', 'delivered');
+            })
+            ->with('package')
+            ->select(
+                'package_id',
+                DB::raw('SUM(quantity) as total_orders'),
+                DB::raw('SUM(unit_price * quantity) as total_revenue')
+            )
+            ->groupBy('package_id')
+            ->get()
+            ->map(function($item) {
+                return [
+                    'package_id' => $item->package_id,
+                    'package_name' => $item->package->name ?? 'غير معروف',
+                    'total_orders' => $item->total_orders,
+                    'total_revenue' => $item->total_revenue
+                ];
+            });
+
+        $result[] = [
+            'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
+            'packages' => $packageStats,
+        ];
+    }
+
+    return response()->json([
+        'restaurant' => $restaurant->name,
+        'branches' => $result,
+    ]);
+}
+public function getOwnerSummary()
+{
+    $owner = Auth::user();
+
+    $restaurant = Restaurant::where('owner_id', $owner->id)->first();
+
+    if (!$restaurant) {
+        return response()->json(['message' => 'لا يوجد مطعم لهذا المالك'], 404);
+    }
+
     $branchesCount = Branch::where('restaurant_id', $restaurant->id)->count();
 
-    // جميع طلبات الفروع التابعة للمطعم
     $ordersQuery = Order::whereIn('branch_id', function ($query) use ($restaurant) {
         $query->select('id')
             ->from('branches')
             ->where('restaurant_id', $restaurant->id);
     })->where('status', 'delivered');
 
-    // إجمالي عدد الطلبات
     $totalOrders = $ordersQuery->count();
 
-    // إجمالي الإيرادات من الطلبات
     $totalRevenue = $ordersQuery->sum('total_price');
     $averageRating = DB::table('feedback')
         ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
@@ -234,7 +267,6 @@ public function getOwnerSummary()
         ->where('feedback_types.target_ref_id', $restaurant->id)
         ->avg('feedback.score');
 
-    // عدد التقييمات
     $totalRating = DB::table('feedback')
         ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
         ->where('feedback.type', 'rating')
@@ -269,7 +301,6 @@ public function getBranchStatistics($branchId)
         return response()->json(['message' => 'الفرع غير موجود أو لا يتبع لهذا المطعم'], 404);
     }
 
-    // الطلبات الشهرية
     $monthlyData = Order::selectRaw('MONTH(created_at) as month, COUNT(*) as orders_count, SUM(total_price) as revenue')
         ->where('branch_id', $branch->id)
         ->where('status', 'delivered')
