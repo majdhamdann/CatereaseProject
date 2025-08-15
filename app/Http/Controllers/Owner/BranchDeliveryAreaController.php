@@ -37,7 +37,6 @@ class BranchDeliveryAreaController extends Controller
 
     $owner = Auth::user();
 
-    // التأكد أن الفرع يخص مطعم يملكه هذا المالك
     $branch = Branch::where('id', $branchId)
                     ->whereHas('restaurant', function ($q) use ($owner) {
                         $q->where('owner_id', $owner->id);

@@ -4,26 +4,102 @@ namespace App\Http\Controllers\Owner;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\Restaurant;
+
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
 class BranchController extends Controller
 {
     public function showRestaurantDetails()
-    {
-        $user = Auth::user();
-        $this->ensureIsRestaurantOwner($user);
+{
+    $user = Auth::user();
+    $this->ensureIsRestaurantOwner($user);
 
-        $restaurant = $user->restaurant;
+    $restaurant = Restaurant::with([
+        'branches' => function($query) {
+            $query->with([
+                'deliveryAreas',
+                'foodCategories',
+                'workingDays',
+                'branchServiceTypes.serviceType', 
+                'packages' => function($query) {
+                    $query->with([
+                        'extras',
+                        'categories',
+                        'occasionTypes',
+                        'discounts'
+                    ]);
+                },
+                'deliveryPeople',
+                'city',
+                'feedbacks',
+                'categories' 
+            ]);
+        },
+    ])->where('owner_id', $user->id)->first();
 
-        if (!$restaurant) {
-            return response()->json(['error' => 'You do not own a restaurant.'], 404);
-        }
-
-        return response()->json([
-            'restaurant' => $restaurant
-        ]);
+    if (!$restaurant) {
+        return response()->json(['error' => 'You do not own a restaurant.'], 404);
     }
+
+    // تنظيم بيانات الإخراج
+  
+
+    return response()->json([
+        
+        'branches' => $restaurant
+    ]);
+}
+    public function showRestaurantDetails11()
+{
+    $user = Auth::user();
+    $this->ensureIsRestaurantOwner($user);
+
+    $restaurant = $user->restaurant->with([
+        'branches' => function($query) {
+            $query->with([
+                'deliveryAreas',
+                'foodCategories',
+                'workingDays',
+                'branchServiceTypes',
+                'packages',
+                'deliveryPeople',
+                'city',
+                'feedbacks',
+                
+            ]);
+        },
+        // 'services',
+        // 'events'
+    ])->first();
+
+    if (!$restaurant) {
+        return response()->json(['error' => 'You do not own a restaurant.'], 404);
+    }
+
+    // تنظيم بيانات أوقات العمل
+    $restaurant->branches->each(function($branch) {
+        $branch->working_hours = $branch->workingDays->groupBy('day_of_week');
+        unset($branch->workingDays);
+    });
+
+    return response()->json([
+        'restaurant' => $restaurant,
+        'branches' => $restaurant->branches->map(function($branch) {
+            return [
+                'id' => $branch->id,
+                'city' => $branch->city,
+                'delivery_areas' => $branch->deliveryAreas,
+                'working_hours' => $branch->working_hours,
+                'services' => $branch->branchServiceTypes,
+                'packages' => $branch->packages,
+                'delivery_people' => $branch->deliveryPeople,
+                'rating' => $branch->feedbacks->avg('rating') ?? 0
+            ];
+        }),
+    ]);
+}
 
     public function index()
     {
