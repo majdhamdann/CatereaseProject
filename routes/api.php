@@ -214,7 +214,7 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::get('branch-statistics', [BranchStatisticsController::class, 'getStatistics']);
      Route::get('/OrdersCountbranches', [BranchStatisticsController::class, 'getOrdersCountbranches']);
      Route::get('/RevenueByMonth', [BranchStatisticsController::class, 'getBranchesRevenueByMonth']);
-     Route::get('/BranchFoodItemStats', [BranchStatisticsController::class, 'getBranchFoodItemStats']);
+     Route::get('/BranchFoodItemStats', [BranchStatisticsController::class, 'getBranchPackageStats']);
      Route::get('/Summary', [BranchStatisticsController::class, 'getOwnerSummary']);
      Route::get('/branch/{id}/statistics', [BranchStatisticsController::class, 'getBranchStatistics']);
      Route::get('branches/{branch}/delivery-areas', [BranchDeliveryAreaController::class, 'index']);

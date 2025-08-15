@@ -153,7 +153,8 @@ class DeliveryEmployeeManagementController extends Controller
                     'order_id' => $delivery->order->id ?? null,
                     'status' => $delivery->order->status,
                     'notes' => $delivery->notes,
-                    'estimated_time' => $delivery->estimated_time,
+                    'rejection_reason' => $delivery->rejection_reason,
+                    'acceptance_status' => $delivery->acceptance_status,
                     'total_price' => $delivery->order->total_price ?? 0,
                    'delivered_at' => $delivery->delivered_at,
                ];

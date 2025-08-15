@@ -264,7 +264,7 @@ public function assignDeliveryPerson(Request $request)
         $delivery = Delivery::create([
             'order_id' => $order->id,
             'delivery_person_id' => $deliveryPerson->id,
-            'status' => 'assigned',
+           // 'status' => 'assigned',
             'updated_at' => now(),
         ]);
 
@@ -272,7 +272,7 @@ public function assignDeliveryPerson(Request $request)
         
         $order->update([
              'status' => 'preparing',
-            'delivery_id' => $delivery->id,
+          //  'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
 
@@ -377,7 +377,8 @@ public function assignDeliveryPerson(Request $request)
             'delivery_info' => $order->delivery ? [
                 'status' => $order->delivery->status,
                 'delivered_at' => $order->delivery->delivered_at,
-              //  'estimated_time' => $order->delivery->estimated_time,
+                'acceptance_status' => $order->delivery->acceptance_status,
+                'rejection_reason' => $order->delivery->rejection_reason,
                 'delivery_person_id' => $order->delivery->deliveryPerson->id ,
                 'delivery_person' => $order->delivery ? [
                     'name' => $order->delivery->deliveryPerson->user->name,
