@@ -43,64 +43,59 @@ class BranchController extends Controller
         return response()->json(['error' => 'You do not own a restaurant.'], 404);
     }
 
-    // تنظيم بيانات الإخراج
   
 
     return response()->json([
-        
-        'branches' => $restaurant
+        'restaurant' => [
+            'basic_info' => [
+                'id_restaurant' => $restaurant->id,
+                'name' => $restaurant->name,
+                'owner' => $restaurant->owner->name,
+                'description' => $restaurant->description
+            ],
+            'branches' => $restaurant->branches->map(function($branch) {
+                return [
+                    'branch_info' => [
+                        'id' => $branch->id,
+                        'manager' => $branch->manager->name,
+                        'description' => $branch->description,
+                        'photo' => $branch->photo,
+                        'location_note' => $branch->location_note,
+                        'city' => $branch->city->name
+                    ],
+                    'delivery_areas' => $branch->deliveryAreas->map(function($area) {
+                        return [
+                            'delivery_city' => $area->city->name,
+                            'delivery_price' => $area->delivery_price
+                        ];
+                    }),
+                    'working_hours' => $branch->workingDays,
+                    'food_categories' => $branch->foodCategories->map(function($category) {
+                        return [
+                            'name' => $category->category->name,
+                            
+                        ];
+                    }),
+                    'services' => $branch->branchServiceTypes->map(function($service) {
+                        return [
+                            'name' => $service->serviceType->name,
+                            'custom_price' => $service->custom_price,
+                            'service_cost' => $service->service_cost
+                        ];
+                    }),
+                    'packages' => $branch->packages->map(function($package) {
+                        return [
+                            'name' => $package->name,
+                            'price' => $package->base_price,
+                            'occasions' => $package->occasionTypes->pluck('name')
+                        ];
+                    })
+                ];
+            })
+        ]
     ]);
 }
-    public function showRestaurantDetails11()
-{
-    $user = Auth::user();
-    $this->ensureIsRestaurantOwner($user);
-
-    $restaurant = $user->restaurant->with([
-        'branches' => function($query) {
-            $query->with([
-                'deliveryAreas',
-                'foodCategories',
-                'workingDays',
-                'branchServiceTypes',
-                'packages',
-                'deliveryPeople',
-                'city',
-                'feedbacks',
-                
-            ]);
-        },
-        // 'services',
-        // 'events'
-    ])->first();
-
-    if (!$restaurant) {
-        return response()->json(['error' => 'You do not own a restaurant.'], 404);
-    }
-
-    // تنظيم بيانات أوقات العمل
-    $restaurant->branches->each(function($branch) {
-        $branch->working_hours = $branch->workingDays->groupBy('day_of_week');
-        unset($branch->workingDays);
-    });
-
-    return response()->json([
-        'restaurant' => $restaurant,
-        'branches' => $restaurant->branches->map(function($branch) {
-            return [
-                'id' => $branch->id,
-                'city' => $branch->city,
-                'delivery_areas' => $branch->deliveryAreas,
-                'working_hours' => $branch->working_hours,
-                'services' => $branch->branchServiceTypes,
-                'packages' => $branch->packages,
-                'delivery_people' => $branch->deliveryPeople,
-                'rating' => $branch->feedbacks->avg('rating') ?? 0
-            ];
-        }),
-    ]);
-}
-
+    
     public function index()
     {
         $user = Auth::user();
