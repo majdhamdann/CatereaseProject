@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Package;
 use App\Models\Restaurant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -295,7 +296,32 @@ public function getBranchStatistics($branchId)
 
     $averageRating = $branch->feedbacks()->avg('score');
     $totalRatings = $branch->feedbacks()->count();
-
+    $packageStats = OrderDetail::whereHas('order', function($query) use ($branch) {
+                $query->where('branch_id', $branch->id)
+                      ->where('status', 'delivered');
+            })
+            ->with('package')
+            ->select(
+                'package_id',
+                DB::raw('SUM(quantity) as total_orders'),
+                DB::raw('SUM(unit_price * quantity) as total_revenue')
+            )
+            ->groupBy('package_id')
+            ->get()
+            ->map(function($item) {
+                 return [
+                    'package_id' => $item->package_id,
+                    'package_name' => $item->package->name ?? 'غير معروف',
+                    'total_orders' => $item->total_orders,
+                    'total_revenue' => $item->total_revenue,
+                    'categories' => $item->package->categories->map(function($category) {
+                      return [
+                        'id' => $category->id,
+                        'name' => $category->name
+                     ];
+                      })->toArray()
+                ];
+            });
     return response()->json([
         'branch_id' => $branch->id,
         'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
@@ -304,8 +330,7 @@ public function getBranchStatistics($branchId)
         'monthly_stats' => $monthlyStats,
         'average_rating' => round($averageRating, 2),
         'total_ratings' => $totalRatings,
+        'packageStats' => $packageStats
     ]);
 }
-
-
 }
