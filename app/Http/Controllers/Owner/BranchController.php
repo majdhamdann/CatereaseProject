@@ -118,7 +118,7 @@ class BranchController extends Controller
 
         $branch = $role === 'Admin'
             ? Branch::find($id)
-            : Branch::where('id', $id)->where('restaurant_id', $user->restaurant->id)->first();
+            : Branch::where('id', $id)->with('packages')->where('restaurant_id', $user->restaurant->id)->first();
 
         if (!$branch) {
             return response()->json(['error' => 'Branch not found or unauthorized'], 404);
