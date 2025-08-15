@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('feedback_types', function (Blueprint $table) {
             $table->id();
-            $table->enum('target_type', ['restaurant', 'food_item','package', 'delivery_person', 'service']);
+            $table->enum('target_type', ['restaurant', 'branch','package', 'delivery_person', 'service']);
             $table->unsignedBigInteger('target_ref_id');
 
             $table->timestamps();
