@@ -34,13 +34,8 @@ public function getOrdersCountbranches()
             ->where('branch_id', $branch->id)
             ->where('status', 'delivered')
             ->first();
-
-        $averageRating = DB::table('feedback')
-            ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
-            ->where('feedback.type', 'rating')
-            ->where('feedback_types.target_type', 'branch')
-            ->where('feedback_types.target_ref_id', $branch->id)
-            ->avg('feedback.score');
+        $averageRating=$branch->feedbacks()->avg('score');
+        
 
         $stats[] = [
             'branch_id' => $branch->id,
@@ -81,18 +76,26 @@ public function getStatistics()
             ->where('status', 'delivered')
             ->sum('total_price');
 
-        $packageStats = DB::table('order_details')
-            ->join('orders', 'order_details.order_id', '=', 'orders.id')
-            ->join('packages', 'order_details.package_id', '=', 'packages.id')
-            ->select(
-                'packages.name',
-                DB::raw('SUM(order_details.quantity) as total_orders'),
-                DB::raw('SUM(order_details.quantity * order_details.unit_price) as total_revenue')
-            )
-            ->where('orders.branch_id', $branch->id)
-            ->where('orders.status', 'delivered')
-            ->groupBy('packages.name')
-            ->get();
+        $packageStats = OrderDetail::with(['package', 'order'])
+    ->whereHas('order', function($query) use ($branch) {
+        $query->where('branch_id', $branch->id)
+              ->where('status', 'delivered');
+    })
+    ->select(
+        'package_id',
+        DB::raw('SUM(quantity) as total_orders'),
+        DB::raw('SUM(quantity * unit_price) as total_revenue')
+    )
+    ->groupBy('package_id')
+    ->get()
+    ->map(function($item) {
+        return [
+            'name' => $item->package->name ?? 'غير معروف',
+            'total_orders' => $item->total_orders,
+            'total_revenue' => $item->total_revenue
+        ];
+    });
+
 
     
 
@@ -201,47 +204,46 @@ public function getOwnerSummary()
 {
     $owner = Auth::user();
 
-    $restaurant = Restaurant::where('owner_id', $owner->id)->first();
+    $restaurant = Restaurant::withCount('branches')
+        ->with(['branches' => function($query) {
+            $query->withAvg('feedbacks as average_rating', 'score')
+                  ->withCount('feedbacks as ratings_count');
+        }])
+        ->where('owner_id', $owner->id)
+        ->first();
 
     if (!$restaurant) {
         return response()->json(['message' => 'لا يوجد مطعم لهذا المالك'], 404);
     }
 
-    $branchesCount = Branch::where('restaurant_id', $restaurant->id)->count();
-
-    $ordersQuery = Order::whereIn('branch_id', function ($query) use ($restaurant) {
-        $query->select('id')
-            ->from('branches')
-            ->where('restaurant_id', $restaurant->id);
-    })->where('status', 'delivered');
+    $ordersQuery = Order::whereIn('branch_id', $restaurant->branches->pluck('id'))
+        ->where('status', 'delivered');
 
     $totalOrders = $ordersQuery->count();
-
     $totalRevenue = $ordersQuery->sum('total_price');
-    $averageRating = DB::table('feedback')
-        ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
-        ->where('feedback.type', 'rating')
-        ->where('feedback_types.target_type', 'restaurant')
-        ->where('feedback_types.target_ref_id', $restaurant->id)
-        ->avg('feedback.score');
 
-    $totalRating = DB::table('feedback')
-        ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
-        ->where('feedback.type', 'rating')
-        ->where('feedback_types.target_type', 'restaurant')
-        ->where('feedback_types.target_ref_id', $restaurant->id)
-        ->count();
+    $averageRating = $restaurant->branches->avg('average_rating');
+    $totalRating = $restaurant->branches->sum('ratings_count');
+
+    $branchesStats = $restaurant->branches->map(function($branch) {
+        return [
+            'branch_id' => $branch->id,
+            'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
+            'average_rating' => round($branch->average_rating, 2),
+            'ratings_count' => $branch->ratings_count
+        ];
+    });
 
     return response()->json([
         'restaurant' => $restaurant->name,
-        'branches_count' => $branchesCount,
+        'branches_count' => $restaurant->branches_count,
         'total_orders' => $totalOrders,
         'total_revenue' => (float) $totalRevenue,
         'average_rating' => round($averageRating, 2),
-        'total_rating' => $totalRating
+        'total_rating' => $totalRating,
+        'branches_stats' => $branchesStats
     ]);
 }
-
 public function getBranchStatistics($branchId)
 {
     $owner = Auth::user();
