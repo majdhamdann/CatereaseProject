@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Services;
 
 use App\Models\Restaurant;
@@ -10,7 +9,7 @@ class RestaurantService
     public function getRestaurantsWithDetails()
     {
         $restaurants = Restaurant::with([
-            'branches.categories.foodCategory',
+            'branches.categories',
             'feedbacks' => function ($q) {
                 $q->where('type', 'rating');
             }
@@ -33,7 +32,7 @@ class RestaurantService
                         'branch_id' => $branch->id,
                         'location' => $branch->location ?? null,
                         'categories' => $branch->categories
-                            ->pluck('foodCategory.name')
+                            ->pluck('name')
                             ->filter()
                             ->unique()
                             ->values()
@@ -43,4 +42,3 @@ class RestaurantService
         });
     }
 }
-

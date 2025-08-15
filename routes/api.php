@@ -50,6 +50,16 @@ Route::middleware(['auth:sanctum', 'customer'])->prefix('customer')->group(funct
     Route::delete('/delete_addresse/{id}', [AddressController::class, 'delete']);
     Route::post('/addresses/{id}/default', [AddressController::class, 'setDefault']);
 });
+Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
+Route::get('/restaurant', [RestaurantController::class, 'index']);
+//Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
+Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
+
+Route::middleware('auth:sanctum')->group(function () {
+    Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
+    Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
+});
+
 
 //Branch
 Route::prefix('branches')->group(function () {
@@ -99,6 +109,9 @@ Route::middleware(['auth:sanctum', 'delivery'])->prefix('delivery')->group(funct
     Route::get('/profile', [DeliveryController::class, 'show']);
     Route::post('/orders/{orderId}/delivery-status', [DeliveryController::class, 'updateDeliveryStatus']);
     Route::post('/confirm-by-qr', [DeliveryController::class, 'confirmByQr']);
+    Route::get('/rejection-reasons', [DeliveryController::class, 'getRejectionReasons']);
+    Route::post('/{orderId}/decide', [DeliveryController::class, 'decide']);
+
 
 });
 
@@ -213,15 +226,6 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
 
     });
 
-Route::get('/allbranch', [BranchController::class, 'getAllBranchesWithDetails']);
-Route::get('/restaurant', [RestaurantController::class, 'index']);
-//Route::get('/restaurants/category/{name}', [RestaurantController::class, 'getByCategory']);
-Route::get('/menu/items', [MenuController::class, 'filterFoodItems']);
-
-Route::middleware('auth:sanctum')->group(function () {
-    Route::get('/branches/category/{categoryName}', [BranchController::class, 'getBranchesByCategoryName']);
-    Route::get('/branches/{branch}/food-items', [BranchController::class, 'getItems']);
-});
 
 
 

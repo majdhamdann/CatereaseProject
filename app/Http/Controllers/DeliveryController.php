@@ -179,7 +179,7 @@ class DeliveryController extends Controller
     public function updateDeliveryStatus(Request $request, $orderId)
     {
         $request->validate([
-            'status' => 'required|in:pending,assigned,on_the_way_to_pickup,picked_up,delivered,on_the_way,cancelled,failed'
+            'status' => 'required|in:on_the_way,cancelled,failed'
         ]);
 
         try {
@@ -195,7 +195,6 @@ class DeliveryController extends Controller
                 ], 403);
             }
 
-
             $delivery = Delivery::where('delivery_person_id', $deliveryPerson->id)
                 ->whereHas('order', fn($q) => $q->where('id', $orderId))
                 ->first();
@@ -207,22 +206,15 @@ class DeliveryController extends Controller
                 ], 404);
             }
 
-
             $delivery->status = $request->status;
             $delivery->save();
-
-
-            if ($request->status === 'delivered') {
-                $delivery->order->status = 'delivered';
-                $delivery->order->save();
-            }
 
             DB::commit();
 
             return response()->json([
                 'status' => 'success',
                 'message' => 'Delivery status updated successfully',
-                'data' => $delivery
+               // 'data' => $delivery
             ]);
 
         } catch (\Throwable $e) {
@@ -295,6 +287,104 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
+
+    public function getRejectionReasons()
+    {
+
+        $reasons = [
+            [
+                'vehicle_breakdown'   => 'Vehicle breakdown',
+                'vehicle_accident'    => 'Traffic accident',
+                'traffic_jam'         => 'Traffic jam',
+                'health_emergency'    => 'Health emergency',
+                'personal_emergency'  => 'Personal emergency',
+                'other'               => 'Other',
+            ]
+        ];
+
+        return response()->json([
+            'status' => 'success',
+            'data'   => $reasons
+        ]);
+    }
+
+    public function decide(Request $request, $orderId)
+    {
+        $request->validate([
+            'decision'         => 'required|in:approve,reject',
+            'rejection_reason' => 'required_if:decision,reject|in:vehicle_breakdown,vehicle_accident,traffic_jam,health_emergency,personal_emergency,other',
+
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $user = Auth::user();
+            $deliveryPerson = $user->deliveryPerson;
+
+            if (!$deliveryPerson) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'You are not a delivery person.'
+                ], 403);
+            }
+
+            $delivery = Delivery::where('delivery_person_id', $deliveryPerson->id)
+                ->whereHas('order', fn($q) => $q->where('id', $orderId))
+                ->first();
+
+            if (!$delivery) {
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Order not found or not assigned to you.'
+                ], 404);
+            }
+
+            if (!is_null($delivery->acceptance_status)) {
+                DB::rollBack();
+                return response()->json([
+                    'status'  => 'error',
+                    'message' => 'Decision has already been taken for this delivery.'
+                ], 409);
+            }
+
+            if ($request->decision === 'approve') {
+                $delivery->acceptance_status = 1;
+                $delivery->rejection_reason  = null;
+
+
+
+            } else {
+                $delivery->acceptance_status = 0;
+                $delivery->rejection_reason  = $request->rejection_reason;
+                $delivery->status            = 'pending';
+                //$delivery->delivery_person_id = null;
+            }
+
+            $delivery->save();
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => $request->decision === 'approve'
+                    ? 'Delivery approved successfully.'
+                    : 'Delivery rejected successfully.',
+               // 'data'    => $delivery
+            ]);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Failed to take decision.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
+
 
 
 
