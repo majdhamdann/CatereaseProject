@@ -195,5 +195,30 @@ class BranchController extends Controller
         'data' => $branches
     ]);
 }
+public function getOwnerBranches()
+{
+    $owner = Auth::user();
+    $this->ensureIsRestaurantOwner($owner);
 
+    $branches = Branch::with(['restaurant.owner', 'city'])
+        ->whereHas('restaurant', function($query) use ($owner) {
+            $query->where('owner_id', $owner->id);
+        })
+        ->get()
+        ->map(function($branch) {
+            return [
+                'id' => $branch->id,
+                'name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
+                'image' => $branch->photo, 
+                'ownerName' => $branch->restaurant->owner->name ?? 'غير معروف',
+                'Manager' => $branch->manager->name ?? 'غير معروف',
+                'city' => $branch->city->name ?? 'غير معروفة'
+            ];
+        });
+
+    return response()->json([
+        'status' => true,
+        'branches' => $branches
+    ]);
+}
 }

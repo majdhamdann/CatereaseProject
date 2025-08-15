@@ -264,7 +264,7 @@ public function assignDeliveryPerson(Request $request)
         $delivery = Delivery::create([
             'order_id' => $order->id,
             'delivery_person_id' => $deliveryPerson->id,
-           // 'status' => 'assigned',
+            'status' => 'assigned',
             'updated_at' => now(),
         ]);
 

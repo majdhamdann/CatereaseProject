@@ -145,7 +145,7 @@ class Branch extends Model
     }
 
     public function feedbacks()
-{
+  {
     return $this->hasManyThrough(
         Feedback::class,
         FeedbackType::class,
@@ -155,7 +155,7 @@ class Branch extends Model
         'id'
     )->where('feedback_types.target_type', 'branch')
      ->where('feedback.type', 'rating');
-}
+  }
 
 
 

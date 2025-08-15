@@ -150,48 +150,6 @@ public function getBranchesRevenueByMonth()
     ]);
 }
 
-public function getBranchFoodItemStats()
-{
-    $owner = auth()->user();
-
-    $restaurant = Restaurant::where('owner_id', $owner->id)->first();
-
-    if (!$restaurant) {
-        return response()->json(['message' => 'لا يوجد مطعم لهذا المالك'], 404);
-    }
-
-    $branches = Branch::where('restaurant_id', $restaurant->id)->get();
-
-    $result = [];
-
-    foreach ($branches as $branch) {
-        $foodStats = DB::table('order_details')
-            ->join('orders', 'order_details.order_id', '=', 'orders.id')
-            ->join('packages', 'order_details.package_id', '=', 'packages.id')
-            ->join('package_items', 'packages.id', '=', 'package_items.package_id')
-            ->join('food_items', 'package_items.food_item_id', '=', 'food_items.id')
-            ->where('orders.branch_id', $branch->id)
-            ->where('orders.status', 'delivered')
-            ->select(
-                'food_items.id as food_item_id',
-                'food_items.name as food_item_name',
-                DB::raw('SUM(order_details.quantity * package_items.quantity) as total_orders'),
-                DB::raw('SUM(order_details.unit_price * package_items.quantity) as total_revenue')
-            )
-            ->groupBy('food_items.id', 'food_items.name')
-            ->get();
-
-        $result[] = [
-            'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
-            'food_items' => $foodStats,
-        ];
-    }
-
-    return response()->json([
-        'restaurant' => $restaurant->name,
-        'branches' => $result,
-    ]);
-}
 public function getBranchPackageStats()
 {
     $owner = auth()->user();

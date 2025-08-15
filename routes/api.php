@@ -210,11 +210,13 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
 });
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
      Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
+     Route::get('/branches', [OwnerBranchController::class, 'getOwnerBranches']);
+
      Route::post('/branches/{branch}/categories', [OwnerBranchController::class, 'addCategoriesToBranch']);
      Route::get('branch-statistics', [BranchStatisticsController::class, 'getStatistics']);
      Route::get('/OrdersCountbranches', [BranchStatisticsController::class, 'getOrdersCountbranches']);
      Route::get('/RevenueByMonth', [BranchStatisticsController::class, 'getBranchesRevenueByMonth']);
-     Route::get('/BranchFoodItemStats', [BranchStatisticsController::class, 'getBranchPackageStats']);
+     Route::get('/BranchPackageStats', [BranchStatisticsController::class, 'getBranchPackageStats']);
      Route::get('/Summary', [BranchStatisticsController::class, 'getOwnerSummary']);
      Route::get('/branch/{id}/statistics', [BranchStatisticsController::class, 'getBranchStatistics']);
      Route::get('branches/{branch}/delivery-areas', [BranchDeliveryAreaController::class, 'index']);
