@@ -185,6 +185,8 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     Route::get('/reviews/manage/DeliveryReviews', [ReviewmanagerController::class, 'getDeliveryPersonsReviewsSummary']);
 
 });
+Route::middleware(['auth:sanctum'])->get('city', [OwnerBranchController::class, 'getCity']);
+
 Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagementController::class, 'index']);
 Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
 Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {

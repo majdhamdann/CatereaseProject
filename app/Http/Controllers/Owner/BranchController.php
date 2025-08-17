@@ -6,6 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Branch;
 use App\Models\BranchServiceType;
 use App\Models\Category;
+use App\Models\City;
 use App\Models\Restaurant;
 use App\Models\ServiceType;
 use Illuminate\Http\Request;
@@ -228,6 +229,9 @@ class BranchController extends Controller
         ])
     ], 201);
 }
+  public function getCity(){
+    return City::all();
+  }
  public function addCategoriesToBranch(Request $request, $branchId)
     {
         $user = Auth::user();
