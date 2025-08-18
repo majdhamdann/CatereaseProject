@@ -232,7 +232,7 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::delete('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'destroy']);
      Route::get('/report', [ReportController::class, 'index']);
      Route::get('/BranchesWithPackages', [OwnerBranchController::class, 'getOwnerBranchesWithPackages']);
-     Route::get('/CategoriesToBranch/{branch_id}', [MenuOwnerController::class, 'getCategoriesToBranch']);
+     Route::get('/CategoriesToBranch', [MenuOwnerController::class, 'getCategoriesToBranch']);
      Route::get('/PackagesByCategory/{category_id}', [MenuOwnerController::class, 'getPackagesByCategory']);
 
     });

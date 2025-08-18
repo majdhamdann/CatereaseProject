@@ -12,25 +12,25 @@ use Illuminate\Support\Facades\Auth;
 
 class MenuOwnerController extends Controller
 {
-   public function getCategoriesToBranch($branch_id)
+   
+public function getCategoriesToBranch()
 {
     $owner = Auth::user();
     
-    $branch = Branch::where('id', $branch_id)
-        ->whereHas('restaurant', function($query) use ($owner) {
+    $branches = Branch::whereHas('restaurant', function($query) use ($owner) {
             $query->where('owner_id', $owner->id);
         })
         ->with('categories')
-        ->first();
+        ->get();
 
-    if (!$branch) {
+    if ($branches->isEmpty()) {
         return response()->json([
-            'message' => 'الفرع غير موجود أو لا ينتمي لهذا المالك'
+            'message' => 'لا توجد فروع لهذا المالك'
         ], 404);
     }
 
     return response()->json([
-        'categories' => $branch->categories
+        'branches' => $branches
     ]);
 }
 public function getPackagesByCategory($category_id)
