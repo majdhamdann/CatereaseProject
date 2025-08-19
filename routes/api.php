@@ -191,6 +191,7 @@ Route::middleware(['auth:sanctum'])->get('service-types', [ServiceTypeManagement
 Route::middleware(['auth:sanctum'])->get('/occasion-types', [OccasionTypeController::class, 'index']);
 Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
      Route::apiResource('users', UserManagementController::class);
+     Route::get('users/all/Manager', [UserManagementController::class,'getallManager']);
      Route::apiResource('/branches/management', OwnerBranchController::class);
      Route::post('/branches/{branchId}/working-days', [WorkingDayController::class, 'store']);
      Route::put('/working-days/{id}', [WorkingDayController::class, 'update']);
@@ -234,6 +235,7 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::get('/BranchesWithPackages', [OwnerBranchController::class, 'getOwnerBranchesWithPackages']);
      Route::get('/CategoriesToBranch', [MenuOwnerController::class, 'getCategoriesToBranch']);
      Route::get('/PackagesByCategory/{category_id}', [MenuOwnerController::class, 'getPackagesByCategory']);
+     Route::get('/Discount_TO_package/{packageId}', [PackageDiscountController::class, 'getPackageDiscounts']);
 
     });
 

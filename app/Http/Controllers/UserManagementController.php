@@ -70,4 +70,14 @@ class UserManagementController extends Controller
         $this->userService->deleteUser($id);
         return response()->json(['message' => 'User deleted successfully']);
     }
+    public function getallManager()
+    {
+       $managers = User::with('role')
+          ->whereHas('role', function($query) {
+               $query->where('name', 'Manager');
+           })
+          ->get();
+    
+       return response()->json(['allManager' => $managers]);
+    }
 }
