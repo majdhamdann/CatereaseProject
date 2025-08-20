@@ -51,8 +51,7 @@ class UserManagementController extends Controller
         $user = $this->userService->getUserById($id);
         return response()->json($user);
     }
-
-    public function update(UpdateUserRequest $request, $id)
+       public function update(UpdateUserRequest $request, $id)
     {
         $data = $request->validated();
 
@@ -85,7 +84,7 @@ public function getallManager(Request $request)
     
   
     if ($request->has('date') && !empty($request->date)) {
-    $query->whereDate('created_at', \Carbon\Carbon::parse($request->date));
+      $query->whereDate('created_at', \Carbon\Carbon::parse($request->date));
 }
     
     if ($request->has('status') && !empty($request->status)) {
