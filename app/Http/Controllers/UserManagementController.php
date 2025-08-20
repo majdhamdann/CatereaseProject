@@ -71,7 +71,8 @@ class UserManagementController extends Controller
         return response()->json(['message' => 'User deleted successfully']);
     }
     
-    public function getallManager(Request $request)
+    
+public function getallManager(Request $request)
 {
     $query = User::with('role')
         ->whereHas('role', function($query) {
@@ -83,7 +84,11 @@ class UserManagementController extends Controller
     }
     
     if ($request->has('date') && !empty($request->date)) {
-        $query->whereDate('created_at', $request->date);
+        $date = \Carbon\Carbon::parse($request->date);
+        $query->whereBetween('created_at', [
+            $date->startOfDay()->timezone('UTC')->format('Y-m-d H:i:s'),
+            $date->endOfDay()->timezone('UTC')->format('Y-m-d H:i:s')
+        ]);
     }
     
     if ($request->has('status') && !empty($request->status)) {
