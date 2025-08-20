@@ -83,13 +83,10 @@ public function getallManager(Request $request)
         $query->where('name', 'LIKE', '%' . $request->name . '%');
     }
     
+  
     if ($request->has('date') && !empty($request->date)) {
-        $date = \Carbon\Carbon::parse($request->date);
-        $query->whereBetween('created_at', [
-            $date->startOfDay()->timezone('UTC')->format('Y-m-d H:i:s'),
-            $date->endOfDay()->timezone('UTC')->format('Y-m-d H:i:s')
-        ]);
-    }
+    $query->whereDate('created_at', \Carbon\Carbon::parse($request->date));
+}
     
     if ($request->has('status') && !empty($request->status)) {
         $query->where('status', $request->status);
