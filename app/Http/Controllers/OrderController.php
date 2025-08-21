@@ -500,7 +500,6 @@ class OrderController extends Controller
             'orderDetails.occasionType',
             'orderDetails.services.service.serviceType',
             'orderDetails.extras.extra',
-            'bill'
         ])
             ->where('user_id', $user->id)
             ->where('id', $id)
@@ -513,7 +512,7 @@ class OrderController extends Controller
             ], 404);
         }
 
-        $details = $order->orderDetails->map(function ($detail) {
+        $packages = $order->orderDetails->map(function ($detail) {
             $package = $detail->package;
 
             $discount = $package->discounts
@@ -522,71 +521,55 @@ class OrderController extends Controller
                 ->where('end_at', '>=', now())
                 ->first();
 
-            $originalBasePrice = $package->base_price;
+            $originalBasePrice = (float) $package->base_price;
             $discountedBasePrice = $discount
                 ? $originalBasePrice * (1 - ($discount->value / 100))
                 : $originalBasePrice;
 
-            $baseCost = $discountedBasePrice * $detail->quantity;
-            $extraPersonsCost = $detail->extra_persons * $package->price_per_extra_person;
-            $extrasCost = $detail->extras->sum(fn($extra) => $extra->total_price);
-            $servicesCost = $detail->services->sum(fn($service) => $service->custom_price);
+            $baseCost        = $discountedBasePrice * $detail->quantity;
+            $extraPersonsCost= $detail->extra_persons * $package->price_per_extra_person;
+            $extrasCost      = $detail->extras->sum(fn($extra) => $extra->total_price);
+            $servicesCost    = $detail->services->sum(fn($service) => $service->custom_price);
 
             $finalTotal = $baseCost + $extraPersonsCost + $extrasCost + $servicesCost;
 
-            $prepaymentAmount = null;
-            if ($package->prepayment_required && $package->prepayment_amount) {
-                $prepaymentAmount = number_format(($package->prepayment_amount / 100) * $finalTotal, 2);
-            }
-
             $data = [
-                'order_details_id' => $detail->id,
-                'package_id'   => $package->id,
-                'name'         => $package->name,
-                'branch_id'    => $package->branch_id,
-                'restaurant_name'  => $package->branch->name ?? ($package->branch->restaurant->name ?? 'Unknown'),
-                'description'  => $package->description,
-                'photo'        => $package->photo,
-                'base_price'   => number_format($originalBasePrice, 2),
-                'quantity'     => $detail->quantity,
-                'serves_count' => $package->serves_count,
-                'extra_persons' => $detail->extra_persons,
-                'price_per_extra_person' => number_format($package->price_per_extra_person, 2),
+                'id'             => $detail->id,
+                'package_id'     => $package->id,
+                'name'           => $package->name,
+                'description'    => $package->description,
+                'photo'          => $package->photo,
+                'quantity'       => $detail->quantity,
+                'base_price'     => number_format($originalBasePrice, 2),
+                'extra_persons'  => $detail->extra_persons,
                 'extra_persons_cost' => number_format($extraPersonsCost, 2),
-                'total_persons' => $package->serves_count + $detail->extra_persons,
+                'total_persons'  => $package->serves_count + $detail->extra_persons,
+                'final_total'    => number_format($finalTotal, 2),
+                'occasion_type'  => $detail->occasionType?->name,
 
-                'prepayment_required'    => (bool) $package->prepayment_required,
-                'prepayment_percentage'  => $package->prepayment_amount ? $package->prepayment_amount . '%' : null,
-                'prepayment_amount'      => $prepaymentAmount,
-                'cancellation_policy'    => $package->cancellation_policy,
-                'occasion_type'          => $detail->occasionType?->name,
+
+                'prepayment_percentage' => $package->prepayment_required && $package->prepayment_amount
+                    ? $package->prepayment_amount . '%'
+                    : null,
 
                 'items' => $package->items->map(fn($item) => [
                     'food_item_id'   => $item->food_item_id,
                     'food_item_name' => $item->foodItem->name ?? null,
                     'quantity'       => $item->quantity,
-                   // 'is_optional'    => $item->is_optional,
                 ]),
-
-                'services' => $detail->services->map(function ($service) {
-                    return [
-                        'name'         => $service->service->serviceType->name ?? null,
-                        'custom_price' => number_format($service->custom_price, 2)
-                    ];
-                }),
-
-                'extras' => $detail->extras->map(function ($extra) {
-                    return [
-                        'name'         => $extra->extra->name,
-                        'type'         => $extra->extra->type,
-                        'quantity'     => $extra->quantity,
-                        'unit_price'   => number_format($extra->unit_price, 2),
-                        'total_price'  => number_format($extra->total_price, 2),
-                    ];
-                }),
-
-                'final_total' => number_format($finalTotal, 2),
+                'services' => $detail->services->map(fn($service) => [
+                    'name'         => $service->service->serviceType->name ?? null,
+                    'custom_price' => number_format($service->custom_price, 2)
+                ]),
+                'extras' => $detail->extras->map(fn($extra) => [
+                    'name'        => $extra->extra->name,
+                    'type'        => $extra->extra->type,
+                    'quantity'    => $extra->quantity,
+                    'unit_price'  => number_format($extra->unit_price, 2),
+                    'total_price' => number_format($extra->total_price, 2),
+                ]),
             ];
+
 
             if ($discount) {
                 $data['discount'] = [
@@ -600,28 +583,36 @@ class OrderController extends Controller
         });
 
         return response()->json([
-            'status' => true,
-            'message' => 'Order details retrieved successfully.',
+            'status' => 'success',
             'data' => [
-                'order_id'         => $order->id,
-                'status'           => $order->status,
-                'is_approved'      => (bool) $order->is_approved,
-                'approval_deadline'=> $order->approval_deadline,
-                'notes'            => $order->notes,
-                'delivery_time'    => $order->delivery_time,
-                'total_price'      => number_format($order->total_price, 2),
+                'order' => [
+                    'id'              => $order->id,
+                    'status'          => $order->status,
+                    'is_approved'     => (bool) $order->is_approved,
+                    'approval_deadline'=> $order->approval_deadline,
+                    'notes'           => $order->notes,
+                    'delivery_time'   => $order->delivery_time,
+                    'total_price'     => number_format($order->total_price, 2),
+                    'created_at'      => $order->created_at->format('Y-m-d H:i:s'),
+                    'created_since'   => $order->created_at->diffForHumans(),
+                ],
                 'address' => [
+                    'id'        => $order->address->id,
+                    'city'      => $order->address->city->name ?? null,
                     'street'    => $order->address->street,
                     'building'  => $order->address->building,
                     'floor'     => $order->address->floor,
                     'apartment' => $order->address->apartment,
-                    'city'      => $order->address->city->name ?? null,
+                    'latitude' =>  $order->address->latitude ?? null,
+                    'longitude' => $order->address->longitude ?? null,
                 ],
-                'packages' => $details,
-                'bill' => $order->bill ? [
-                    'amount'    => number_format($order->bill->amount, 2),
-                    'issued_at' => $order->bill->issued_at,
-                ] : null,
+                'restaurant' => [
+                    'id'   => $order->orderDetails->first()?->package->branch->restaurant->id,
+                    'name' => $order->orderDetails->first()?->package->branch->restaurant->name,
+                    'branch'=> $order->orderDetails->first()?->package->branch->description ?? 'N/A',
+                    'location' => $order->orderDetails->first()?->package->branch->location_note ?? '',
+                ],
+                'packages' => $packages,
             ]
         ]);
     }
