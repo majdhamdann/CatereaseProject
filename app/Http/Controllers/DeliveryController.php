@@ -12,6 +12,7 @@ use Illuminate\Support\Facades\DB;
 class DeliveryController extends Controller
 {
 
+
     public function assignedOrders()
     {
         try {
@@ -30,7 +31,7 @@ class DeliveryController extends Controller
             $deliveries = Delivery::with([
                 'order.orderDetails.package',
                 'order.user',
-                'order.branch',
+                'order.address.city',
                 'order.branch.restaurant'
             ])
                 ->where('delivery_person_id', $deliveryPerson->id)
@@ -49,17 +50,37 @@ class DeliveryController extends Controller
                     $packageName = $detail->package->name ?? 'Unknown Package';
                     return $packageName . ' (' . $detail->quantity . ')';
                 })->implode(', ');
-
                 return [
-                    'order_id'      => $order->id,
-                    'customer_name' => $order->user->name ?? 'Unknown',
-                    'restaurant_name' => optional($order->branch->restaurant)->name ?? 'Unknown',
-                    'branch_name'   => $order->branch->description ?? 'Not Available',
-                    'status'        => $delivery->status,
-                    'total_price'   => number_format($order->total_price, 2),
-                    'created_at'    => $order->created_at->format('Y-m-d H:i'),
-                    'created_since' => $order->created_at->diffForHumans(),
-                    // 'items'      => $itemsSummary,
+                    'order' => [
+                        'id' => $order->id,
+                        'status' => $delivery->status,
+                        'total_price' => number_format($order->total_price, 2),
+                        'created_at' => $order->created_at->format('Y-m-d H:i'),
+                        'created_since' => $order->created_at->diffForHumans(),
+                        'items' => $itemsSummary,
+                    ],
+                    'user' => [
+                        'id' => $order->user->id,
+                        'name' => $delivery->order->user->name,
+                        'phone' => $delivery->order->user->phone,
+                        'address' => [
+                            'id' => $delivery->order->address->id,
+                            'city' => $delivery->order->address->city->name ?? null,
+                            'street' => $delivery->order->address->street ?? null,
+                            'building' => $delivery->order->address->building ?? null,
+                            'floor' => $delivery->order->address->floor ?? null,
+                            'apartment' => $delivery->order->address->apartment ?? null,
+                            'latitude' => $delivery->order->address->latitude ?? null,
+                            'longitude' => $delivery->order->address->longitude ?? null,
+
+                        ],
+                    ],
+                    'restaurant' => [
+                        'id' => $delivery->order->branch->restaurant->id,
+                        'name' => $delivery->order->branch->restaurant->name,
+                        'phone' => $delivery->order->branch->restaurant->phone_number ?? 'N/A',
+                        'branch' => $delivery->order->branch->description ?? 'N/A',
+                    ],
                 ];
             })->filter();
 
@@ -67,8 +88,8 @@ class DeliveryController extends Controller
 
             return response()->json([
                 'status' => 'success',
-                'count'  => $data->count(),
-                'data'   => $data->values(),
+                'count' => $data->count(),
+                'data' => $data->values(),
             ]);
         } catch (\Throwable $e) {
             DB::rollBack();
@@ -113,14 +134,53 @@ class DeliveryController extends Controller
                 ], 404);
             }
 
-            DB::commit();
+            $order = $delivery->order;
+            $address = $order->address;
+            $city = optional($address->city);
+            $branch = $order->branch;
+            $restaurant = optional($branch)->restaurant;
 
+            $itemsSummary = $order->orderDetails->map(function ($detail) {
+                return optional($detail->package)->name . ' (' . $detail->quantity . ')';
+            })->implode(', ');
+
+            DB::commit();
 
             return response()->json([
                 'status' => 'success',
-                'data'   => $delivery
-            ]);
+                'data' => [
+                    'order' => [
+                        'id' => $order->id,
+                        'status' => $delivery->status,
+                        'total_price' => number_format($order->total_price, 2),
+                        'created_at' => $order->created_at->format('Y-m-d'),
+                        'created_since' => $order->created_at->diffForHumans(),
+                        'items' => $itemsSummary,
+                    ],
+                    'user' => [
+                        'id' => $order->user->id,
+                        'name' => $delivery->order->user->name,
+                        'phone' => $delivery->order->user->phone,
+                        'address' => [
+                            'id' => $delivery->order->address->id,
+                            'city' => $delivery->order->address->city->name ?? null,
+                            'street' => $delivery->order->address->street ?? null,
+                            'building' => $delivery->order->address->building ?? null,
+                            'floor' => $delivery->order->address->floor ?? null,
+                            'apartment' => $delivery->order->address->apartment ?? null,
+                            'latitude' => $delivery->order->address->latitude ?? null,
+                            'longitude' => $delivery->order->address->longitude ?? null,
 
+                        ],
+                    ],
+                    'restaurant' => [
+                        'id' => $delivery->order->branch->restaurant->id,
+                        'name' => $delivery->order->branch->restaurant->name,
+                        'branch' => $delivery->order->branch->description ?? 'N/A',
+                        'location' => $delivery->order->branch->location_note ?? '',
+                    ],
+                ]
+            ]);
         } catch (\Throwable $e) {
             DB::rollBack();
 
@@ -230,7 +290,8 @@ class DeliveryController extends Controller
     public function confirmByQr(Request $request)
     {
         $request->validate([
-            'qr_string' => 'required|string'
+            'qr_string' => 'required|string',
+            'notes'     => 'nullable|string|max:1000'
         ]);
 
         try {
@@ -265,9 +326,9 @@ class DeliveryController extends Controller
             }
 
             DB::transaction(function () use ($delivery, $order, $request) {
-               // $delivery->qr_scanned_string = $request->qr_string;
-                $delivery->status = 'delivered';
+                $delivery->status       = 'delivered';
                 $delivery->delivered_at = now();
+                $delivery->notes        = $request->notes;
                 $delivery->save();
 
                 $order->status = 'delivered';
@@ -277,7 +338,6 @@ class DeliveryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Delivery confirmed by QR successfully.',
-                //'data' => $delivery
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -287,7 +347,7 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-
+    
     public function getRejectionReasons()
     {
 
