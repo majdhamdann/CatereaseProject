@@ -773,6 +773,48 @@ class OrderController extends Controller
         ]);
     }
 
+    public function showQr($orderId)
+    {
+        try {
+            $user = Auth::user();
+
+            $order = Order::where('id', $orderId)
+                ->where('user_id', $user->id)
+                ->first();
+
+            if (!$order) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Order not found.'
+                ], 404);
+            }
+
+            if (!$order->qr_token) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'QR code not generated for this order.'
+                ], 400);
+            }
+
+            return response()->json([
+                'status' => true,
+                'message' => 'QR token retrieved successfully.',
+                'data' => [
+                    'order_id' => $order->id,
+                    'qr_token' => $order->qr_token,
+                ]
+            ]);
+
+        } catch (\Throwable $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Something went wrong.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
+
 
 
 

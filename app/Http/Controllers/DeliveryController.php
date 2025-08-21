@@ -347,7 +347,7 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-    
+
     public function getRejectionReasons()
     {
 
