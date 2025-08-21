@@ -17,6 +17,7 @@ return new class extends Migration
             $table->unsignedBigInteger('FeedbackType_id');
 
             $table->enum('type', ['rating', 'complaint']);
+            $table->enum('status', ['under_review', 'resolved'])->nullable();
             $table->decimal('score', 2, 1)->nullable();
             $table->text('message')->nullable();
 
