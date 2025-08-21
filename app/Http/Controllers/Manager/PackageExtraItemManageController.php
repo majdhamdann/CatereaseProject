@@ -46,12 +46,12 @@ class PackageExtraItemManageController extends Controller
 
    public function show($id)
 {
-    $manager = auth()->user();
-    $branch = Branch::where('manager_id', $manager->id)->first();
+    // $manager = auth()->user();
+    // $branch = Branch::where('manager_id', $manager->id)->first();
 
-    if (!$branch) {
-        return response()->json(['error' => 'لا يوجد فرع مرتبط بهذا المدير'], 403);
-    }
+    // if (!$branch) {
+    //     return response()->json(['error' => 'لا يوجد فرع مرتبط بهذا المدير'], 403);
+    // }
 
     $package = Package::with([
         'items.foodItem',
@@ -64,7 +64,7 @@ class PackageExtraItemManageController extends Controller
         'extraServices',
         'feedbacks.user',
     ])
-    ->where('branch_id', $branch->id)
+   // ->where('branch_id', $branch->id)
     ->findOrFail($id);
       $averageRating =  $package-> feedbacks->avg('score') ?? 0;
       $reviews_count =  $package-> feedbacks->count() ;

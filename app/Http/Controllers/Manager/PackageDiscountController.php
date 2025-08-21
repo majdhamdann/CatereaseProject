@@ -127,6 +127,9 @@ class PackageDiscountController extends Controller
 
     return response()->json($data);
 }
-
+public function getPackageDiscounts($packageId){
+    $discount=PackageDiscount::where('package_id',$packageId)->get();
+    return $discount;
+}
 
 }
