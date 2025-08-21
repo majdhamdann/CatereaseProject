@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Admin\ComplaintController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CartController;
@@ -81,6 +82,7 @@ Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
     Route::get('items/{cartItemId}', [CartController::class, 'showCartItem']);
     Route::delete('/items/{cartItem}', [CartController::class, 'removeCartItem']);
 });
+
 
 Route::prefix('order')->middleware('auth:sanctum')->group(function () {
 
@@ -211,11 +213,11 @@ Route::middleware(['auth:api', 'owner_or_manager'])->group(function () {
     Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
     Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
 });
-
+ Route::post('/update-staus-compalant/{id}', [ComplaintController::class, 'updateStatusfeedback']);
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::get('/role', [UserManagementController::class, 'allRole']);
      Route::apiResource('restaurants', AdminRestaurantController::class);
-     Route::apiResource('complaints', \App\Http\Controllers\Admin\ComplaintController::class);
+     Route::apiResource('complaints', ComplaintController::class);
      Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
      Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
      Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
