@@ -199,6 +199,7 @@ Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
      Route::post('/occasion-types', [OccasionTypeController::class, 'store']);
      Route::put('/occasion-types/{id}', [OccasionTypeController::class, 'update']);
      Route::get('/branches/{branchId}/working-days/owner', [WorkingDayController::class, 'all']);
+     Route::post('/report/update/{id}', [ReportController::class, 'updateStatus']);
      Route::delete('/occasion-types/{id}', [OccasionTypeController::class, 'destroy']);
 });
 
@@ -234,7 +235,6 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::put('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'update']);
      Route::delete('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'destroy']);
      Route::get('/report', [ReportController::class, 'index']);
-     Route::post('/report/update/{id}', [ReportController::class, 'updateStatus']);
      Route::get('/BranchesWithPackages', [OwnerBranchController::class, 'getOwnerBranchesWithPackages']);
      Route::get('/CategoriesToBranch', [MenuOwnerController::class, 'getCategoriesToBranch']);
      Route::get('/PackagesByCategory/{category_id}', [MenuOwnerController::class, 'getPackagesByCategory']);
