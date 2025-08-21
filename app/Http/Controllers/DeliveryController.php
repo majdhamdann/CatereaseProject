@@ -290,8 +290,8 @@ class DeliveryController extends Controller
     public function confirmByQr(Request $request)
     {
         $request->validate([
-            'qr_string' => 'required|string'
-
+            'qr_string' => 'required|string',
+            'notes'     => 'nullable|string|max:1000'
         ]);
 
         try {
@@ -326,9 +326,9 @@ class DeliveryController extends Controller
             }
 
             DB::transaction(function () use ($delivery, $order, $request) {
-               // $delivery->qr_scanned_string = $request->qr_string;
-                $delivery->status = 'delivered';
+                $delivery->status       = 'delivered';
                 $delivery->delivered_at = now();
+                $delivery->notes        = $request->notes;
                 $delivery->save();
 
                 $order->status = 'delivered';
@@ -338,7 +338,6 @@ class DeliveryController extends Controller
             return response()->json([
                 'status' => 'success',
                 'message' => 'Delivery confirmed by QR successfully.',
-                //'data' => $delivery
             ]);
         } catch (\Throwable $e) {
             return response()->json([
@@ -348,7 +347,7 @@ class DeliveryController extends Controller
             ], 500);
         }
     }
-
+    
     public function getRejectionReasons()
     {
 
