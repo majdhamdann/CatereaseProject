@@ -19,7 +19,7 @@ class OrderManagementController extends Controller
     public function index()
 {
     $manager = auth()->user();
-    
+
     $branch = Branch::where('manager_id', $manager->id)
 
              ->first();
@@ -69,7 +69,7 @@ class OrderManagementController extends Controller
     Bill::create([
         'order_id' => $order->id,
         'user_id' => $order->user_id,
-        'amount' => $order->total_price, 
+        'amount' => $order->total_price,
         'issued_at' => now(),
     ]);
 
@@ -88,7 +88,7 @@ class OrderManagementController extends Controller
     $order = Order::where('id', $id)->where('is_submitted', true)
            ->where('branch_id', $branchId)->firstOrFail();
 
-    $order->is_approved = false; 
+    $order->is_approved = false;
     $order->status = 'cancelled';
     $order->rejection_reason = $request->rejection_reason;
     $order->approved_by = $manager->id;
@@ -183,7 +183,7 @@ class OrderManagementController extends Controller
                                     ->lockForUpdate()
                                     ->firstOrFail();
 
-       
+
             if (!$deliveryPerson->is_available) {
                 throw new \Exception('موظف التوصيل غير متاح حالياً');
             }
@@ -196,7 +196,7 @@ class OrderManagementController extends Controller
             ]);
 
             $deliveryPerson->update(['is_available' => false]);
-            
+
             $order->update([
                 'status' => 'preparing',
                 'delivery_id' => $delivery->id,
@@ -204,7 +204,7 @@ class OrderManagementController extends Controller
             ]);
 
             $message = 'تم تعيين موظف التوصيل بنجاح';
-      
+
 
         DB::commit();
 
@@ -254,10 +254,10 @@ public function assignDeliveryPerson(Request $request)
         }
 
         $previousDelivery = Delivery::where('order_id', $order->id)->first();
-        
+
         if ($previousDelivery) {
             $previousDelivery->deliveryPerson->update(['is_available' => true]);
-            
+
             $previousDelivery->delete();
         }
 
@@ -269,7 +269,7 @@ public function assignDeliveryPerson(Request $request)
         ]);
 
         $deliveryPerson->update(['is_available' => false]);
-        
+
         $order->update([
              'status' => 'preparing',
           //  'delivery_id' => $delivery->id,
@@ -324,7 +324,7 @@ public function assignDeliveryPerson(Request $request)
             'orderDetails.extras.extra',
             'orderDetails.services.service.serviceType',
           //  'services.branchServiceType.serviceType',
-            'delivery.deliveryPerson' 
+            'delivery.deliveryPerson'
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
@@ -339,11 +339,11 @@ public function assignDeliveryPerson(Request $request)
                 'branch_id' => $branch->id
             ], 404);
         }
-        
+
         $deliveryPrice = $order->deliveryArea?->delivery_price;
         $orderPrice = $order->total_price;
         $totalPriceWithDelivery = $deliveryPrice + $orderPrice;
-    
+
         $formatted = [
             'id' => $order->id,
             'customer' => [
@@ -416,7 +416,7 @@ public function assignDeliveryPerson(Request $request)
                     }),
                 ];
             }),
-            
+
         ];
 
         return response()->json([
@@ -541,7 +541,7 @@ public function assignDeliveryPerson(Request $request)
         ->where('branch_id', $branchId)
         ->where('is_submitted', true)
         ->where('status', 'delivered')
-        ->orderBy('created_at', 'desc') 
+        ->orderBy('created_at', 'desc')
         ->get();
 
     return response()->json($orders);

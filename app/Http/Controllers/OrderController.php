@@ -726,7 +726,7 @@ class OrderController extends Controller
     {
         $user = Auth::user();
 
-        $order = Order::with('orderDetails.package')
+        $order = Order::with(['orderDetails.package', 'delivery'])
             ->where('id', $id)
             ->where('user_id', $user->id)
             ->first();
@@ -738,39 +738,97 @@ class OrderController extends Controller
             ], 404);
         }
 
-        if ($order->status === 'cancelled') {
-            return response()->json([
-                'status' => false,
-                'message' => 'Order was rejected.',
-                'rejection_reason' => $order->rejection_reason,
-            ]);
-        }
+        switch ($order->status) {
+            case 'pending':
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your order is still under review.',
+                    'current_status' => $order->status,
+                    'next_step' => 'Wait for restaurant approval'
+                ]);
 
-        if ($order->status === 'confirmed') {
-            $prepaymentRequired = false;
-            $prepaymentAmount = 0;
+            case 'confirmed':
+                $prepaymentRequired   = false;
+                $prepaymentPercentage = null;
+                $prepaymentAmount     = null;
 
-            foreach ($order->orderDetails as $detail) {
-                $package = $detail->package;
-                if ($package && $package->prepayment_required) {
-                    $prepaymentRequired = true;
-                    $prepaymentAmount += ($order->total_price * ($package->prepayment_amount / 100));
+                foreach ($order->orderDetails as $detail) {
+                    $package = $detail->package;
+                    if ($package && $package->prepayment_required) {
+                        $prepaymentRequired   = true;
+                        $prepaymentPercentage = $package->prepayment_amount . '%';
+                        $prepaymentAmount     = round($order->total_price * ($package->prepayment_amount / 100), 2);
+                        break;
+                    }
                 }
-            }
 
-            return response()->json([
-                'status' => true,
-                'message' => 'Order approved. Please proceed to prepayment.',
-                'prepayment_required' => $prepaymentRequired,
-                'prepayment_amount' => round($prepaymentAmount, 2),
-            ]);
+                return response()->json([
+                    'status' => true,
+                    'message' => $prepaymentRequired
+                        ? 'Order confirmed. Partial payment is required before preparation.'
+                        : 'Order confirmed. Full payment can be made anytime.',
+                    'current_status'        => $order->status,
+                    'prepayment_required'   => $prepaymentRequired,
+                    'prepayment_percentage' => $prepaymentPercentage,
+                    'prepayment_amount'     => $prepaymentAmount,
+                ]);
+
+            case 'preparing':
+                if ($order->delivery) {
+                    switch ($order->delivery->status) {
+                        case 'on_the_way':
+                            return response()->json([
+                                'status' => true,
+                                'message' => 'Your order is on the way.',
+                                'current_status' => 'on_the_way',
+                                'next_step' => 'Your order is on the way, please be ready to receive it'
+                            ]);
+
+                        case 'failed':
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Delivery failed. Please contact support.',
+                                'current_status' => 'delivery_failed',
+                            ]);
+
+                        case 'cancelled':
+                            return response()->json([
+                                'status' => false,
+                                'message' => 'Delivery was cancelled.',
+                                'current_status' => 'delivery_cancelled',
+                            ]);
+                    }
+                }
+
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Your order is being prepared.',
+                    'current_status' => $order->status,
+                    'next_step' => 'Wait for delivery'
+                ]);
+
+            case 'delivered':
+                return response()->json([
+                    'status' => true,
+                    'message' => 'Your order has been delivered. Enjoy your meal!',
+                    'current_status' => $order->status,
+                ]);
+
+            case 'cancelled':
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your order has been cancelled.',
+                    'current_status' => $order->status,
+                    'rejection_reason' => $order->rejection_reason ?? 'No reason provided',
+                ]);
+
+            default:
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Unknown order status.',
+                    'current_status' => $order->status,
+                ], 400);
         }
-
-        return response()->json([
-            'status' => false,
-            'message' => 'Order is still under review.',
-            'current_status' => $order->status,
-        ]);
     }
 
     public function showQr($orderId)
