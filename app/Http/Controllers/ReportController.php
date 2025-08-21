@@ -39,6 +39,25 @@ public function index()
 
     return response()->json($reports);
 }
+public function allReports()
+{
+
+    $reports = Report::with(['branch'])->get();
+
+    return response()->json($reports);
+}
+public function updateStatus(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:under_review,resolved'
+        ]);
+
+        $report = Report::findOrFail($id);
+        $report->status=$request->status;
+         $report->save();
+         return response()->json([$report]);
+       
+    }
 
 
 }

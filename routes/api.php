@@ -203,6 +203,7 @@ Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
      Route::post('/occasion-types', [OccasionTypeController::class, 'store']);
      Route::put('/occasion-types/{id}', [OccasionTypeController::class, 'update']);
      Route::get('/branches/{branchId}/working-days/owner', [WorkingDayController::class, 'all']);
+     Route::post('/report/update/{id}', [ReportController::class, 'updateStatus']);
      Route::delete('/occasion-types/{id}', [OccasionTypeController::class, 'destroy']);
 });
 
@@ -219,6 +220,8 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
      Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
      Route::get('service-types/{id}', [ServiceTypeManagementController::class, 'show']);
+     Route::get('/report/admin', [ReportController::class, 'allReports']);
+
 });
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
      Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
