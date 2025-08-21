@@ -215,6 +215,8 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
      Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
      Route::get('service-types/{id}', [ServiceTypeManagementController::class, 'show']);
+     Route::get('/report/admin', [ReportController::class, 'allReports']);
+
 });
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
      Route::get('/my-restaurant', [OwnerBranchController::class, 'showRestaurantDetails']);
@@ -232,6 +234,7 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::put('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'update']);
      Route::delete('delivery-areas/{id}', [BranchDeliveryAreaController::class, 'destroy']);
      Route::get('/report', [ReportController::class, 'index']);
+     Route::post('/report/update/{id}', [ReportController::class, 'updateStatus']);
      Route::get('/BranchesWithPackages', [OwnerBranchController::class, 'getOwnerBranchesWithPackages']);
      Route::get('/CategoriesToBranch', [MenuOwnerController::class, 'getCategoriesToBranch']);
      Route::get('/PackagesByCategory/{category_id}', [MenuOwnerController::class, 'getPackagesByCategory']);

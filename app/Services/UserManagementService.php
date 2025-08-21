@@ -61,20 +61,6 @@ class UserManagementService
         $user = User::findOrFail($id);
         $user->delete();
     }
-    public function getManagerBranch($managerId)
-{
-    return Branch::with(['restaurant', 'city'])
-        ->where('manager_id', $managerId)
-        ->firstOrFail();
-}
-
-public function getOwnerRestaurantWithBranches($ownerId)
-{
-    return Restaurant::with(['branches' => function($query) {
-            $query->with(['manager', 'city']);
-        }])
-        ->where('owner_id', $ownerId)
-        ->firstOrFail();
-}
+   
 
 }
