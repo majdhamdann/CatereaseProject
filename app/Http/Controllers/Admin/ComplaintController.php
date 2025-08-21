@@ -26,6 +26,18 @@ class ComplaintController extends Controller
 
         return response()->json($complaint);
     }
+    public function updateStatusfeedback(Request $request, $id)
+    {
+        $request->validate([
+            'status' => 'required|in:under_review,resolved'
+        ]);
+
+        $feedback = Feedback::findOrFail($id);
+        $feedback->status=$request->status;
+         $feedback->save();
+         return response()->json([$feedback]);
+       
+    }
 
 
     public function destroy($id)
