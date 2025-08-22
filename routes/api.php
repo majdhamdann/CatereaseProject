@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Admin\ComplaintController;
+use App\Http\Controllers\Admin\StatisticsAdminController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CartController;
@@ -217,11 +218,15 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::get('/role', [UserManagementController::class, 'allRole']);
      Route::apiResource('restaurants', AdminRestaurantController::class);
      Route::apiResource('complaints', ComplaintController::class);
-     Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
-     Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
-     Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
-     Route::get('service-types/{id}', [ServiceTypeManagementController::class, 'show']);
+    //  Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
+    //  Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
+    //  Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
+    //  Route::get('service-types/{id}', [ServiceTypeManagementController::class, 'show']);
      Route::get('/report/admin', [ReportController::class, 'allReports']);
+     Route::get('/restaurants/{id}/stats', [StatisticsAdminController::class, 'restaurantStats']);
+     Route::get('/statistics', [StatisticsAdminController::class, 'index']);
+     Route::get('/restaurants-summary', [StatisticsAdminController::class, 'restaurantsSummary']);
+     Route::get('/popular-packages', [StatisticsAdminController::class, 'popularPackages']);
 
 });
 Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () {
