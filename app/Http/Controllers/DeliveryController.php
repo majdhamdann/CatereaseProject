@@ -443,6 +443,63 @@ class DeliveryController extends Controller
         }
     }
 
+    public function getDeliveryPerson($orderId)
+    {
+        $user = Auth::user();
+
+        $order = Order::with('delivery.deliveryPerson')
+            ->where('id', $orderId)
+            ->where('user_id', $user->id)
+            ->first();
+
+        if (!$order) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Order not found.',
+            ], 404);
+        }
+
+
+        if (!$order->delivery) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'No delivery assigned to this order yet.',
+            ], 404);
+        }
+
+
+        if (!$order->delivery->deliveryPerson) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Delivery person not assigned yet.',
+            ], 404);
+        }
+
+
+        if ($order->delivery->status !== 'on_the_way') {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Delivery person details will be available once the order is on the way.',
+                'current_status' => $order->delivery->status
+            ], 403);
+        }
+
+        $deliveryPerson = $order->delivery->deliveryPerson->user;
+
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Delivery person details retrieved successfully.',
+            'data' => [
+                'id'     => $deliveryPerson->id,
+                'name'   => $deliveryPerson->name,
+                'phone'  => $deliveryPerson->phone,
+                'status' => $order->delivery->status,
+            ]
+        ]);
+    }
+
+
 
 
 

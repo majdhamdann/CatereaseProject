@@ -93,10 +93,9 @@ Route::prefix('order')->middleware('auth:sanctum')->group(function () {
     Route::post('/orders/{id}', [OrderController::class, 'updateOrder']);
     Route::delete('/{id}', [OrderController::class, 'deleteOrder']);
     Route::post('/{id}/submit', [OrderController::class, 'submitOrderToBranch']);
-
     Route::get('/orders/{order}/qr', [OrderController::class, 'showQr']);
-
-    Route::post('/{id}/cancel-submit', [OrderController::class, 'cancelOrderSubmission']);
+    Route::get('/orders/{id}/delivery-info', [DeliveryController::class, 'getDeliveryPerson']);
+    //Route::post('/{id}/cancel-submit', [OrderController::class, 'cancelOrderSubmission']);
 
     Route::get('{id}/approval-status', [OrderController::class, 'checkOrderApprovalStatus']);
 
