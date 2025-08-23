@@ -36,12 +36,12 @@ class RestaurantController extends Controller
     return response()->json($restaurant, 201);
 }
 
-     public function show($id)
-    {
-        $restaurant = Restaurant::findOrFail($id);
-        return response()->json($restaurant);
-    }
-    public function update(Request $request, $id)
+    public function show($id)
+{
+    $restaurant = Restaurant::with('owner')->findOrFail($id);
+    return response()->json($restaurant);
+}  
+  public function update(Request $request, $id)
 {
     $restaurant = Restaurant::findOrFail($id);
 

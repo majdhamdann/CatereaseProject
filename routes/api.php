@@ -218,6 +218,8 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::get('/role', [UserManagementController::class, 'allRole']);
      Route::apiResource('restaurants', AdminRestaurantController::class);
      Route::apiResource('complaints', ComplaintController::class);
+     Route::get('users/all/Owner', [UserManagementController::class,'getallOwner']);
+
     //  Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
     //  Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
     //  Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
