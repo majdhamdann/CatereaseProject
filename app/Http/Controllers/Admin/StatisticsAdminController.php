@@ -7,6 +7,7 @@ use App\Models\Branch;
 use App\Models\Feedback;
 use App\Models\Order;
 use App\Models\OrderDetail;
+use App\Models\Package;
 use App\Models\Restaurant;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
@@ -93,37 +94,16 @@ class StatisticsAdminController extends Controller
     ]);
 }
 
-    public function restaurantStats1($restaurantId)
+   public function restaurantStats($restaurantId)
 {
-    $restaurant = Restaurant::with('branches.orders')->findOrFail($restaurantId);
-
-    $orders = $restaurant->branches->flatMap->orders;
-
-    return response()->json([
-        'status' => true,
-        'data' => [
-            'RestaurantId'   => $restaurant->id,
-            'RestaurantName' => $restaurant->name,
-            'RestaurantPhoto'=> $restaurant->photo,
-            'TotalOrders'    => $orders->count(),
-            'TotalRevenue'   => $orders->sum('total_price'),
-        ]
-    ]);
-}
-public function restaurantStats($restaurantId)
-{
-    //$owner = Auth::user();
-
     $restaurant = Restaurant::with('branches')
         ->where('id', $restaurantId)
-        //->where('owner_id', $owner->id)
         ->first();
 
     if (!$restaurant) {
         return response()->json(['message' => 'المطعم غير موجود أو لا ينتمي لهذا المالك'], 404);
     }
 
-    // الحصول على جميع الأفرع التابعة للمطعم
     $branchIds = $restaurant->branches->pluck('id');
 
     if ($branchIds->isEmpty()) {
@@ -137,11 +117,12 @@ public function restaurantStats($restaurantId)
             'average_rating' => 0,
             'total_ratings' => 0,
             'packageStats' => [],
-            'branches_stats' => []
+            'branches_stats' => [],
+            'branch_ratings' => [],
+            'package_ratings' => []
         ]);
     }
 
-    // إحصائيات الطلبات لكل الفروع
     $ordersStats = Order::selectRaw('
             COUNT(*) as total_orders_count,
             SUM(total_price) as total_revenue,
@@ -152,7 +133,6 @@ public function restaurantStats($restaurantId)
         ->groupBy(DB::raw('MONTH(created_at)'))
         ->get();
 
-    // الإحصائيات الشهرية
     $monthlyStats = [];
     $totalOrders = 0;
     $totalRevenue = 0;
@@ -168,8 +148,58 @@ public function restaurantStats($restaurantId)
         $totalRevenue += $data->total_revenue;
     }
 
-    // // متوسط التقييمات
-    
+    $branchRatings = DB::table('feedback')
+        ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
+        ->where('feedback_types.target_type', 'branch')
+        ->whereIn('feedback_types.target_ref_id', $branchIds)
+        ->select(
+            'feedback_types.target_ref_id as branch_id',
+            DB::raw('COUNT(feedback.id) as total_ratings'),
+            DB::raw('AVG(feedback.score) as average_rating')
+        )
+        ->groupBy('feedback_types.target_ref_id')
+        ->get()
+        ->map(function($item) {
+            return [
+                'branch_id' => $item->branch_id,
+                'total_ratings' => $item->total_ratings,
+                'average_rating' => round($item->average_rating, 2)
+            ];
+        });
+
+    $packageIds = OrderDetail::whereHas('order', function($query) use ($branchIds) {
+            $query->whereIn('branch_id', $branchIds)
+                  ->where('status', 'delivered');
+        })
+        ->pluck('package_id')
+        ->unique();
+
+    $packageRatings = DB::table('feedback')
+        ->join('feedback_types', 'feedback.FeedbackType_id', '=', 'feedback_types.id')
+        ->where('feedback_types.target_type', 'package')
+        ->whereIn('feedback_types.target_ref_id', $packageIds)
+        ->select(
+            'feedback_types.target_ref_id as package_id',
+            DB::raw('COUNT(feedback.id) as total_ratings'),
+            DB::raw('AVG(feedback.score) as average_rating')
+        )
+        ->groupBy('feedback_types.target_ref_id')
+        ->get()
+        ->map(function($item) use ($packageIds) {
+            $package = Package::find($item->package_id);
+            return [
+                'package_id' => $item->package_id,
+                'package_name' => $package->name ?? 'غير معروف',
+                'total_ratings' => $item->total_ratings,
+                'average_rating' => round($item->average_rating, 2),
+                'categories' => $package ? $package->categories->map(function($category) {
+                    return [
+                        'id' => $category->id,
+                        'name' => $category->name
+                    ];
+                })->toArray() : []
+            ];
+        });
 
     // إحصائيات الباقات
     $packageStats = OrderDetail::whereHas('order', function($query) use ($branchIds) {
@@ -211,18 +241,23 @@ public function restaurantStats($restaurantId)
             }
         ], 'total_price')
         ->get()
-        ->map(function($branch) {
-            $branchAvgRating = $branch->feedbacks()->avg('score');
+        ->map(function($branch) use ($branchRatings) {
+            // البحث عن تقييمات الفرع
+            $branchRating = $branchRatings->firstWhere('branch_id', $branch->id);
             
             return [
                 'branch_id' => $branch->id,
                 'branch_name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
                 'total_orders' => $branch->total_orders_count ?? 0,
                 'total_revenue' => (float) ($branch->total_revenue ?? 0),
-                'average_rating' => round($branchAvgRating, 2),
-                'total_ratings' => $branch->feedbacks()->count()
+                'average_rating' => $branchRating ? $branchRating['average_rating'] : 0,
+                'total_ratings' => $branchRating ? $branchRating['total_ratings'] : 0
             ];
         });
+
+    // الإحصائيات العامة للتقييمات
+    $totalRatings = $branchRatings->sum('total_ratings') + $packageRatings->sum('total_ratings');
+    $averageRating = ($branchRatings->avg('average_rating') + $packageRatings->avg('average_rating')) / 2;
 
     return response()->json([
         'restaurant_id' => $restaurant->id,
@@ -231,10 +266,12 @@ public function restaurantStats($restaurantId)
         'total_orders' => $totalOrders,
         'total_revenue' => (float) $totalRevenue,
         'monthly_stats' => $monthlyStats,
-        // 'average_rating' => round($averageRating, 2),
-        // 'total_ratings' => $totalRatings,
+        'average_rating' => round($averageRating, 2),
+        'total_ratings' => $totalRatings,
         'packageStats' => $packageStats,
-        'branches_stats' => $branchesStats
+        'branches_stats' => $branchesStats,
+        'branch_ratings' => $branchRatings,
+        'package_ratings' => $packageRatings
     ]);
 }
 
