@@ -38,7 +38,7 @@ class RestaurantController extends Controller
 
     public function show($id)
 {
-    $restaurant = Restaurant::with('owner')->findOrFail($id);
+    $restaurant = Restaurant::with(['owner','branches'])->findOrFail($id);
     return response()->json($restaurant);
 }  
   public function update(Request $request, $id)
