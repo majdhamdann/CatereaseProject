@@ -37,7 +37,8 @@ class BranchController extends Controller
                 'deliveryPeople',
                 'city',
                 'feedbacks',
-                'categories' 
+                'categories' ,
+                'owner'
             ]);
         },
     ])->where('owner_id', $user->id)->first();
@@ -151,7 +152,6 @@ class BranchController extends Controller
         'delivery_regions' => 'nullable|array',
         'delivery_regions.*.city_id' => 'required|exists:cities,id',
         'delivery_regions.*.district_id' => 'required|exists:districts,id',
-        'delivery_regions.*.area_id' => 'required|exists:areas,id',
         'delivery_regions.*.delivery_price' => 'required|numeric',
        // 'delivery_regions.*.description' => 'nullable|string',
     ];
@@ -217,7 +217,6 @@ class BranchController extends Controller
             $branch->deliveryAreas()->create([
                 'city_id' => $region['city_id'],
                  'district_id' => $region['district_id'],
-                 'area_id' => $region['area_id'],
                 'delivery_price' => $region['delivery_price'],
                // 'description' => $region['description'] ?? null,
             ]);
@@ -276,7 +275,6 @@ public function show($id)
         'branchServiceTypes.serviceType',
         'deliveryAreas.city',
          'deliveryAreas.district', 
-        'deliveryAreas.area',    
         
     ])->findOrFail($id);
 
@@ -318,7 +316,6 @@ public function show($id)
         'delivery_regions.*.id' => 'sometimes|exists:branch_delivery_areas,id,branch_id,'.$id,
         'delivery_regions.*.city_id' => 'required_with:delivery_regions|exists:cities,id',
         'delivery_regions.*.district_id' => 'required|exists:districts,id',
-        'delivery_regions.*.area_id' => 'required|exists:areas,id',
         'delivery_regions.*.delivery_price' => 'required|numeric',
       //  'delivery_regions.*.description' => 'nullable|string',
     ];
@@ -428,7 +425,6 @@ public function show($id)
                     ->update([
                         'city_id' => $region['city_id'],
                          'district_id' => $region['district_id'],
-                          'area_id' => $region['area_id'],
                         'delivery_price' => $region['delivery_price'],
                     ]);
                 $updatedRegionIds[] = $region['id'];

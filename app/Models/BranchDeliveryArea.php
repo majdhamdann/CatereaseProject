@@ -46,8 +46,8 @@ class BranchDeliveryArea extends Model
     }
 
    
-    public function area()
-    {
-        return $this->belongsTo(Area::class);
-    }
+    // public function area()
+    // {
+    //     return $this->belongsTo(Area::class);
+    // }
 }
