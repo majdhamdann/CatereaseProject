@@ -34,6 +34,8 @@ use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\BranchDeliveryAreaController;
 use App\Http\Controllers\Owner\BranchStatisticsController;
+use App\Http\Controllers\Owner\LocationController;
+
 use App\Http\Controllers\Owner\branchtatisticsontroller;
 use App\Http\Controllers\Owner\MenuOwnerController;
 use App\Http\Controllers\Owner\WorkingDayController;
@@ -251,6 +253,7 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::get('/CategoriesToBranch', [MenuOwnerController::class, 'getCategoriesToBranch']);
      Route::get('/PackagesByCategory/{category_id}', [MenuOwnerController::class, 'getPackagesByCategory']);
      Route::get('/Discount_TO_package/{packageId}', [PackageDiscountController::class, 'getPackageDiscounts']);
+     Route::get('/locations/search', [LocationController::class, 'search']);
 
     });
 

@@ -136,6 +136,7 @@ class BranchController extends Controller
         'latitude' => 'nullable|numeric',
         'longitude' => 'nullable|numeric',
         'city_id' => 'required|exists:cities,id',
+        
         'manager_id' => 'nullable|exists:users,id',
         'categories' => 'required|array',
         'categories.*' => 'string', 
@@ -149,8 +150,10 @@ class BranchController extends Controller
         'services.*.description' => 'nullable|string',
         'delivery_regions' => 'nullable|array',
         'delivery_regions.*.city_id' => 'required|exists:cities,id',
+        'delivery_regions.*.district_id' => 'required|exists:districts,id',
+        'delivery_regions.*.area_id' => 'required|exists:areas,id',
         'delivery_regions.*.delivery_price' => 'required|numeric',
-        'delivery_regions.*.description' => 'nullable|string',
+       // 'delivery_regions.*.description' => 'nullable|string',
     ];
 
     if ($role === 'Admin') {
@@ -213,12 +216,13 @@ class BranchController extends Controller
         foreach ($data['delivery_regions'] as $region) {
             $branch->deliveryAreas()->create([
                 'city_id' => $region['city_id'],
+                 'district_id' => $region['district_id'],
+                 'area_id' => $region['area_id'],
                 'delivery_price' => $region['delivery_price'],
-                'description' => $region['description'] ?? null,
+               // 'description' => $region['description'] ?? null,
             ]);
         }
     }
-
     return response()->json([
         'message' => 'Branch created successfully',
         'branch' => $branch->load([
@@ -271,6 +275,8 @@ public function show($id)
         'workingDays',
         'branchServiceTypes.serviceType',
         'deliveryAreas.city',
+         'deliveryAreas.district', 
+        'deliveryAreas.area',    
         
     ])->findOrFail($id);
 
@@ -311,8 +317,10 @@ public function show($id)
         'delivery_regions' => 'sometimes|nullable|array',
         'delivery_regions.*.id' => 'sometimes|exists:branch_delivery_areas,id,branch_id,'.$id,
         'delivery_regions.*.city_id' => 'required_with:delivery_regions|exists:cities,id',
-        'delivery_regions.*.delivery_price' => 'required_with:delivery_regions|numeric',
-        'delivery_regions.*.description' => 'nullable|string',
+        'delivery_regions.*.district_id' => 'required|exists:districts,id',
+        'delivery_regions.*.area_id' => 'required|exists:areas,id',
+        'delivery_regions.*.delivery_price' => 'required|numeric',
+      //  'delivery_regions.*.description' => 'nullable|string',
     ];
 
     if ($role === 'Admin') {
@@ -419,8 +427,9 @@ public function show($id)
                     ->where('id', $region['id'])
                     ->update([
                         'city_id' => $region['city_id'],
+                         'district_id' => $region['district_id'],
+                          'area_id' => $region['area_id'],
                         'delivery_price' => $region['delivery_price'],
-                        'description' => $region['description'] ?? null
                     ]);
                 $updatedRegionIds[] = $region['id'];
             } else {
