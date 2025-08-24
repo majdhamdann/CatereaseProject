@@ -10,7 +10,7 @@ use App\Models\Area;
 
 class LocationController extends Controller
 {
-      public function search(Request $request)
+      public function search11(Request $request)
     {
         $search = $request->input('search');
         
@@ -32,7 +32,7 @@ class LocationController extends Controller
         ];
         
         $cities = City::where('name', 'like', "%{$search}%")
-            ->with(['districts.areas'])
+            ->with(['districts'])
             ->get();
         
         $districts = District::where('name', 'like', "%{$search}%")
@@ -88,6 +88,41 @@ class LocationController extends Controller
         return response()->json([
             'search_term' => $search,
             'results' => $results,
+           
+        ]);
+    }
+      public function search(Request $request)
+    {
+        $search = $request->input('search');
+        
+        if (!$search) {
+            $cities = City::with(['districts.areas'])
+                ->orderBy('name')
+                ->get();
+            
+            return response()->json([
+                'data' => $cities,
+                'message' => 'All cities with districts and areas'
+            ]);
+        }
+        
+        $results = [
+            'cities' => [],
+            'districts' => [],
+            'areas' => []
+        ];
+        
+        $cities = City::where('name', 'like', "%{$search}%")
+            ->with(['districts'])
+            ->get();
+        
+        $districts = District::where('name', 'like', "%{$search}%")
+            ->get();
+      
+        return response()->json([
+            'search_term' => $search,
+            'results' => $cities,
+            'districts'=> $districts 
            
         ]);
     }
