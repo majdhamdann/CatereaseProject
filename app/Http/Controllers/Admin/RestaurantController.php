@@ -50,9 +50,10 @@ class RestaurantController extends Controller
         'description' => 'sometimes|string',
         'photo' => 'sometimes|string', 
         'is_active' => 'sometimes|boolean',
+        'owner_id' => 'sometimes|exists:users,id',
     ]);
 
-    $restaurant->update($request->only(['name', 'description', 'is_active', 'photo']));
+    $restaurant->update($request->only(['name', 'description', 'is_active', 'photo','owner_id']));
 
     return response()->json($restaurant);
 }
