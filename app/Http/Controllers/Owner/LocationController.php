@@ -106,11 +106,7 @@ class LocationController extends Controller
             ]);
         }
         
-        $results = [
-            'cities' => [],
-            'districts' => [],
-            'areas' => []
-        ];
+      
         
         $cities = City::where('name', 'like', "%{$search}%")
             ->with(['districts'])

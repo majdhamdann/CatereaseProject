@@ -13,7 +13,7 @@ class RestaurantController extends Controller
 {
    public function index()
     {
-        $restaurant=Restaurant::all();
+        $restaurant=Restaurant::with('owner')->get();
         return response()->json( $restaurant);
     }
        public function store(Request $request)
