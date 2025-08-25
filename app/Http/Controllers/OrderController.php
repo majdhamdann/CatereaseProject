@@ -700,7 +700,7 @@ class OrderController extends Controller
             $order->is_submitted = true;
             $order->submitted_at = $now;
             $order->approval_deadline = now()->addDays(1)->addHours(4);
-
+            $order->status = 'waiting';
             $order->save();
 
             DB::commit();
@@ -742,7 +742,14 @@ class OrderController extends Controller
             case 'pending':
                 return response()->json([
                     'status' => false,
-                    'message' => 'Your order is still under review.',
+                    'message' => 'Your order has been created and is pending submission to the branch.',
+                    'current_status' => $order->status,
+                    'next_step' => 'Submit order to branch'
+                ]);
+            case 'waiting':
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Your order has been submitted to the branch and is waiting for approval.',
                     'current_status' => $order->status,
                     'next_step' => 'Wait for restaurant approval'
                 ]);
