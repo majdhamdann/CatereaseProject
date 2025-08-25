@@ -23,7 +23,9 @@ class DatabaseSeeder extends Seeder
         $this->call([
         RoleSeeder::class,
         UserSeeder::class,
-        cityseeder::class,
+        CitiesTableSeeder::class,
+        DistrictsTableSeeder::class,
+        AreasTableSeeder::class,
         resturantseeder::class,
 
         BranchSeeder::class,

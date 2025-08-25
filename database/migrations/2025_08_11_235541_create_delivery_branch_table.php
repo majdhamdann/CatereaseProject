@@ -15,6 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('branch_id');
             $table->unsignedBigInteger('delivery_person_id');
+            
 
             $table->timestamps();
 

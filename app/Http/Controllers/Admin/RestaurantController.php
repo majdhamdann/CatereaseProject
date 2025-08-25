@@ -13,7 +13,7 @@ class RestaurantController extends Controller
 {
    public function index()
     {
-        $restaurant=Restaurant::all();
+        $restaurant=Restaurant::with('owner')->get();
         return response()->json( $restaurant);
     }
        public function store(Request $request)
@@ -36,12 +36,12 @@ class RestaurantController extends Controller
     return response()->json($restaurant, 201);
 }
 
-     public function show($id)
-    {
-        $restaurant = Restaurant::findOrFail($id);
-        return response()->json($restaurant);
-    }
-    public function update(Request $request, $id)
+    public function show($id)
+{
+    $restaurant = Restaurant::with(['owner','branches'])->findOrFail($id);
+    return response()->json($restaurant);
+}  
+  public function update(Request $request, $id)
 {
     $restaurant = Restaurant::findOrFail($id);
 
@@ -50,9 +50,10 @@ class RestaurantController extends Controller
         'description' => 'sometimes|string',
         'photo' => 'sometimes|string', 
         'is_active' => 'sometimes|boolean',
+        'owner_id' => 'sometimes|exists:users,id',
     ]);
 
-    $restaurant->update($request->only(['name', 'description', 'is_active', 'photo']));
+    $restaurant->update($request->only(['name', 'description', 'is_active', 'photo','owner_id']));
 
     return response()->json($restaurant);
 }

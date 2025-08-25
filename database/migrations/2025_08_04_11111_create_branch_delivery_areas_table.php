@@ -13,18 +13,21 @@ return new class extends Migration
     {
         Schema::create('branch_delivery_areas', function (Blueprint $table) {
            $table->id();
-
            $table->unsignedBigInteger('branch_id');
-           $table->unsignedBigInteger('city_id'); 
-
+           $table->unsignedBigInteger('city_id');
+           $table->unsignedBigInteger('district_id')->nullable();
            $table->decimal('delivery_price', 10, 2);
-
            $table->timestamps();
 
-           $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
-           $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
+          $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
+          $table->foreign('city_id')->references('id')->on('cities')->onDelete('cascade');
+          $table->foreign('district_id')->references('id')->on('districts')->onDelete('cascade');
 
-           $table->unique(['branch_id', 'city_id']);
+          $table->unique([
+           'branch_id', 
+           'city_id', 
+           'district_id'
+         ], 'blda_unique');
         });
     }
 

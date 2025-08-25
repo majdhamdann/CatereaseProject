@@ -36,6 +36,8 @@ use App\Http\Controllers\Manager\ServiceTypeManagementController;
 use App\Http\Controllers\Owner\BranchController as OwnerBranchController;
 use App\Http\Controllers\Owner\BranchDeliveryAreaController;
 use App\Http\Controllers\Owner\BranchStatisticsController;
+use App\Http\Controllers\Owner\LocationController;
+
 use App\Http\Controllers\Owner\branchtatisticsontroller;
 use App\Http\Controllers\Owner\MenuOwnerController;
 use App\Http\Controllers\Owner\WorkingDayController;
@@ -225,6 +227,8 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::get('/role', [UserManagementController::class, 'allRole']);
      Route::apiResource('restaurants', AdminRestaurantController::class);
      Route::apiResource('complaints', ComplaintController::class);
+     Route::get('users/all/Owner', [UserManagementController::class,'getallOwner']);
+
     //  Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
     //  Route::put('service-types/{id}', [ServiceTypeManagementController::class, 'update']);
     //  Route::delete('service-types/{id}', [ServiceTypeManagementController::class, 'destroy']);
@@ -256,6 +260,7 @@ Route::middleware(['auth:sanctum','owner'])->prefix('owner')->group(function () 
      Route::get('/CategoriesToBranch', [MenuOwnerController::class, 'getCategoriesToBranch']);
      Route::get('/PackagesByCategory/{category_id}', [MenuOwnerController::class, 'getPackagesByCategory']);
      Route::get('/Discount_TO_package/{packageId}', [PackageDiscountController::class, 'getPackageDiscounts']);
+     Route::get('/locations/search', [LocationController::class, 'search']);
 
     });
 
