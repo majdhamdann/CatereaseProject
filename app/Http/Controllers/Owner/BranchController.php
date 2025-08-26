@@ -71,6 +71,7 @@ class BranchController extends Controller
                     'delivery_areas' => $branch->deliveryAreas->map(function($area) {
                         return [
                             'delivery_city' => $area->city->name,
+                            'delivery_distract' => $area->district->name,
                             'delivery_price' => $area->delivery_price
                         ];
                     }),

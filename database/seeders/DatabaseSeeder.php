@@ -44,15 +44,15 @@ class DatabaseSeeder extends Seeder
         OrderDetailSeeder::class,
         FeedBackTypeSeeder::class,
          PackageDiscountSeeder::class,
-
+         ReportsTableSeeder::class,
 
         OrderServiceTypeSeeder::class,
 
         DeliveryPersonSeeder::class,
         DeliverySeeder::class,
         DeliveryTrackingSeeder::class,
-        //FeedbackTypeSeeder::class,
-        //FeedbackSeeder::class,
+       FeedbackTypesTableSeeder::class,
+       FeedbackTableSeeder::class,
         BranchDeliveryAreasSeeder::class,
 
     ]);
