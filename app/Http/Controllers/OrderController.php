@@ -28,6 +28,8 @@ class OrderController extends Controller
             'address.type' => 'required|in:existing,new',
             'address.existing_id' => 'required_if:address.type,existing|exists:addresses,id',
             'address.new_city_id' => 'required_if:address.type,new|exists:cities,id',
+            'address.new_district_id' => 'required_if:address.type,new|exists:districts,id',
+            'address.new_area_id' => 'required_if:address.type,new|exists:areas,id',
             'address.new_street' => 'required_if:address.type,new|string|max:255',
             'address.new_building' => 'nullable|string|max:255',
             'address.new_floor' => 'nullable|string|max:255',
@@ -63,15 +65,17 @@ class OrderController extends Controller
             }
         } else {
             $address = Address::create([
-                'user_id'   => $user->id,
-                'city_id'   => $request->address['new_city_id'],
-                'street'    => $request->address['new_street'],
-                'building'  => $request->address['new_building'],
-                'floor'     => $request->address['new_floor'],
-                'apartment' => $request->address['new_apartment'],
-                'latitude'  => $request->address['new_latitude'],
-                'longitude' => $request->address['new_longitude'],
-                'is_default' => false,
+                'user_id'     => $user->id,
+                'city_id'     => $request->address['new_city_id'],
+                'district_id' => $request->address['new_district_id'],
+                'area_id'     => $request->address['new_area_id'],
+                'street'      => $request->address['new_street'],
+                'building'    => $request->address['new_building'],
+                'floor'       => $request->address['new_floor'],
+                'apartment'   => $request->address['new_apartment'],
+                'latitude'    => $request->address['new_latitude'],
+                'longitude'   => $request->address['new_longitude'],
+                'is_default'  => false,
             ]);
         }
 
@@ -92,7 +96,11 @@ class OrderController extends Controller
 
         foreach ($cartItems as $item) {
             $branch = $item->package->branch;
-            if (!$branch->deliveryAreas->contains('city_id', $address->city_id)) {
+            if (!$branch->deliveryAreas
+                ->where('city_id', $address->city_id)
+                ->where('district_id', $address->district_id)
+                ->count()
+            ) {
                 return response()->json([
                     'status' => false,
                     'message' => "Branch '{$branch->restaurant->name}' doesn't deliver to this address"
@@ -118,9 +126,9 @@ class OrderController extends Controller
                     $unitPrice -= ($unitPrice * ($discount->value / 100));
                 }
 
-
                 $deliveryArea = \App\Models\BranchDeliveryArea::where('branch_id', $package->branch_id)
                     ->where('city_id', $address->city_id)
+                    ->where('district_id', $address->district_id)
                     ->first();
 
                 $order = Order::create([
@@ -174,18 +182,11 @@ class OrderController extends Controller
                     $total += $extra->total_price;
                 }
 
-
                 if ($deliveryArea) {
                     $total += $deliveryArea->delivery_price;
                 }
 
                 $order->update(['total_price' => $total]);
-
-//                $order->bill()->create([
-//                    'user_id'   => $user->id,
-//                    'amount'    => $total,
-//                    'issued_at' => now(),
-//                ]);
 
                 $item->delete();
             }
