@@ -275,6 +275,8 @@ class OrderController extends Controller
             'address.type'                => 'required_with:address|in:existing,new',
             'address.existing_id'         => 'required_if:address.type,existing|exists:addresses,id',
             'address.new_city_id'         => 'required_if:address.type,new|exists:cities,id',
+            'address.new_district_id'     => 'required_if:address.type,new|exists:districts,id',
+            'address.new_area_id'         => 'required_if:address.type,new|exists:areas,id',
             'address.new_street'          => 'required_if:address.type,new|string|max:255',
             'address.new_building'        => 'nullable|string|max:255',
             'address.new_floor'           => 'nullable|string|max:255',
@@ -314,22 +316,27 @@ class OrderController extends Controller
                         ->firstOrFail();
                 } else {
                     $address = Address::create([
-                        'user_id'   => $user->id,
-                        'city_id'   => $request->address['new_city_id'],
-                        'street'    => $request->address['new_street'],
-                        'building'  => $request->address['new_building'] ?? null,
-                        'floor'     => $request->address['new_floor'] ?? null,
-                        'apartment' => $request->address['new_apartment'] ?? null,
-                        'latitude'  => $request->address['new_latitude'] ?? null,
-                        'longitude' => $request->address['new_longitude'] ?? null,
-                        'is_default'=> false,
+                        'user_id'     => $user->id,
+                        'city_id'     => $request->address['new_city_id'],
+                        'district_id' => $request->address['new_district_id'],
+                        'area_id'     => $request->address['new_area_id'],
+                        'street'      => $request->address['new_street'],
+                        'building'    => $request->address['new_building'] ?? null,
+                        'floor'       => $request->address['new_floor'] ?? null,
+                        'apartment'   => $request->address['new_apartment'] ?? null,
+                        'latitude'    => $request->address['new_latitude'] ?? null,
+                        'longitude'   => $request->address['new_longitude'] ?? null,
+                        'is_default'  => false,
                     ]);
                 }
 
                 $firstDetail = $order->orderDetails()->with('package.branch.restaurant','package.branch.deliveryAreas')->first();
                 $branch      = $firstDetail->package->branch;
 
-                if (!$branch->deliveryAreas->contains('city_id', $address->city_id)) {
+                if (!$branch->deliveryAreas
+                    ->where('city_id', $address->city_id)
+                    ->where('district_id', $address->district_id)
+                    ->count()) {
                     return response()->json([
                         'status'  => false,
                         'message' => "Branch '{$branch->restaurant->name}' doesn't deliver to this address"
@@ -338,6 +345,7 @@ class OrderController extends Controller
 
                 $deliveryArea = \App\Models\BranchDeliveryArea::where('branch_id', $branch->id)
                     ->where('city_id', $address->city_id)
+                    ->where('district_id', $address->district_id)
                     ->first();
 
                 $order->address_id = $address->id;
@@ -351,6 +359,7 @@ class OrderController extends Controller
                     if ($firstDetail && $address) {
                         $deliveryArea = \App\Models\BranchDeliveryArea::where('branch_id', $firstDetail->package->branch_id)
                             ->where('city_id', $address->city_id)
+                            ->where('district_id', $address->district_id)
                             ->first();
                     }
                 }
@@ -406,7 +415,6 @@ class OrderController extends Controller
                     $orderDetail->occasion_type_id = (int) $pkg['occasion_type_id'];
                     $orderDetail->save();
 
-
                     $servicesTotal = 0.0;
                     if (array_key_exists('services', $pkg)) {
                         $orderDetail->services()->delete();
@@ -422,7 +430,6 @@ class OrderController extends Controller
                     } else {
                         $servicesTotal = (float) $orderDetail->services->sum('custom_price');
                     }
-
 
                     $extrasTotal = 0.0;
                     if (array_key_exists('extras', $pkg)) {
@@ -456,7 +463,7 @@ class OrderController extends Controller
                     ->with(['package','services','extras'])
                     ->get()
                     ->sum(function ($detail) {
-                        $servicesTotal = (float) $detail->services->sum('custom_price'); // استخدام custom_price
+                        $servicesTotal = (float) $detail->services->sum('custom_price');
                         $extrasTotal   = (float) $detail->extras->sum('total_price');
 
                         $baseCost         = (float) $detail->unit_price * (int) $detail->quantity;
@@ -596,6 +603,7 @@ class OrderController extends Controller
                     'total_price'     => number_format($order->total_price, 2),
                     'created_at'      => $order->created_at->format('Y-m-d H:i:s'),
                     'created_since'   => $order->created_at->diffForHumans(),
+                    'qr'              =>$order->qr_token,
                 ],
                 'address' => [
                     'id'        => $order->address->id,
