@@ -59,6 +59,16 @@ class Address extends Model
         return $this->belongsTo(City::class, 'city_id');
     }
 
+    public function district()
+    {
+        return $this->belongsTo(District::class);
+    }
+
+    public function area()
+    {
+        return $this->belongsTo(Area::class);
+    }
+
     public function orders()
     {
         return $this->hasMany(Order::class, 'address_id');

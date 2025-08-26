@@ -79,6 +79,7 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/packages', [PackageController::class, 'listPackages']);
 
 });
+
 Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/add', [CartController::class, 'addToCart']);
@@ -88,6 +89,14 @@ Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
     Route::delete('/items/{cartItem}', [CartController::class, 'removeCartItem']);
 });
 
+Route::prefix('address')->middleware('auth:sanctum')->group(function () {
+
+    Route::get('/cities', [AddressController::class, 'getCities']);
+    Route::get('/cities/{id}/districts', [AddressController::class, 'getDistrictsByCity']);
+    Route::get('/districts/{id}/areas', [AddressController::class, 'getAreasByDistrict']);
+    Route::get('/locations/hierarchy', [AddressController::class, 'getAllHierarchy']);
+
+});
 Route::prefix('bill')->middleware('auth:sanctum')->group(function () {
 
     Route::get('/orders/{orderId}', [BillController::class, 'getBillByOrderId']);
