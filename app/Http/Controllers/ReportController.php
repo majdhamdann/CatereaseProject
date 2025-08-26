@@ -31,7 +31,7 @@ class ReportController extends Controller
 
     return response()->json(['message' => 'Report created successfully', 'report' => $report]);
 }
-public function index()
+public function index11()
 {
     $user = auth()->user(); 
 
@@ -39,10 +39,40 @@ public function index()
 
     return response()->json($reports);
 }
-public function allReports()
+public function index(Request $request)
+{
+    $user = auth()->user(); 
+
+    $query = Report::whereIn('branch_id', $user->restaurant->pluck('id'))
+        ->with(['branch']);
+
+   
+   if ($request->has('date')) {
+        $query->whereDate('created_at', $request->date);
+    }
+
+    $reports = $query->get();
+
+    return response()->json($reports);
+}
+public function allReports11()
 {
 
     $reports = Report::with(['branch'])->get();
+    
+
+    return response()->json($reports);
+}
+public function allReports(Request $request)
+{
+    $query = Report::with(['branch']);
+
+    if ($request->has('date')) {
+        $query->whereDate('created_at', $request->date);
+    }
+
+    
+    $reports = $query->get();
 
     return response()->json($reports);
 }

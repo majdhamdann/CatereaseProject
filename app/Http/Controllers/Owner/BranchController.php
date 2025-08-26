@@ -452,7 +452,8 @@ public function show($id)
             'categories',
             'workingDays',
             'branchServiceTypes.serviceType',
-            'deliveryAreas.city'
+            'deliveryAreas.city',
+            'deliveryAreas.district'
         ])
     ]);
 }
