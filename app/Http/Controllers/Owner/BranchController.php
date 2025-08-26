@@ -54,6 +54,7 @@ class BranchController extends Controller
             'basic_info' => [
                 'id_restaurant' => $restaurant->id,
                 'name' => $restaurant->name,
+                'photo' => $restaurant->photo,
                 'owner' => $restaurant->owner->name,
                 'description' => $restaurant->description
             ],
@@ -70,6 +71,7 @@ class BranchController extends Controller
                     'delivery_areas' => $branch->deliveryAreas->map(function($area) {
                         return [
                             'delivery_city' => $area->city->name,
+                            'delivery_distract' => $area->district->name,
                             'delivery_price' => $area->delivery_price
                         ];
                     }),
@@ -450,7 +452,8 @@ public function show($id)
             'categories',
             'workingDays',
             'branchServiceTypes.serviceType',
-            'deliveryAreas.city'
+            'deliveryAreas.city',
+            'deliveryAreas.district'
         ])
     ]);
 }

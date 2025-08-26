@@ -8,7 +8,7 @@ use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
-     public function index()
+     public function index11()
     {
         $complaints = Feedback::with(['user', 'feedbackType'])
             ->where('type', 'complaint')
@@ -17,6 +17,20 @@ class ComplaintController extends Controller
 
         return response()->json($complaints);
     }
+    public function index(Request $request)
+{
+    $query = Feedback::with(['user', 'feedbackType'])
+        ->where('type', 'complaint')
+        ->orderBy('created_at', 'desc');
+
+      if ($request->has('date')) {
+        $query->whereDate('created_at', $request->date);
+    }
+
+    $complaints = $query->get();
+
+    return response()->json($complaints);
+}
 
     public function show($id)
     {
