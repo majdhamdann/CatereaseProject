@@ -54,6 +54,7 @@ class BranchController extends Controller
             'basic_info' => [
                 'id_restaurant' => $restaurant->id,
                 'name' => $restaurant->name,
+                'photo' => $restaurant->photo,
                 'owner' => $restaurant->owner->name,
                 'description' => $restaurant->description
             ],
