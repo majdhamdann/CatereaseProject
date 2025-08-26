@@ -218,7 +218,7 @@ class BranchController extends Controller
         foreach ($data['delivery_regions'] as $region) {
             $branch->deliveryAreas()->create([
                 'city_id' => $region['city_id'],
-                 'district_id' => $region['district_id'],
+                 'district_id' => $region['district_id']?? null,
                 'delivery_price' => $region['delivery_price'],
                // 'description' => $region['description'] ?? null,
             ]);
@@ -230,7 +230,8 @@ class BranchController extends Controller
             'categories',
             'workingDays',
             'branchServiceTypes.serviceType',
-            'deliveryAreas.city'
+            'deliveryAreas.city',
+            'deliveryAreas.district'
         ])
     ], 201);
 }
@@ -317,9 +318,10 @@ public function show($id)
         'delivery_regions' => 'sometimes|nullable|array',
         'delivery_regions.*.id' => 'sometimes|exists:branch_delivery_areas,id,branch_id,'.$id,
         'delivery_regions.*.city_id' => 'required_with:delivery_regions|exists:cities,id',
-        'delivery_regions.*.district_id' => 'required|exists:districts,id',
-        'delivery_regions.*.delivery_price' => 'required|numeric',
-      //  'delivery_regions.*.description' => 'nullable|string',
+        'delivery_regions.*.district_id' => 'nullable|exists:districts,id',
+        'delivery_regions.*.delivery_price' => 'required_with:delivery_regions|numeric', 
+
+        'delivery_regions.*.description' => 'nullable|string',
     ];
 
     if ($role === 'Admin') {
@@ -415,36 +417,63 @@ public function show($id)
             $branch->branchServiceTypes()->whereIn('id', $toDelete)->delete();
         }
     }
+  if (isset($data['delivery_regions'])) {
+    $existingRegionIds = $branch->deliveryAreas()->pluck('id')->toArray();
+    $updatedRegionIds = [];
+    
+    foreach ($data['delivery_regions'] as $region) {
+        $regionData = [
+            'city_id' => $region['city_id'],
+            'district_id' => $region['district_id'] ?? null,
+            'delivery_price' => $region['delivery_price'],
+        ];
 
-    if (isset($data['delivery_regions'])) {
-        $existingRegionIds = $branch->deliveryAreas()->pluck('id')->toArray();
-        $updatedRegionIds = [];
-        
-        foreach ($data['delivery_regions'] as $region) {
-            if (isset($region['id'])) {
-                $branch->deliveryAreas()
-                    ->where('id', $region['id'])
-                    ->update([
-                        'city_id' => $region['city_id'],
-                         'district_id' => $region['district_id'],
-                        'delivery_price' => $region['delivery_price'],
-                    ]);
-                $updatedRegionIds[] = $region['id'];
-            } else {
-                $newRegion = $branch->deliveryAreas()->create([
-                    'city_id' => $region['city_id'],
-                    'delivery_price' => $region['delivery_price'],
-                    'description' => $region['description'] ?? null
-                ]);
-                $updatedRegionIds[] = $newRegion->id;
+        if (isset($region['id'])) {
+            $duplicateExists = $branch->deliveryAreas()
+                ->where('city_id', $region['city_id'])
+                ->where('district_id', $region['district_id'] ?? null)
+                ->where('id', '!=', $region['id'])
+                ->exists();
+            
+            if ($duplicateExists) {
+                return response()->json([
+                    'message' => 'منطقة التوصيل موجودة مسبقاً لهذا الفرع',
+                    'errors' => [
+                        'delivery_regions' => ['تركيبة المدينة والمنطقة موجودة مسبقاً']
+                    ]
+                ], 422);
             }
-        }
-        
-        $toDelete = array_diff($existingRegionIds, $updatedRegionIds);
-        if (!empty($toDelete)) {
-            $branch->deliveryAreas()->whereIn('id', $toDelete)->delete();
+
+            $branch->deliveryAreas()
+                ->where('id', $region['id'])
+                ->update($regionData);
+            $updatedRegionIds[] = $region['id'];
+        } else {
+            $duplicateExists = $branch->deliveryAreas()
+                ->where('city_id', $region['city_id'])
+                ->where('district_id', $region['district_id'] ?? null)
+                ->exists();
+            
+            if ($duplicateExists) {
+                return response()->json([
+                    'message' => 'منطقة التوصيل موجودة مسبقاً لهذا الفرع',
+                    'errors' => [
+                        'delivery_regions' => ['تركيبة المدينة والمنطقة موجودة مسبقاً']
+                    ]
+                ], 422);
+            }
+
+            $newRegion = $branch->deliveryAreas()->create($regionData);
+            $updatedRegionIds[] = $newRegion->id;
         }
     }
+    
+    $toDelete = array_diff($existingRegionIds, $updatedRegionIds);
+    if (!empty($toDelete)) {
+        $branch->deliveryAreas()->whereIn('id', $toDelete)->delete();
+    }
+}
+  
 
     return response()->json([
         'message' => 'Branch updated successfully',
