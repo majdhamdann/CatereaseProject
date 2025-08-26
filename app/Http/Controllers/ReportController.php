@@ -55,14 +55,7 @@ public function index(Request $request)
 
     return response()->json($reports);
 }
-public function allReports11()
-{
 
-    $reports = Report::with(['branch'])->get();
-    
-
-    return response()->json($reports);
-}
 public function allReports(Request $request)
 {
     $query = Report::with(['branch']);
