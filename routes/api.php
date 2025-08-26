@@ -3,8 +3,10 @@
 use App\Http\Controllers\Admin\ComplaintController;
 use App\Http\Controllers\Admin\StatisticsAdminController;
 use App\Http\Controllers\AuthController;
+use App\Http\Controllers\BillController;
 use App\Http\Controllers\BranchController;
 use App\Http\Controllers\CartController;
+use App\Http\Controllers\CouponController;
 use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
@@ -86,7 +88,12 @@ Route::prefix('cart')->middleware('auth:sanctum')->group(function () {
     Route::delete('/items/{cartItem}', [CartController::class, 'removeCartItem']);
 });
 
+Route::prefix('bill')->middleware('auth:sanctum')->group(function () {
 
+    Route::get('/orders/{orderId}', [BillController::class, 'getBillByOrderId']);
+    Route::post('/{bill}/apply-coupon', [CouponController::class, 'applyCoupon']);
+
+});
 Route::prefix('order')->middleware('auth:sanctum')->group(function () {
 
    // Route::post('/init', [OrderController::class, 'initOrder']);

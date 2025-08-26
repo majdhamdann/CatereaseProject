@@ -16,6 +16,7 @@ return new class extends Migration
             $table->unsignedBigInteger('bill_id');
             $table->unsignedBigInteger('user_id');
             $table->string('payment_method');
+            $table->decimal('amount', 10, 2)->nullable();
             $table->enum('payment_status', ['pending', 'completed', 'failed', 'refunded'])->default('pending');
             $table->dateTime('paid_at')->nullable();
             $table->timestamps();

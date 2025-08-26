@@ -16,6 +16,8 @@ return new class extends Migration
             $table->unsignedBigInteger('order_id');
             $table->unsignedBigInteger('user_id');
             $table->decimal('amount', 10, 2);
+
+            $table->enum('status', ['unpaid','partially_paid', 'paid', 'cancelled'])->default('unpaid');
             $table->dateTime('issued_at');
             $table->timestamps();
 
