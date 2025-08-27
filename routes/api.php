@@ -100,12 +100,21 @@ Route::prefix('address')->middleware('auth:sanctum')->group(function () {
 Route::prefix('bill')->middleware('auth:sanctum')->group(function () {
 
     Route::get('/orders/{orderId}', [BillController::class, 'getBillByOrderId']);
-    Route::post('/{bill}/apply-coupon', [CouponController::class, 'applyCoupon']);
+
+
 
 });
+
+
 Route::prefix('payment')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/intent', [PaymentController::class, 'createIntent']);
+
+});
+Route::prefix('coupon')->middleware('auth:sanctum')->group(function () {
+
+    Route::get('/user/coupons', [CouponController::class, 'getUserCoupons']);
+    Route::post('/bills/{billId}/apply-coupon', [CouponController::class, 'applyCoupon']);
 
 });
 
