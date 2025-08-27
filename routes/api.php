@@ -103,6 +103,13 @@ Route::prefix('bill')->middleware('auth:sanctum')->group(function () {
     Route::post('/{bill}/apply-coupon', [CouponController::class, 'applyCoupon']);
 
 });
+Route::prefix('payment')->middleware('auth:sanctum')->group(function () {
+
+    Route::post('/intent', [PaymentController::class, 'createIntent']);
+
+});
+
+
 Route::prefix('order')->middleware('auth:sanctum')->group(function () {
 
    // Route::post('/init', [OrderController::class, 'initOrder']);

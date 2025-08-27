@@ -81,4 +81,38 @@ class PaymentController extends Controller
         }
     }
 
+//////////////////
+    public function createIntent(Request $request)
+    {
+        $request->validate([
+            'amount' => 'required|numeric|min:1',
+        ]);
+
+        \Stripe\Stripe::setApiKey(env('STRIPE_SECRET'));
+
+        try {
+            $amountInCents = (int) round($request->amount * 100);
+
+            $intent = \Stripe\PaymentIntent::create([
+                'amount'   => $amountInCents,
+                'currency' => 'usd',
+                'payment_method_types' => ['card'],
+            ]);
+
+            return response()->json([
+                'status'        => true,
+                'client_secret' => $intent->client_secret,
+                'amount'        => $request->amount,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Stripe createIntent error: '.$e->getMessage());
+
+            return response()->json([
+                'status'  => false,
+                'message' => 'Failed to create payment intent',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 }
