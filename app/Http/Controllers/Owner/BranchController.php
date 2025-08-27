@@ -417,7 +417,8 @@ public function show($id)
             $branch->branchServiceTypes()->whereIn('id', $toDelete)->delete();
         }
     }
-  if (isset($data['delivery_regions'])) {
+
+ if (isset($data['delivery_regions'])) {
     $existingRegionIds = $branch->deliveryAreas()->pluck('id')->toArray();
     $updatedRegionIds = [];
     
@@ -428,41 +429,15 @@ public function show($id)
             'delivery_price' => $region['delivery_price'],
         ];
 
-        if (isset($region['id'])) {
-            $duplicateExists = $branch->deliveryAreas()
-                ->where('city_id', $region['city_id'])
-                ->where('district_id', $region['district_id'] ?? null)
-                ->where('id', '!=', $region['id'])
-                ->exists();
-            
-            if ($duplicateExists) {
-                return response()->json([
-                    'message' => 'منطقة التوصيل موجودة مسبقاً لهذا الفرع',
-                    'errors' => [
-                        'delivery_regions' => ['تركيبة المدينة والمنطقة موجودة مسبقاً']
-                    ]
-                ], 422);
-            }
+        $existingRegion = $branch->deliveryAreas()
+            ->where('city_id', $region['city_id'])
+            ->where('district_id', $region['district_id'] ?? null)
+            ->first();
 
-            $branch->deliveryAreas()
-                ->where('id', $region['id'])
-                ->update($regionData);
-            $updatedRegionIds[] = $region['id'];
+        if ($existingRegion) {
+            $existingRegion->update(['delivery_price' => $region['delivery_price']]);
+            $updatedRegionIds[] = $existingRegion->id;
         } else {
-            $duplicateExists = $branch->deliveryAreas()
-                ->where('city_id', $region['city_id'])
-                ->where('district_id', $region['district_id'] ?? null)
-                ->exists();
-            
-            if ($duplicateExists) {
-                return response()->json([
-                    'message' => 'منطقة التوصيل موجودة مسبقاً لهذا الفرع',
-                    'errors' => [
-                        'delivery_regions' => ['تركيبة المدينة والمنطقة موجودة مسبقاً']
-                    ]
-                ], 422);
-            }
-
             $newRegion = $branch->deliveryAreas()->create($regionData);
             $updatedRegionIds[] = $newRegion->id;
         }
@@ -473,8 +448,6 @@ public function show($id)
         $branch->deliveryAreas()->whereIn('id', $toDelete)->delete();
     }
 }
-  
-
     return response()->json([
         'message' => 'Branch updated successfully',
         'branch' => $branch->load([

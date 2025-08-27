@@ -31,14 +31,6 @@ class ReportController extends Controller
 
     return response()->json(['message' => 'Report created successfully', 'report' => $report]);
 }
-public function index11()
-{
-    $user = auth()->user(); 
-
-    $reports = Report::whereIn('branch_id', $user->restaurant->pluck('id'))->with(['branch'])->get();
-
-    return response()->json($reports);
-}
 public function index(Request $request)
 {
     $user = auth()->user(); 
@@ -81,6 +73,18 @@ public function updateStatus(Request $request, $id)
          return response()->json([$report]);
        
     }
-
+public function destroy($id)
+{
+    $report = Report::findOrFail($id);
+    $user = auth()->user();
+    
+    
+    
+    $report->delete();
+    
+    return response()->json([
+        'message' => 'Report deleted successfully'
+    ], 200);
+}
 
 }
