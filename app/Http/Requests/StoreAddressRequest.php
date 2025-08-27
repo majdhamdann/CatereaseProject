@@ -23,6 +23,8 @@ class StoreAddressRequest extends FormRequest
     {
         return [
             'city_id'    => 'required|exists:cities,id',
+            'district_id' => 'required|exists:districts,id',
+            'area_id'     => 'sometimes|exists:areas,id',
             'street'     => 'nullable|string',
             'building'   => 'nullable|string',
             'floor'      => 'nullable|string',
