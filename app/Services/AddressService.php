@@ -22,7 +22,15 @@ class AddressService
             DB::beginTransaction();
 
             $data = $request->only([
-                'city_id', 'street', 'building', 'floor', 'apartment', 'latitude', 'longitude'
+                'city_id',
+                'district_id',
+                'area_id',
+                'street',
+                'building',
+                'floor',
+                'apartment',
+                'latitude',
+                'longitude'
             ]);
             $data['user_id'] = Auth::id();
 
@@ -62,8 +70,16 @@ class AddressService
                     return [
                         'id'         => $address->id,
                         'user_id'    => $address->user_id,
+
                         'city'       => optional($address->city)->name,
                         'city_id'    => $address->city_id,
+
+                        'district'   => optional($address->district)->name,
+                        'district_id'=> $address->district_id,
+
+                        'area'       => optional($address->area)->name,
+                        'area_id'    => $address->area_id,
+
                         'street'     => $address->street,
                         'building'   => $address->building,
                         'floor'      => $address->floor,
@@ -103,7 +119,9 @@ class AddressService
             }
 
             $data = $request->only([
-                'city_id', 'street', 'building', 'floor', 'apartment', 'latitude', 'longitude'
+                'city_id', 'district_id', 'area_id',
+                'street', 'building', 'floor', 'apartment',
+                'latitude', 'longitude'
             ]);
 
             $updated = $this->addressRepository->update($id, $data);
@@ -165,6 +183,7 @@ class AddressService
             ];
         }
     }
+
     public function setDefault($id)
     {
         try {
