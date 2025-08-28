@@ -201,6 +201,7 @@ class DeliveryEmployeeManagementController extends Controller
             'email' => 'sometimes|email|unique:users,email,' . $deliveryPerson->user_id,
             'phone' => 'sometimes|numeric',
             'gender' => 'sometimes|in:m,f',
+            'status' => 'sometimes|in:active,deleted',
             'password' => 'sometimes|string|min:6',
         ]);
 
@@ -217,6 +218,9 @@ class DeliveryEmployeeManagementController extends Controller
         }
         if ($request->has('gender')) {
             $user->gender = $request->input('gender');
+        }
+        if ($request->has('status')) {
+            $user->status = $request->input('status');
         }
         if ($request->has('password')) {
             $user->password = bcrypt($request->input('password'));
