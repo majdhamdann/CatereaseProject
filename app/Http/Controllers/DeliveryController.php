@@ -411,13 +411,14 @@ class DeliveryController extends Controller
             if ($request->decision === 'approve') {
                 $delivery->acceptance_status = 1;
                 $delivery->rejection_reason  = null;
+                $delivery->status            = 'accepted';
 
 
 
             } else {
                 $delivery->acceptance_status = 0;
                 $delivery->rejection_reason  = $request->rejection_reason;
-                $delivery->status            = 'pending';
+                $delivery->status            = 'rejection';
                 //$delivery->delivery_person_id = null;
             }
 

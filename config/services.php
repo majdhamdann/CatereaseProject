@@ -30,6 +30,13 @@ return [
         'secret' => env('AWS_SECRET_ACCESS_KEY'),
         'region' => env('AWS_DEFAULT_REGION', 'us-east-1'),
     ],
+
+    'firebase' => [
+        'credentials' => [
+            'file' => storage_path('app/private/firebase_service.json'),
+        ],
+    ],
+
     'stripe' => [
         'secret' => env('STRIPE_SECRET'),
         'key' => env('STRIPE_KEY'),
