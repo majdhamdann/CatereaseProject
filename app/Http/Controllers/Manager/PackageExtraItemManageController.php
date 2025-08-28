@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Manager;
 
 use App\Http\Controllers\Controller;
 use App\Models\Branch;
+use App\Models\BranchServiceType;
 use App\Models\FoodItem;
 use App\Models\Package;
 use App\Models\PackageExtra;
@@ -204,6 +205,13 @@ public function store(Request $request)
         'extras.*.name' => 'required|string',
         'extras.*.price' => 'required|numeric',
     ]);
+ $validServices = BranchServiceType::where('branch_id', $branch->id)
+        ->whereIn('id', $validated['branch_service_type_ids'])
+        ->count();
+        
+    if ($validServices !== count($validated['branch_service_type_ids'])) {
+        return response()->json(['error' => 'Invalid services selected'], 422);
+    }
 
     DB::beginTransaction();
 

@@ -445,6 +445,8 @@ public function assignDeliveryPerson(Request $request)
                     'street' => $order->address->street ?? null,
                     'building' => $order->address->building ?? null,
                     'floor' => $order->address->floor ?? null,
+                    'district_id' => $order->address->district ?? null,
+                    'area_id' => $order->address->area ?? null,
                     'apartment' => $order->address->apartment ?? null,
                     'latitude' => $order->address->latitude,
                     'longitude' => $order->address->longitude,
