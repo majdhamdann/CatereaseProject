@@ -39,7 +39,7 @@ class CustomerService
                     'phone' => $user->phone,
                     'gender' => $user->gender,
                     'photo' => $user->photo,
-                    'role' => optional($user->role)->name,
+                    'role' => $user->role,
                     'addresses' => $user->addresses->map(function ($address) {
                         return [
                             'id' => $address->id,
