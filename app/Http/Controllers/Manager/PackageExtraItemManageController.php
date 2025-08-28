@@ -200,6 +200,8 @@ public function store(Request $request)
         'items.*.food_item_name' => 'required|string',
         'items.*.quantity' => 'required|integer|min:1',
         'items.*.is_optional' => 'boolean',
+        'items.*.type' => 'sometimes|string|in:veg,non_veg',
+
 
         'extras' => 'array',
         'extras.*.name' => 'required|string',
@@ -236,13 +238,9 @@ public function store(Request $request)
             $foodItem = FoodItem::firstOrCreate(
                 ['name' => $item['food_item_name'], 'branch_id' => $branch->id],
                 [
-                    // 'food_category_id' => null, 
-                    // 'description' => 'Auto-created item.',
-                    // 'price' => 0.0,
-                    // 'discount_price' => null,
-                    // 'photo' => '',
+                   
                     'available' => true,
-                    'type' => null,
+                    'type' =>$item['type']?? null,
                 ]
             );
 
@@ -258,13 +256,9 @@ public function store(Request $request)
             $foodItem = FoodItem::firstOrCreate(
                 ['name' => $extra['name'], 'branch_id' => $branch->id],
                 [
-                    //'food_category_id' => null, 
-                   // 'description' => 'Auto-created extra item.',
-                   // 'price' => $extra['price'],
-                    //'discount_price' => null,
-                    //'photo' => '',
+                   
                     'available' => true,
-                    'type' => null,
+                    'type' =>$item['type'],
                 ]
             );
 
@@ -335,6 +329,7 @@ public function store(Request $request)
         'items' => 'sometimes|array',
         'items.*.food_item_name' => 'required_with:items|string',
         'items.*.quantity' => 'required_with:items|integer|min:1',
+        'items.*.type' => 'sometimes|string|in:veg,non_veg',
         'items.*.is_optional' => 'sometimes|boolean',
 
         'extras' => 'sometimes|array',
@@ -345,11 +340,7 @@ public function store(Request $request)
     DB::beginTransaction();
 
     try {
-        $package->update($request->only([
-            'name', 'description', 'photo', 'base_price', 'serves_count',
-            'max_extra_persons', 'price_per_extra_person', 'cancellation_policy',
-            'prepayment_required', 'prepayment_amount', 'is_active', 'notes'
-        ]));
+        $package->update($$validated);
 
         // Update Items
         if (isset($validated['items'])) {
@@ -358,13 +349,9 @@ public function store(Request $request)
                 $foodItem = FoodItem::firstOrCreate(
                     ['name' => $item['food_item_name'], 'branch_id' => $branch->id],
                     [
-                        // 'food_category_id' => 1,
-                        // 'description' => 'Auto-created item.',
-                        // 'price' => 0.0,
-                        // 'discount_price' => null,
-                        // 'photo' => '',
+                      
                         'available' => true,
-                        'type' => null,
+                        'type' =>$item['type']?? null,
                     ]
                 );
 
@@ -384,13 +371,9 @@ public function store(Request $request)
                 $foodItem = FoodItem::firstOrCreate(
                     ['name' => $extra['name'], 'branch_id' => $branch->id],
                     [
-                        // 'food_category_id' => 1,
-                        // 'description' => 'Auto-created extra item.',
-                        // 'price' => $extra['price'],
-                        // 'discount_price' => null,
-                        // 'photo' => '',
+                       
                         'available' => true,
-                        'type' => null,
+                        'type' => $item['type'],
                     ]
                 );
 
