@@ -194,13 +194,14 @@ class DeliveryEmployeeManagementController extends Controller
 
         $deliveryPerson = $branch->deliveryPeople()->findOrFail($id);
 
-        $request->validate([
+       $validate= $request->validate([
             'vehicle_type' => 'sometimes|string',
             'is_available' => 'sometimes|boolean',
             'name' => 'sometimes|string',
             'email' => 'sometimes|email|unique:users,email,' . $deliveryPerson->user_id,
             'phone' => 'sometimes|numeric',
             'gender' => 'sometimes|in:m,f',
+            'status' => 'sometimes|in:active,deleted',
             'password' => 'sometimes|string|min:6',
         ]);
 
@@ -218,12 +219,15 @@ class DeliveryEmployeeManagementController extends Controller
         if ($request->has('gender')) {
             $user->gender = $request->input('gender');
         }
+        if ($request->has('status')) {
+            $user->status = $request->input('status');
+        }
         if ($request->has('password')) {
             $user->password = bcrypt($request->input('password'));
         }
         $user->save();
 
-        $deliveryPerson->update($request->only(['vehicle_type', 'is_available']));
+        $deliveryPerson->update( $validate);
 
         return response()->json([
             'status' => true,

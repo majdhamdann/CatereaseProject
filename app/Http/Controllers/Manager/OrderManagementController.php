@@ -9,6 +9,7 @@ use App\Models\Delivery;
 use App\Models\DeliveryPerson;
 use App\Models\Feedback;
 use App\Models\Order;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
@@ -52,8 +53,97 @@ class OrderManagementController extends Controller
         'orders' => $orders
     ]);
     }
+    public function approve11(Request $request, $id)
+{
+    $request->validate([
+        'payment_method' => 'sometimes|string',
+        'paid_amount' => 'required_if:payment_method,cash|numeric|min:0',
+    ]);
+
+    $manager = auth()->user();
+    $branchId = Branch::where('manager_id', $manager->id)->value('id');
+
+    $order = Order::where('id', $id)
+                ->where('is_submitted', true)
+                ->where('branch_id', $branchId)
+                ->firstOrFail();
+
+    $paidAmount = 0;
+    if ($order->payment_method == 'cash') {
+        $paidAmount = $request->input('paid_amount', 0);
+        
+        if ($paidAmount > $order->total_price) {
+            return response()->json([
+                'message' => 'المبلغ المدفوع لا يمكن أن يكون أكبر من المبلغ الإجمالي للطلب'
+            ], 400);
+        }
+    }
+
+    // تحديث حالة الطلب
+    $order->is_approved = true;
+    $order->status = 'preparing';
+    $order->rejection_reason = null;
+    $order->approved_by = $manager->id;
+    $order->approved_at = now();
+    $order->save();
+
+    // إنشاء فاتورة للطلب
+    $bill = Bill::create([
+        'order_id' => $order->id,
+        'user_id' => $order->user_id,
+        'amount' => $order->total_price,
+        'issued_at' => now(),
+    ]);
+
+    // معالجة الدفع بناءً على طريقة الدفع
+    if ($order->payment_method == 'cash') {
+        // تحديد حالة الدفع بناءً على المبلغ المدفوع
+        $paymentStatus = 'completed';
+        if ($paidAmount < $order->total_price) {
+            $paymentStatus = 'partial';
+        }
+
+        Payment::create([
+            'bill_id' => $bill->id,
+            'user_id' => $order->user_id,
+            'payment_method' => 'cash',
+            'amount' => $paidAmount,
+            'payment_status' => $paymentStatus,
+            'paid_at' => now(),
+        ]);
+
+        // إذا كان الدفع جزئيًا، إنشاء فاتورة للمبلغ المتبقي
+        if ($paymentStatus === 'partial') {
+            $remainingAmount = $order->total_price - $paidAmount;
+            
+            Bill::create([
+                'order_id' => $order->id,
+                'user_id' => $order->user_id,
+                'amount' => $remainingAmount,
+                'issued_at' => now(),
+                'notes' => 'بقيمة الدفع للفاتورة #' . $bill->id
+            ]);
+        }
+    } else {
+        Payment::create([
+            'bill_id' => $bill->id,
+            'user_id' => $order->user_id,
+            'payment_method' => $order->payment_method, 
+            'amount' => $order->total_price,
+            'payment_status' => 'pending',
+            'paid_at' => null,
+        ]);
+    }
+
+    return response()->json([
+        'message' => 'Order approved successfully',
+        'paid_amount' => $paidAmount,
+        'payment_status' => $paymentStatus ?? 'pending'
+    ]);
+}
     public function approve($id)
 {
+
     $manager = auth()->user();
     $branchId = Branch::where('manager_id', $manager->id)->value('id');
 
@@ -66,13 +156,12 @@ class OrderManagementController extends Controller
     $order->approved_by = $manager->id;
     $order->approved_at = now();
     $order->save();
-    Bill::create([
+    $bill=Bill::create([
         'order_id' => $order->id,
         'user_id' => $order->user_id,
         'amount' => $order->total_price,
         'issued_at' => now(),
     ]);
-
     return response()->json(['message' => 'Order approved successfully']);
     }
 
@@ -356,6 +445,8 @@ public function assignDeliveryPerson(Request $request)
                     'street' => $order->address->street ?? null,
                     'building' => $order->address->building ?? null,
                     'floor' => $order->address->floor ?? null,
+                    'district_id' => $order->address->district ?? null,
+                    'area_id' => $order->address->area ?? null,
                     'apartment' => $order->address->apartment ?? null,
                     'latitude' => $order->address->latitude,
                     'longitude' => $order->address->longitude,

@@ -4,19 +4,14 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feedback;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
-     public function index11()
-    {
-        $complaints = Feedback::with(['user', 'feedbackType'])
-            ->where('type', 'complaint')
-            ->orderBy('created_at', 'desc')
-            ->get();
+   
 
-        return response()->json($complaints);
-    }
+    
     public function index(Request $request)
 {
     $query = Feedback::with(['user', 'feedbackType'])
@@ -61,4 +56,6 @@ class ComplaintController extends Controller
 
         return response()->json(['message' => 'Complaint deleted.']);
     }
+    
+
 }

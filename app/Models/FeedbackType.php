@@ -39,4 +39,20 @@ class FeedbackType extends Model
     {
         return $this->hasMany(Feedback::class, 'FeedbackType_id');
     }
+    public function branch()
+    {
+        if ($this->target_type === 'package') {
+            return $this->belongsTo(Package::class, 'target_ref_id')->with('branch');
+        }
+
+        if ($this->target_type === 'delivery_person') {
+            return $this->belongsTo(DeliveryPerson::class, 'target_ref_id')->with('branches');
+        }
+
+        if ($this->target_type === 'branch') {
+            return $this->belongsTo(Branch::class, 'target_ref_id');
+        }
+
+        return null;
+    }
 }
