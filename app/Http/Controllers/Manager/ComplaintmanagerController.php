@@ -25,11 +25,7 @@ class ComplaintmanagerController extends Controller
                 && $feedbackType->deliveryPerson->branches->contains('manager_id', $user->id);
         }
 
-        if ($feedbackType->target_type === 'branch') {
-            return $feedbackType->branch 
-                && $feedbackType->branch->manager_id === $user->id;
-        }
-
+       
         return false;
     }
 
@@ -46,7 +42,6 @@ class ComplaintmanagerController extends Controller
         $complaints = $query->get();
         $user = auth()->user();
 
-        // فقط المدير يشوف الشكاوى الخاصة بفرعه
         $filtered = $complaints->filter(function ($complaint) use ($user) {
             return $this->canManageComplaint($user, $complaint);
         })->values();
