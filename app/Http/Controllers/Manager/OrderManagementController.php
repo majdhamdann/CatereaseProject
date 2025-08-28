@@ -53,94 +53,8 @@ class OrderManagementController extends Controller
         'orders' => $orders
     ]);
     }
-    public function approve11(Request $request, $id)
-{
-    $request->validate([
-        'payment_method' => 'sometimes|string',
-        'paid_amount' => 'required_if:payment_method,cash|numeric|min:0',
-    ]);
-
-    $manager = auth()->user();
-    $branchId = Branch::where('manager_id', $manager->id)->value('id');
-
-    $order = Order::where('id', $id)
-                ->where('is_submitted', true)
-                ->where('branch_id', $branchId)
-                ->firstOrFail();
-
-    $paidAmount = 0;
-    if ($order->payment_method == 'cash') {
-        $paidAmount = $request->input('paid_amount', 0);
-        
-        if ($paidAmount > $order->total_price) {
-            return response()->json([
-                'message' => 'المبلغ المدفوع لا يمكن أن يكون أكبر من المبلغ الإجمالي للطلب'
-            ], 400);
-        }
-    }
-
-    // تحديث حالة الطلب
-    $order->is_approved = true;
-    $order->status = 'preparing';
-    $order->rejection_reason = null;
-    $order->approved_by = $manager->id;
-    $order->approved_at = now();
-    $order->save();
-
-    // إنشاء فاتورة للطلب
-    $bill = Bill::create([
-        'order_id' => $order->id,
-        'user_id' => $order->user_id,
-        'amount' => $order->total_price,
-        'issued_at' => now(),
-    ]);
-
-    // معالجة الدفع بناءً على طريقة الدفع
-    if ($order->payment_method == 'cash') {
-        // تحديد حالة الدفع بناءً على المبلغ المدفوع
-        $paymentStatus = 'completed';
-        if ($paidAmount < $order->total_price) {
-            $paymentStatus = 'partial';
-        }
-
-        Payment::create([
-            'bill_id' => $bill->id,
-            'user_id' => $order->user_id,
-            'payment_method' => 'cash',
-            'amount' => $paidAmount,
-            'payment_status' => $paymentStatus,
-            'paid_at' => now(),
-        ]);
-
-        // إذا كان الدفع جزئيًا، إنشاء فاتورة للمبلغ المتبقي
-        if ($paymentStatus === 'partial') {
-            $remainingAmount = $order->total_price - $paidAmount;
-            
-            Bill::create([
-                'order_id' => $order->id,
-                'user_id' => $order->user_id,
-                'amount' => $remainingAmount,
-                'issued_at' => now(),
-                'notes' => 'بقيمة الدفع للفاتورة #' . $bill->id
-            ]);
-        }
-    } else {
-        Payment::create([
-            'bill_id' => $bill->id,
-            'user_id' => $order->user_id,
-            'payment_method' => $order->payment_method, 
-            'amount' => $order->total_price,
-            'payment_status' => 'pending',
-            'paid_at' => null,
-        ]);
-    }
-
-    return response()->json([
-        'message' => 'Order approved successfully',
-        'paid_amount' => $paidAmount,
-        'payment_status' => $paymentStatus ?? 'pending'
-    ]);
-}
+    
+    
     public function approve($id)
 {
 
@@ -164,7 +78,81 @@ class OrderManagementController extends Controller
     ]);
     return response()->json(['message' => 'Order approved successfully']);
     }
+private function processPayment(Request $request, Order $order, Bill $bill)
+{
+    $paymentMethod = $request->input('payment_method', $order->payment_method);
+    $paidAmount = $request->input('paid_amount', 0);
+    
+    if ($paymentMethod == 'cash') {
+        $this->validateCashPayment($paidAmount, $order->total_price);
+    }
+    
+    if ($paymentMethod == 'cash') {
+        return $this->processCashPayment($order, $bill, $paidAmount);
+    } else {
+        return $this->processOtherPayment($order, $bill, $paymentMethod);
+    }
+}
+private function validateCashPayment($paidAmount, $totalPrice)
+{
+    if ($paidAmount > $totalPrice) {
+        throw new \Exception('المبلغ المدفوع لا يمكن أن يكون أكبر من المبلغ الإجمالي للطلب');
+    }
+}
 
+private function processCashPayment(Order $order, Bill $bill, $paidAmount)
+{
+    $paymentStatus = ($paidAmount >= $order->total_price) ? 'completed' : 'partial';
+    
+    Payment::create([
+        'bill_id' => $bill->id,
+        'user_id' => $order->user_id,
+        'payment_method' => 'cash',
+        'amount' => $paidAmount,
+        'payment_status' => $paymentStatus,
+        'paid_at' => now(),
+    ]);
+    
+    // معالجة الدفع الجزئي
+    if ($paymentStatus === 'partial') {
+        $this->handlePartialPayment($order, $bill, $paidAmount);
+    }
+    
+    return [
+        'paid_amount' => $paidAmount,
+        'payment_status' => $paymentStatus
+    ];
+}
+
+private function processOtherPayment(Order $order, Bill $bill, $paymentMethod)
+{
+    Payment::create([
+        'bill_id' => $bill->id,
+        'user_id' => $order->user_id,
+        'payment_method' => $paymentMethod,
+        'amount' => $order->total_price,
+        'payment_status' => 'pending',
+        'paid_at' => null,
+    ]);
+    
+    return [
+        'paid_amount' => 0,
+        'payment_status' => 'pending'
+    ];
+}
+
+private function handlePartialPayment(Order $order, Bill $bill, $paidAmount)
+{
+    $remainingAmount = $order->total_price - $paidAmount;
+    
+    Bill::create([
+        'order_id' => $order->id,
+        'user_id' => $order->user_id,
+        'amount' => $remainingAmount,
+        'issued_at' => now(),
+        'notes' => 'بقيمة الدفع للفاتورة #' . $bill->id
+    ]);
+}
     public function reject(Request $request, $id)
 {
     $request->validate([
