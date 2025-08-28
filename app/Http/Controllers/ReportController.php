@@ -76,7 +76,7 @@ public function updateStatus(Request $request, $id)
 public function destroy($id)
 {
     $report = Report::findOrFail($id);
-    $user = auth()->user();
+    //$user = auth()->user();
     
     
     

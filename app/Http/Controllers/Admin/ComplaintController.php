@@ -4,10 +4,13 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Feedback;
+use App\Models\User;
 use Illuminate\Http\Request;
 
 class ComplaintController extends Controller
 {
+   
+
     
     public function index(Request $request)
 {
@@ -53,4 +56,6 @@ class ComplaintController extends Controller
 
         return response()->json(['message' => 'Complaint deleted.']);
     }
+    
+
 }

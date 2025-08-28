@@ -25,6 +25,7 @@ use App\Http\Controllers\PackageController;
 
 use App\Http\Controllers\Admin\RestaurantController as AdminRestaurantController;
 use App\Http\Controllers\Manager\BranchServiceTypeManagementController;
+use App\Http\Controllers\Manager\ComplaintmanagerController;
 use App\Http\Controllers\Manager\CouponManagementController;
 use App\Http\Controllers\Manager\MenuManagementController;
 use App\Http\Controllers\Manager\OrderManagementController;
@@ -223,7 +224,10 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     ////////////////////////////////////////////reviews Management
     Route::get('/reviews/manage', [ReviewmanagerController::class, 'getBranchReviewsSummary']);
     Route::get('/reviews/manage/DeliveryReviews', [ReviewmanagerController::class, 'getDeliveryPersonsReviewsSummary']);
-
+    Route::get('complaints/manager', [ComplaintmanagerController::class, 'index']);            // عرض كل الشكاوى الخاصة بالمدير
+    Route::get('complaints/{id}/manager', [ComplaintmanagerController::class, 'show']);        // عرض شكوى معينة
+    Route::put('complaints/{id}/status/manager', [ComplaintmanagerController::class, 'updateStatusfeedback']); // تحديث حالة الشكوى
+    Route::delete('complaints/{id}/manager', [ComplaintmanagerController::class, 'destroy']);  // حذف شكوى
 });
 Route::middleware(['auth:sanctum'])->get('city', [OwnerBranchController::class, 'getCity']);
 
@@ -239,6 +243,7 @@ Route::middleware(['auth:sanctum', 'admin_or_owner'])->group(function () {
      Route::post('/occasion-types', [OccasionTypeController::class, 'store']);
      Route::put('/occasion-types/{id}', [OccasionTypeController::class, 'update']);
      Route::get('/branches/{branchId}/working-days/owner', [WorkingDayController::class, 'all']);
+     Route::delete('/report/delete/{id}', [ReportController::class, 'destroy']);
      Route::post('/report/update/{id}', [ReportController::class, 'updateStatus']);
      Route::delete('/occasion-types/{id}', [OccasionTypeController::class, 'destroy']);
 });
@@ -247,11 +252,14 @@ Route::middleware(['auth:api', 'owner_or_manager'])->group(function () {
     Route::post('package-discounts/management', [PackageDiscountController::class, 'store']);
     Route::delete('package-discounts/{id}/management', [PackageDiscountController::class, 'destroy']);
 });
- Route::post('/update-staus-compalant/{id}', [ComplaintController::class, 'updateStatusfeedback']);
 Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::get('/role', [UserManagementController::class, 'allRole']);
      Route::apiResource('restaurants', AdminRestaurantController::class);
-     Route::apiResource('complaints', ComplaintController::class);
+     Route::get('complaints',[ ComplaintController::class,'index']);
+     Route::get('complaints/{id}',[ ComplaintController::class,'show']);
+     Route::post('/update-staus-compalant/{id}', [ComplaintController::class, 'updateStatusfeedback']);
+     Route::delete('complaints/{id}',[ ComplaintController::class,'destroy']);
+
      Route::get('users/all/Owner', [UserManagementController::class,'getallOwner']);
 
     //  Route::post('service-types', [ServiceTypeManagementController::class, 'store']);
