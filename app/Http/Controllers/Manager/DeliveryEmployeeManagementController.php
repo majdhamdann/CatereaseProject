@@ -194,7 +194,7 @@ class DeliveryEmployeeManagementController extends Controller
 
         $deliveryPerson = $branch->deliveryPeople()->findOrFail($id);
 
-        $request->validate([
+       $validate= $request->validate([
             'vehicle_type' => 'sometimes|string',
             'is_available' => 'sometimes|boolean',
             'name' => 'sometimes|string',
@@ -227,7 +227,7 @@ class DeliveryEmployeeManagementController extends Controller
         }
         $user->save();
 
-        $deliveryPerson->update($request->only(['vehicle_type', 'is_available']));
+        $deliveryPerson->update( $validate);
 
         return response()->json([
             'status' => true,
