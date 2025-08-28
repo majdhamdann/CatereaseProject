@@ -28,7 +28,6 @@ class OrderSeeder extends Seeder
                 'branch_id'     => $faker->randomElement($branchIds),
                 'delivery_id'   => null,
                 'status'        => $faker->randomElement(['pending', 'confirmed', 'preparing', 'delivered', 'cancelled']),
-                'promo_code_id' => null,
                 'total_price'   => $faker->randomFloat(2, 20, 200),
                 'address_id'    => $addressIds->isNotEmpty() ? $faker->randomElement($addressIds) : null,
                 'cart_id'       => null,

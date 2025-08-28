@@ -46,9 +46,9 @@ class Coupon extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function promoCode() {
-        return $this->belongsTo(PromoCode::class, 'promo_code_id');
-    }
+    // public function promoCode() {
+    //     return $this->belongsTo(PromoCode::class, 'promo_code_id');
+    // }
 
     public function packages() {
         return $this->belongsToMany(Package::class, 'package_coupon');

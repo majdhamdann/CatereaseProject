@@ -13,10 +13,10 @@ return new class extends Migration
 {
     Schema::table('orders', function (Blueprint $table) {
 
-        if (!Schema::hasColumn('orders', 'promo_code_id')) {
-            $table->unsignedBigInteger('promo_code_id')->nullable()->after('delivery_id');
-            $table->foreign('promo_code_id')->references('id')->on('promo_codes')->nullOnDelete();
-        }
+        // if (!Schema::hasColumn('orders', 'promo_code_id')) {
+        //     $table->unsignedBigInteger('promo_code_id')->nullable()->after('delivery_id');
+        //     $table->foreign('promo_code_id')->references('id')->on('promo_codes')->nullOnDelete();
+        // }
 
         if (!Schema::hasColumn('orders', 'address_id')) {
             $table->unsignedBigInteger('address_id')->nullable()->after('promo_code_id');
@@ -55,13 +55,13 @@ return new class extends Migration
     {
                Schema::table('orders', function (Blueprint $table) {
             // حذف الحقول
-            $table->dropForeign(['promo_code_id']);
+          //  $table->dropForeign(['promo_code_id']);
             $table->dropForeign(['address_id']);
             $table->dropForeign(['cart_id']);
             $table->dropForeign(['approved_by']);
 
             $table->dropColumn([
-                'promo_code_id',
+            //    'promo_code_id',
                 'address_id',
                 'cart_id',
                 'approved_by',

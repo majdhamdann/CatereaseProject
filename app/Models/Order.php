@@ -128,7 +128,7 @@ class Order extends Model
         return $this->belongsTo(Cart::class, 'cart_id');
     }
 
-    public function promoCode() {
-        return $this->belongsTo(PromoCode::class, 'promo_code_id');
-    }
+    // public function promoCode() {
+    //     return $this->belongsTo(PromoCode::class, 'promo_code_id');
+    // }
 }

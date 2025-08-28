@@ -18,13 +18,12 @@ return new class extends Migration
             $table->decimal('discount_amount', 10, 2); 
             $table->date('expiration_date'); 
             $table->boolean('used')->default(false); 
-            $table->unsignedBigInteger('promo_code_id')->nullable();
+            
 
             $table->timestamps();
 
             // العلاقات
             $table->foreign('branch_id')->references('id')->on('branches')->onDelete('cascade');
-            $table->foreign('promo_code_id')->references('id')->on('promo_codes')->nullOnDelete();
         });
     }
 
