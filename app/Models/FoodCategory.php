@@ -47,10 +47,10 @@ class FoodCategory extends Model
         return $this->belongsTo(Branch::class);
     }
 
-    public function foodItems()
-    {
-        return $this->hasMany(FoodItem::class);
-    }
+    // public function foodItems()
+    // {
+    //     return $this->hasMany(FoodItem::class);
+    // }
 
 
 

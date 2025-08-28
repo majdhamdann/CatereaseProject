@@ -60,10 +60,10 @@ class FoodItem extends Model
         return $this->belongsTo(Branch::class, 'branch_id');
     }
 
-    public function foodCategory()
-    {
-        return $this->belongsTo(FoodCategory::class, 'food_category_id');
-    }
+    // public function foodCategory()
+    // {
+    //     return $this->belongsTo(FoodCategory::class, 'food_category_id');
+    // }
 
 //    public function orderDetails()
 //    {

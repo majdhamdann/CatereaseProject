@@ -236,11 +236,11 @@ public function store(Request $request)
             $foodItem = FoodItem::firstOrCreate(
                 ['name' => $item['food_item_name'], 'branch_id' => $branch->id],
                 [
-                    'food_category_id' => null, 
-                    'description' => 'Auto-created item.',
-                    'price' => 0.0,
-                    'discount_price' => null,
-                    'photo' => '',
+                    // 'food_category_id' => null, 
+                    // 'description' => 'Auto-created item.',
+                    // 'price' => 0.0,
+                    // 'discount_price' => null,
+                    // 'photo' => '',
                     'available' => true,
                     'type' => null,
                 ]
@@ -258,11 +258,11 @@ public function store(Request $request)
             $foodItem = FoodItem::firstOrCreate(
                 ['name' => $extra['name'], 'branch_id' => $branch->id],
                 [
-                    'food_category_id' => 1, 
+                    //'food_category_id' => null, 
                     'description' => 'Auto-created extra item.',
                     'price' => $extra['price'],
-                    'discount_price' => null,
-                    'photo' => '',
+                    //'discount_price' => null,
+                    //'photo' => '',
                     'available' => true,
                     'type' => null,
                 ]
