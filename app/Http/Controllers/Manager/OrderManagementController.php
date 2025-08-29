@@ -65,7 +65,7 @@ class OrderManagementController extends Controller
     ->where('branch_id', $branchId)->firstOrFail();
 
     $order->is_approved = true;
-    $order->status = 'preparing';
+    $order->status = 'confirmed';
     $order->rejection_reason = null;
     $order->approved_by = $manager->id;
     $order->approved_at = now();
@@ -78,81 +78,7 @@ class OrderManagementController extends Controller
     ]);
     return response()->json(['message' => 'Order approved successfully']);
     }
-private function processPayment(Request $request, Order $order, Bill $bill)
-{
-    $paymentMethod = $request->input('payment_method', $order->payment_method);
-    $paidAmount = $request->input('paid_amount', 0);
-    
-    if ($paymentMethod == 'cash') {
-        $this->validateCashPayment($paidAmount, $order->total_price);
-    }
-    
-    if ($paymentMethod == 'cash') {
-        return $this->processCashPayment($order, $bill, $paidAmount);
-    } else {
-        return $this->processOtherPayment($order, $bill, $paymentMethod);
-    }
-}
-private function validateCashPayment($paidAmount, $totalPrice)
-{
-    if ($paidAmount > $totalPrice) {
-        throw new \Exception('المبلغ المدفوع لا يمكن أن يكون أكبر من المبلغ الإجمالي للطلب');
-    }
-}
 
-private function processCashPayment(Order $order, Bill $bill, $paidAmount)
-{
-    $paymentStatus = ($paidAmount >= $order->total_price) ? 'completed' : 'partial';
-    
-    Payment::create([
-        'bill_id' => $bill->id,
-        'user_id' => $order->user_id,
-        'payment_method' => 'cash',
-        'amount' => $paidAmount,
-        'payment_status' => $paymentStatus,
-        'paid_at' => now(),
-    ]);
-    
-    // معالجة الدفع الجزئي
-    if ($paymentStatus === 'partial') {
-        $this->handlePartialPayment($order, $bill, $paidAmount);
-    }
-    
-    return [
-        'paid_amount' => $paidAmount,
-        'payment_status' => $paymentStatus
-    ];
-}
-
-private function processOtherPayment(Order $order, Bill $bill, $paymentMethod)
-{
-    Payment::create([
-        'bill_id' => $bill->id,
-        'user_id' => $order->user_id,
-        'payment_method' => $paymentMethod,
-        'amount' => $order->total_price,
-        'payment_status' => 'pending',
-        'paid_at' => null,
-    ]);
-    
-    return [
-        'paid_amount' => 0,
-        'payment_status' => 'pending'
-    ];
-}
-
-private function handlePartialPayment(Order $order, Bill $bill, $paidAmount)
-{
-    $remainingAmount = $order->total_price - $paidAmount;
-    
-    Bill::create([
-        'order_id' => $order->id,
-        'user_id' => $order->user_id,
-        'amount' => $remainingAmount,
-        'issued_at' => now(),
-        'notes' => 'بقيمة الدفع للفاتورة #' . $bill->id
-    ]);
-}
     public function reject(Request $request, $id)
 {
     $request->validate([
@@ -348,7 +274,7 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPerson->update(['is_available' => false]);
 
         $order->update([
-          //   'status' => 'preparing',
+             'status' => 'preparing',
           //  'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
@@ -433,8 +359,8 @@ public function assignDeliveryPerson(Request $request)
                     'street' => $order->address->street ?? null,
                     'building' => $order->address->building ?? null,
                     'floor' => $order->address->floor ?? null,
-                    'district_id' => $order->address->district ?? null,
-                    'area_id' => $order->address->area ?? null,
+                    'district' => $order->address->district->name ?? null,
+                    'area' => $order->address->area->name ?? null,
                     'apartment' => $order->address->apartment ?? null,
                     'latitude' => $order->address->latitude,
                     'longitude' => $order->address->longitude,
@@ -458,6 +384,7 @@ public function assignDeliveryPerson(Request $request)
                 'delivered_at' => $order->delivery->delivered_at,
                 'acceptance_status' => $order->delivery->acceptance_status,
                 'rejection_reason' => $order->delivery->rejection_reason,
+                'notes' => $order->delivery->notes,
                 'delivery_person_id' => $order->delivery->deliveryPerson->id ,
                 'delivery_person' => $order->delivery ? [
                     'name' => $order->delivery->deliveryPerson->user->name,
