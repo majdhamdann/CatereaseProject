@@ -2,10 +2,13 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\Bill;
+use App\Models\Payment;
 use Illuminate\Http\Request;
 use App\Models\Order;
 use App\Services\StripeService;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Stripe\Stripe;
 use Stripe\PaymentIntent;
@@ -114,5 +117,99 @@ class PaymentController extends Controller
             ], 500);
         }
     }
+
+
+    public function makePayment(Request $request, $billId)
+    {
+        $request->validate([
+            'payment_type'   => 'required|in:partial,full',
+            'payment_method' => 'required|string',
+            'amount'         => 'required|numeric|min:1',
+        ]);
+
+        try {
+            DB::beginTransaction();
+
+            $bill = Bill::with('order')->find($billId);
+
+            if (!$bill) {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Bill not found.',
+                ], 404);
+            }
+
+            if ($bill->status === 'paid') {
+                return response()->json([
+                    'status'  => false,
+                    'message' => 'Bill already paid in full.',
+                ], 400);
+            }
+
+            $userId = Auth::id();
+            $amount = $request->amount;
+
+
+            $payment = Payment::create([
+                'bill_id'        => $bill->id,
+                'user_id'        => $userId,
+                'payment_method' => $request->payment_method,
+                'amount'         => $amount,
+                'payment_status' => 'completed',
+                'paid_at'        => now(),
+            ]);
+
+
+            $totalPaid = Payment::where('bill_id', $bill->id)
+                ->where('payment_status', 'completed')
+                ->sum('amount');
+
+
+            if ($totalPaid >= $bill->amount) {
+                $bill->status = 'paid';
+            } elseif ($totalPaid > 0) {
+                $bill->status = 'partially_paid';
+            } else {
+                $bill->status = 'unpaid';
+            }
+
+            $bill->save();
+
+
+            if ($bill->order) {
+                if ($request->payment_type === 'partial') {
+                    $bill->order->prepayment_paid = true;
+                    $bill->order->prepayment_paid_at = now();
+                } elseif ($request->payment_type === 'full') {
+                    $bill->order->final_payment_paid = true;
+                    $bill->order->final_payment_paid_at = now();
+                }
+                $bill->order->save();
+            }
+
+            DB::commit();
+
+            return response()->json([
+                'status'  => true,
+                'message' => 'Payment recorded successfully.',
+                'data'    => [
+                    'bill_id'     => $bill->id,
+                    'bill_amount' => $bill->amount,
+                    'total_paid'  => $totalPaid,
+                    'bill_status' => $bill->status,
+                    'payment'     => $payment,
+                ]
+            ], 200);
+
+        } catch (\Throwable $e) {
+            DB::rollBack();
+            return response()->json([
+                'status'  => false,
+                'message' => 'Payment failed.',
+                'error'   => $e->getMessage(),
+            ], 500);
+        }
+    }
+
 
 }

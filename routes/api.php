@@ -11,6 +11,7 @@ use App\Http\Controllers\CustomerController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\DeliveryController;
 use App\Http\Controllers\DeliveryProfileController;
+use App\Http\Controllers\FeedbackController;
 use App\Http\Controllers\Manager\DeliveryEmployeeManagementController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\OrderController;
@@ -111,6 +112,16 @@ Route::post('send-notification', [DeliveryController::class, 'sendNotification']
 Route::prefix('payment')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/intent', [PaymentController::class, 'createIntent']);
+    Route::post('/bills/{billId}/pay', [PaymentController::class, 'makePayment']);
+
+
+});
+Route::prefix('feedback')->middleware('auth:sanctum')->group(function () {
+
+    Route::post('/', [FeedbackController::class, 'store']);
+    Route::get('/my', [FeedbackController::class, 'myFeedbacks']);
+    Route::get('/summary', [FeedbackController::class, 'summary']);
+
 
 });
 Route::prefix('coupon')->middleware('auth:sanctum')->group(function () {
