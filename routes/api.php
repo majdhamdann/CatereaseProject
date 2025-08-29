@@ -224,7 +224,7 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
      Route::get('/packages_to_category', [MenuManagementController::class, 'getPackagesByCategory']);
     ////////////////////////////////////////////reviews Management
     Route::get('/reviews/manage', [ReviewmanagerController::class, 'getBranchReviewsSummary']);
-    Route::get('/reviews/manage/DeliveryReviews', [ReviewmanagerController::class, 'getDeliveryPersonsReviewsSummary']);
+   // Route::get('/reviews/manage/DeliveryReviews', [ReviewmanagerController::class, 'getDeliveryPersonsReviewsSummary']);
     Route::get('complaints/manager', [ComplaintmanagerController::class, 'index']);            // عرض كل الشكاوى الخاصة بالمدير
     Route::get('complaints/{id}/manager', [ComplaintmanagerController::class, 'show']);        // عرض شكوى معينة
     Route::put('complaints/{id}/status/manager', [ComplaintmanagerController::class, 'updateStatusfeedback']); // تحديث حالة الشكوى
