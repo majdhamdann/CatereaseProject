@@ -23,11 +23,11 @@ class ComplaintmanagerController extends Controller
                 && $feedbackType->package->branch->manager_id === $user->id;
         }
 
-        if ($feedbackType->target_type === 'delivery_person') {
-            return $feedbackType->deliveryPerson 
-                && $feedbackType->deliveryPerson->branches 
-                && $feedbackType->deliveryPerson->branches->contains('manager_id', $user->id);
-        }
+        // if ($feedbackType->target_type === 'delivery_person') {
+        //     return $feedbackType->deliveryPerson 
+        //         && $feedbackType->deliveryPerson->branches 
+        //         && $feedbackType->deliveryPerson->branches->contains('manager_id', $user->id);
+        // }
 
         return false;
     }
@@ -36,7 +36,7 @@ public function index(Request $request)
         $query = Feedback::with([
                 'user',
                 'feedbackType.package.branch',
-                'feedbackType.deliveryPerson.branches'
+                //'feedbackType.deliveryPerson.branches'
             ])
             ->where('type', 'complaint')
             ->orderBy('created_at', 'desc');

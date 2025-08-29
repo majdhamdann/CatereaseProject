@@ -87,78 +87,78 @@ public function getBranchReviewsSummary()
 
 
 
-public function getDeliveryPersonsReviewsSummary()
-{
-    $manager = auth()->user();
-    $branch = Branch::where('manager_id', $manager->id)->first();
+// public function getDeliveryPersonsReviewsSummary()
+// {
+//     $manager = auth()->user();
+//     $branch = Branch::where('manager_id', $manager->id)->first();
 
-    if (!$branch) {
-        return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
-    }
+//     if (!$branch) {
+//         return response()->json(['message' => 'لا يوجد فرع مرتبط بك كمدير.'], 403);
+//     }
 
-    $date = request()->query('date'); 
+//     $date = request()->query('date'); 
 
-    if ($date && !\Carbon\Carbon::hasFormat($date, 'Y-m-d')) {
-        return response()->json(['message' => 'صيغة التاريخ غير صحيحة. يجب أن تكون Y-m-d'], 422);
-    }
+//     if ($date && !\Carbon\Carbon::hasFormat($date, 'Y-m-d')) {
+//         return response()->json(['message' => 'صيغة التاريخ غير صحيحة. يجب أن تكون Y-m-d'], 422);
+//     }
 
-    $deliveryPersons = DeliveryPerson::whereHas('deliveries.order', function ($q) use ($branch) {
-        $q->where('branch_id', $branch->id);
-    })->with(['allFeedbacks.user', 'allFeedbacks.feedbackType'])->get();
+//     $deliveryPersons = DeliveryPerson::whereHas('deliveries.order', function ($q) use ($branch) {
+//         $q->where('branch_id', $branch->id);
+//     })->with(['allFeedbacks.user', 'allFeedbacks.feedbackType'])->get();
 
-    $totalReviews = 0;
-    $totalRatingSum = 0;
-    $ratingDistribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
-    $feedbackDetails = [];
-    $complaintDetails = [];
+//     $totalReviews = 0;
+//     $totalRatingSum = 0;
+//     $ratingDistribution = [1 => 0, 2 => 0, 3 => 0, 4 => 0, 5 => 0];
+//     $feedbackDetails = [];
+//     $complaintDetails = [];
 
-    foreach ($deliveryPersons as $deliveryPerson) {
-        foreach ($deliveryPerson->feedbacks as $fb) {
-            if (!$fb->feedbackType || $fb->feedbackType->target_type !== 'delivery_person') continue;
+//     foreach ($deliveryPersons as $deliveryPerson) {
+//         foreach ($deliveryPerson->feedbacks as $fb) {
+//             if (!$fb->feedbackType || $fb->feedbackType->target_type !== 'delivery_person') continue;
 
-            if ($date && $fb->created_at->format('Y-m-d') !== $date) continue;
+//             if ($date && $fb->created_at->format('Y-m-d') !== $date) continue;
 
-            $user = $fb->user;
-            if (!$user) continue;
+//             $user = $fb->user;
+//             if (!$user) continue;
 
-            $feedbackData = [
-                'user_name' => $user->name,
-                'type' => $fb->type,
-                'rating' => $fb->type === 'rating' ? (float) $fb->score : null,
-                'message' => $fb->message,
-                'created_at' => optional($fb->created_at)->toDateTimeString(),
-            ];
+//             $feedbackData = [
+//                 'user_name' => $user->name,
+//                 'type' => $fb->type,
+//                 'rating' => $fb->type === 'rating' ? (float) $fb->score : null,
+//                 'message' => $fb->message,
+//                 'created_at' => optional($fb->created_at)->toDateTimeString(),
+//             ];
 
-            if ($fb->type === 'rating') {
-                $value = (int) $fb->score;
-                if ($value >= 1 && $value <= 5) {
-                    $totalReviews++;
-                    $totalRatingSum += $value;
-                    $ratingDistribution[$value]++;
-                }
-                $feedbackDetails[] = $feedbackData;
-            } elseif ($fb->type === 'complaint') {
-                $complaintDetails[] = $feedbackData;
-            }
-        }
-    }
+//             if ($fb->type === 'rating') {
+//                 $value = (int) $fb->score;
+//                 if ($value >= 1 && $value <= 5) {
+//                     $totalReviews++;
+//                     $totalRatingSum += $value;
+//                     $ratingDistribution[$value]++;
+//                 }
+//                 $feedbackDetails[] = $feedbackData;
+//             } elseif ($fb->type === 'complaint') {
+//                 $complaintDetails[] = $feedbackData;
+//             }
+//         }
+//     }
 
-    $averageRating = $totalReviews > 0 ? round($totalRatingSum / $totalReviews, 2) : null;
+//     $averageRating = $totalReviews > 0 ? round($totalRatingSum / $totalReviews, 2) : null;
 
-    return response()->json([
-        'branch' => $branch->location_note ?? $branch->description,
-        'total_reviews' => $totalReviews,
-        'average_rating' => $averageRating,
-        'ratings_distribution' => [
-            '5' => $ratingDistribution[5],
-            '4' => $ratingDistribution[4],
-            '3' => $ratingDistribution[3],
-            '2' => $ratingDistribution[2],
-            '1' => $ratingDistribution[1],
-        ],
-        'feedback_details' => $feedbackDetails,
-        'complaint_details' => $complaintDetails,
-    ]);
-}
+//     return response()->json([
+//         'branch' => $branch->location_note ?? $branch->description,
+//         'total_reviews' => $totalReviews,
+//         'average_rating' => $averageRating,
+//         'ratings_distribution' => [
+//             '5' => $ratingDistribution[5],
+//             '4' => $ratingDistribution[4],
+//             '3' => $ratingDistribution[3],
+//             '2' => $ratingDistribution[2],
+//             '1' => $ratingDistribution[1],
+//         ],
+//         'feedback_details' => $feedbackDetails,
+//         'complaint_details' => $complaintDetails,
+//     ]);
+// }
 
 }
