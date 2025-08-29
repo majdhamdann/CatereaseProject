@@ -236,10 +236,12 @@ Route::middleware(['auth:sanctum', 'manager'])->group(function () {
     ////////////////////////////////////////////reviews Management
     Route::get('/reviews/manage', [ReviewmanagerController::class, 'getBranchReviewsSummary']);
    // Route::get('/reviews/manage/DeliveryReviews', [ReviewmanagerController::class, 'getDeliveryPersonsReviewsSummary']);
-    Route::get('complaints/manager', [ComplaintmanagerController::class, 'index']);            // عرض كل الشكاوى الخاصة بالمدير
-    Route::get('complaints/{id}/manager', [ComplaintmanagerController::class, 'show']);        // عرض شكوى معينة
-    Route::put('complaints/{id}/status/manager', [ComplaintmanagerController::class, 'updateStatusfeedback']); // تحديث حالة الشكوى
-    Route::delete('complaints/{id}/manager', [ComplaintmanagerController::class, 'destroy']);  // حذف شكوى
+    Route::get('complaints/manager', [ComplaintmanagerController::class, 'index']);            
+    Route::get('complaints/{id}/manager', [ComplaintmanagerController::class, 'show']);       
+    Route::put('complaints/{id}/status/manager', [ComplaintmanagerController::class, 'updateStatusfeedback']);
+    Route::delete('complaints/{id}/manager', [ComplaintmanagerController::class, 'destroy']);
+    Route::post('manager/orders/{orderId}/pay-cash', [OrderManagementController::class, 'payCash']);
+
 });
 Route::middleware(['auth:sanctum'])->get('city', [OwnerBranchController::class, 'getCity']);
 

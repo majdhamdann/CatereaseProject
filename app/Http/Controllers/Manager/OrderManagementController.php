@@ -77,6 +77,7 @@ class OrderManagementController extends Controller
         'issued_at' => now(),
     ]);
             // إرسال إشعار للزبون
+            
         if ($order->user && $order->user->device_token) {
            $this->unicast((object)[
              'title' => 'Your order has been approved ',
@@ -573,6 +574,115 @@ public function assignDeliveryPerson(Request $request)
 
     return response()->json($orders);
      }
+     public function payCash(Request $request, $orderId)
+{
+    $request->validate([
+        'payment_type' => 'required|in:partial,full',
+        'amount' => 'required_if:payment_type,partial|numeric|min:0',
+    ]);
+
+    try {
+        DB::beginTransaction();
+
+        $manager = auth()->user();
+        $branch = Branch::where('manager_id', $manager->id)->first();
+
+        if (!$branch) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا يوجد فرع مرتبط بهذا المدير.'
+            ], 403);
+        }
+
+        $order = Order::where('id', $orderId)
+            ->where('branch_id', $branch->id)
+            ->where('is_submitted', true)
+            ->firstOrFail();
+
+        $bill = Bill::where('order_id', $order->id)->first();
+
+        if (!$bill) {
+            return response()->json([
+                'status' => false,
+                'message' => 'لا توجد فاتورة مرتبطة بهذا الطلب.'
+            ], 404);
+        }
+
+        if ($bill->status === 'paid') {
+            return response()->json([
+                'status' => false,
+                'message' => 'الفاتورة مدفوعة بالكامل مسبقاً.'
+            ], 400);
+        }
+
+        $paymentType = $request->payment_type;
+        $amount = $paymentType === 'full' ? $bill->amount : $request->amount;
+
+        if ($paymentType === 'partial' && $amount > $bill->amount) {
+            return response()->json([
+                'status' => false,
+                'message' => 'المبلغ المدفوع يتجاوز المبلغ المتبقي في الفاتورة.'
+            ], 400);
+        }
+
+        if ($paymentType === 'full') {
+            $bill->status = 'paid';
+            $bill->amount = 0;
+
+            $order->final_payment_paid = true;
+            $order->final_payment_paid_at = now();
+        } elseif ($paymentType === 'partial') {
+            $bill->amount -= $amount;
+            $bill->status = $bill->amount > 0 ? 'partially_paid' : 'paid';
+
+            $order->prepayment_paid = true;
+            $order->prepayment_paid_at = now();
+        }
+
+        $bill->save();
+        $order->save();
+
+        Payment::create([
+            'bill_id' => $bill->id,
+            'user_id' => $bill->user_id,
+            'payment_method' => 'cash',
+            'amount' => $amount,
+            'payment_status' => 'completed',
+            'paid_at' => now(),
+            'paid_by' => $manager->id, 
+        ]);
+
+        DB::commit();
+
+        return response()->json([
+            'status' => true,
+            'message' => 'تم تسجيل الدفع النقدي بنجاح.',
+            'data' => [
+                'order_id' => $order->id,
+                'bill_id' => $bill->id,
+                'payment_type' => $paymentType,
+                'amount_paid' => $amount,
+                'remaining_amount' => $bill->amount,
+                'bill_status' => $bill->status,
+                'paid_by' => $manager->name
+            ]
+        ]);
+
+    } catch (ModelNotFoundException $e) {
+        DB::rollBack();
+        return response()->json([
+            'status' => false,
+            'message' => 'الطلب غير موجود أو لا ينتمي لفرعك.'
+        ], 404);
+    } catch (\Throwable $e) {
+        DB::rollBack();
+        return response()->json([
+            'status' => false,
+            'message' => 'فشل في تسجيل الدفع.',
+            'error' => $e->getMessage()
+        ], 500);
+    }
+}
 
 
 }
