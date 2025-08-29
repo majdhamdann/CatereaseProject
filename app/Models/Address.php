@@ -41,6 +41,12 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Address whereIsDefault($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Address whereLatitude($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Address whereLongitude($value)
+ * @property int|null $district_id
+ * @property int|null $area_id
+ * @property-read \App\Models\Area|null $area
+ * @property-read \App\Models\District|null $district
+ * @method static \Illuminate\Database\Eloquent\Builder|Address whereAreaId($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Address whereDistrictId($value)
  * @mixin \Eloquent
  */
 class Address extends Model

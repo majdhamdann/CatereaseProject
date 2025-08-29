@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Payment wherePaymentStatus($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Payment whereUserId($value)
+ * @property string|null $amount
+ * @method static \Illuminate\Database\Eloquent\Builder|Payment whereAmount($value)
  * @mixin \Eloquent
  */
 class Payment extends Model

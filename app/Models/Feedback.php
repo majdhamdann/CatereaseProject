@@ -28,6 +28,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Feedback whereType($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Feedback whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Feedback whereUserId($value)
+ * @property string|null $status
+ * @method static \Illuminate\Database\Eloquent\Builder|Feedback whereStatus($value)
  * @mixin \Eloquent
  */
 class Feedback extends Model

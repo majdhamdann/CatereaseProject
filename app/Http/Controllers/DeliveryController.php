@@ -12,6 +12,36 @@ use Illuminate\Support\Facades\DB;
 class DeliveryController extends Controller
 {
 
+    use \App\Traits\FirebaseNotificationTrait;
+
+    public function sendNotification(Request $request)
+    {
+        try {
+            $request->validate([
+                'deviceToken' => 'required|string',
+                'title'       => 'required|string',
+                'body'        => 'required|string',
+            ]);
+
+            $notification_data = (object) [
+                'title' => $request->title,
+                'body'  => $request->body,
+            ];
+
+            $response = $this->unicast($notification_data, $request->deviceToken);
+
+            return response()->json([
+                'status'   => true,
+                'message'  => 'Notification sent successfully',
+                'response' => $response,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => false,
+                'message' => $e->getMessage(),
+            ], 400);
+        }
+    }
 
     public function assignedOrders()
     {

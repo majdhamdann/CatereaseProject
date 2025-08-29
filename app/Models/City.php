@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $branches_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\BranchDeliveryArea> $deliveryBranches
  * @property-read int|null $delivery_branches_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\District> $districts
+ * @property-read int|null $districts_count
  * @mixin \Eloquent
  */
 class City extends Model

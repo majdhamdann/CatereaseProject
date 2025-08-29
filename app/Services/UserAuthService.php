@@ -14,7 +14,7 @@ class UserAuthService
 {
     public function registerUser(array $data)
 {
-    
+
     $user = User::create([
         'name' => $data['name'],
         'email' => $data['email'],
@@ -23,6 +23,7 @@ class UserAuthService
         'phone' => $data['phone'],
         'gender' => $data['gender'],
         'verified' => false,
+        'device_token' => $data['device_token'] ?? null,
     ]);
 
     $otp = rand(100000, 999999);

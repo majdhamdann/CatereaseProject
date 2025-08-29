@@ -23,6 +23,9 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|BranchDeliveryArea whereDeliveryPrice($value)
  * @method static \Illuminate\Database\Eloquent\Builder|BranchDeliveryArea whereId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|BranchDeliveryArea whereUpdatedAt($value)
+ * @property int|null $district_id
+ * @property-read \App\Models\District|null $district
+ * @method static \Illuminate\Database\Eloquent\Builder|BranchDeliveryArea whereDistrictId($value)
  * @mixin \Eloquent
  */
 class BranchDeliveryArea extends Model
