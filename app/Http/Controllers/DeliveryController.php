@@ -211,10 +211,10 @@ class DeliveryController extends Controller
             }
 
 
-            $branches = $deliveryPerson->branches()->with('restaurant')->get();
+            $branches = $deliveryPerson->branches()->first();
 
 
-            $restaurants = $branches->pluck('restaurant')->filter();
+            $restaurants = $deliveryPerson->branches()->first()->restaurant()->first();
 
             DB::commit();
 
