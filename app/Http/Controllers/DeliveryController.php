@@ -430,6 +430,8 @@ class DeliveryController extends Controller
                 $delivery->rejection_reason  = null;
                 $delivery->status            = 'accepted';
 
+                $title = "Delivery Approved";
+                $body  = "Delivery person {$user->name} has approved the order #{$orderId}.";
 
 
             } else {
@@ -437,9 +439,24 @@ class DeliveryController extends Controller
                 $delivery->rejection_reason  = $request->rejection_reason;
                 $delivery->status            = 'rejection';
                 //$delivery->delivery_person_id = null;
+
+                $title = "Delivery Rejected";
+                $body  = "Delivery person {$user->name} has rejected the order #{$orderId}. ";
             }
 
             $delivery->save();
+
+            $branchManagerId = $delivery->order->branch->manager_id ?? null;
+            if ($branchManagerId) {
+                $branchManager = \App\Models\User::find($branchManagerId);
+                if ($branchManager && $branchManager->device_token) {
+                    $notificationData = (object)[
+                        'title' => $title,
+                        'body' => $body,
+                    ];
+                    $this->unicast($notificationData, $branchManager->device_token);
+                }
+            }
 
             DB::commit();
 
