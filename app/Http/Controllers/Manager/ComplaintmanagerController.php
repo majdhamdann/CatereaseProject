@@ -9,9 +9,13 @@ use App\Models\User;
 
 class ComplaintmanagerController extends Controller
 {
-    private function canManageComplaint(User $user, Feedback $feedback): bool
+     private function canManageComplaint(User $user, Feedback $feedback): bool
     {
         $feedbackType = $feedback->feedbackType;
+
+        if (!$feedbackType) {
+            return false;
+        }
 
         if ($feedbackType->target_type === 'package') {
             return $feedbackType->package 
@@ -25,13 +29,15 @@ class ComplaintmanagerController extends Controller
                 && $feedbackType->deliveryPerson->branches->contains('manager_id', $user->id);
         }
 
-       
         return false;
     }
-
-    public function index(Request $request)
+public function index(Request $request)
     {
-        $query = Feedback::with(['user', 'feedbackType'])
+        $query = Feedback::with([
+                'user',
+                'feedbackType.package.branch',
+                'feedbackType.deliveryPerson.branches'
+            ])
             ->where('type', 'complaint')
             ->orderBy('created_at', 'desc');
 
@@ -48,6 +54,8 @@ class ComplaintmanagerController extends Controller
 
         return response()->json($filtered);
     }
+
+  
 
     public function show($id)
     {

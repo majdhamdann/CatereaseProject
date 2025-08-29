@@ -38,10 +38,10 @@ class BranchController extends Controller
                 'city',
                 'feedbacks',
                 'categories' ,
-                'owner'
+                
             ]);
         },
-    ])->where('owner_id', $user->id)->first();
+    ])->with('owner')->where('owner_id', $user->id)->first();
 
     if (!$restaurant) {
         return response()->json(['error' => 'You do not own a restaurant.'], 404);

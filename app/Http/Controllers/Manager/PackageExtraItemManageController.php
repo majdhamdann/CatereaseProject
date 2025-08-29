@@ -200,7 +200,7 @@ public function store(Request $request)
         'items.*.food_item_name' => 'required|string',
         'items.*.quantity' => 'required|integer|min:1',
         'items.*.is_optional' => 'boolean',
-        'items.*.type' => 'sometimes|string|in:veg,non_veg',
+       // 'items.*.type' => 'sometimes|string|in:veg,non_veg',
 
 
         'extras' => 'array',
@@ -240,7 +240,7 @@ public function store(Request $request)
                 [
                    
                     'available' => true,
-                    'type' =>$item['type']?? null,
+                    'type' =>null,
                 ]
             );
 
@@ -258,7 +258,7 @@ public function store(Request $request)
                 [
                    
                     'available' => true,
-                    'type' =>$item['type'],
+                    'type' =>null,
                 ]
             );
 
@@ -329,7 +329,7 @@ public function store(Request $request)
         'items' => 'sometimes|array',
         'items.*.food_item_name' => 'required_with:items|string',
         'items.*.quantity' => 'required_with:items|integer|min:1',
-        'items.*.type' => 'sometimes|string|in:veg,non_veg',
+       // 'items.*.type' => 'sometimes|string|in:veg,non_veg',
         'items.*.is_optional' => 'sometimes|boolean',
 
         'extras' => 'sometimes|array',
@@ -351,7 +351,7 @@ public function store(Request $request)
                     [
                       
                         'available' => true,
-                        'type' =>$item['type']?? null,
+                        'type' => null,
                     ]
                 );
 
@@ -373,7 +373,7 @@ public function store(Request $request)
                     [
                        
                         'available' => true,
-                        'type' => $item['type'],
+                        'type' => null,
                     ]
                 );
 

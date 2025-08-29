@@ -76,6 +76,15 @@ class OrderManagementController extends Controller
         'amount' => $order->total_price,
         'issued_at' => now(),
     ]);
+            // إرسال إشعار للزبون
+        if ($order->user && $order->user->device_token) {
+           $this->unicast((object)[
+             'title' => 'Your order has been approved ',
+             'body'  => "Your order #{$order->id} has been confirmed and is being prepared."
+           ], $order->user->device_token);
+}
+
+
     return response()->json(['message' => 'Order approved successfully']);
     }
 
@@ -97,6 +106,13 @@ class OrderManagementController extends Controller
     $order->approved_by = $manager->id;
     $order->approved_at = now();
     $order->save();
+        if ($order->user && $order->user->device_token) {
+              $this->unicast((object)[
+                'title' => 'Your order was rejected ',
+                'body'  => "Your order #{$order->id} has been rejected. Reason: {$request->rejection_reason}"
+    ], $order->user->device_token);
+}
+
 
     return response()->json(['message' => 'Order rejected']);
     }
@@ -285,7 +301,12 @@ public function assignDeliveryPerson(Request $request)
         }
 
         DB::commit();
-
+         if ($deliveryPerson->user && $deliveryPerson->user->device_token) {
+             $this->unicast((object)[
+               'title' => 'New Delivery Assigned',
+               'body'  => "You have been assigned to deliver order #{$order->id}. Please check your delivery app."
+            ], $deliveryPerson->user->device_token);
+         }
         return response()->json([
             'status' => true,
             'message' => $message,
@@ -517,7 +538,7 @@ public function assignDeliveryPerson(Request $request)
         ], 403);
     }
 
-    $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled'];
+    $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled','waiting'];
 
     $ordersByStatus = [];
 
