@@ -185,72 +185,7 @@ class OrderManagementController extends Controller
 
         return response()->json($order);
       }
-      public function assignDeliveryPerson1(Request $request)
-{
-    $validated = $request->validate([
-        'order_id' => 'required|exists:orders,id',
-        'delivery_person_id' => 'required|exists:delivery_people,id',
-    ]);
-
-    DB::beginTransaction();
-    try {
-        $manager = auth()->user();
-        $branch = Branch::where('manager_id', $manager->id)->firstOrFail();
-
-        $order = Order::where('id', $validated['order_id'])
-                    ->where('branch_id', $branch->id)
-                    ->where('is_approved', true)
-                    ->where('is_submitted', true)
-                    ->lockForUpdate()
-                    ->firstOrFail();
-
-        $deliveryPerson = DeliveryPerson::where('id', $validated['delivery_person_id'])
-                                    ->lockForUpdate()
-                                    ->firstOrFail();
-
-
-            if (!$deliveryPerson->is_available) {
-                throw new \Exception('موظف التوصيل غير متاح حالياً');
-            }
-
-            $delivery = Delivery::create([
-                'order_id' => $order->id,
-                'delivery_person_id' => $deliveryPerson->id,
-                'status' => 'assigned',
-                'assigned_at' => now(),
-            ]);
-
-            $deliveryPerson->update(['is_available' => false]);
-
-            $order->update([
-                'status' => 'preparing',
-                'delivery_id' => $delivery->id,
-                'updated_at' => now()
-            ]);
-
-            $message = 'تم تعيين موظف التوصيل بنجاح';
-
-
-        DB::commit();
-
-        return response()->json([
-            'status' => true,
-            'message' => $message,
-            'data' => [
-                'order' => $order->fresh(),
-                'delivery' => $delivery ?? null,
-                'delivery_person' => $deliveryPerson->fresh()
-            ]
-        ]);
-
-    } catch (\Exception $e) {
-        DB::rollBack();
-        return response()->json([
-            'status' => false,
-            'message' => 'فشل العملية: ' . $e->getMessage()
-        ], 500);
-    }
-}
+ 
 public function assignDeliveryPerson(Request $request)
 {
     $validated = $request->validate([
@@ -332,7 +267,9 @@ public function assignDeliveryPerson(Request $request)
     }
 }
 
-     public function show($id)
+
+
+public function show($id)
 {
     $manager = auth()->user();
 
@@ -353,8 +290,8 @@ public function assignDeliveryPerson(Request $request)
             'orderDetails.package.occasionTypes',
             'orderDetails.extras.extra',
             'orderDetails.services.service.serviceType',
-          //  'services.branchServiceType.serviceType',
-            'delivery.deliveryPerson'
+            'delivery.deliveryPerson',
+            'bill.payments' 
         ])
         ->where('id', $id)
         ->where('branch_id', $branch->id)
@@ -373,6 +310,35 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPrice = $order->deliveryArea?->delivery_price;
         $orderPrice = $order->total_price;
         $totalPriceWithDelivery = $deliveryPrice + $orderPrice;
+
+        $billInfo = null;
+        if ($order->bill) {
+            $billInfo = [
+                'bill_id' => $order->bill->id,
+                'amount' => $order->bill->amount,
+                'status' => $order->bill->status,
+                'created_at' => $order->bill->created_at,
+                'issued_at' => $order->bill->issued_at,
+                'updated_at' => $order->bill->updated_at,
+                'payments' => $order->bill->payments->map(function ($payment) {
+                    return [
+                        'payment_id' => $payment->id,
+                        'amount' => $payment->amount,
+                        'payment_method' => $payment->payment_method,
+                        'payment_status' => $payment->payment_status,
+                        'paid_at' => $payment->paid_at,
+                        'created_at' => $payment->created_at
+                    ];
+                }),
+                'total_paid' => $order->bill->payments->sum('amount'),
+                'payment_progress' => [
+                    'percentage' => $order->bill->original_amount > 0 ? 
+                        (($order->bill->original_amount - $order->bill->amount) / $order->bill->original_amount) * 100 : 0,
+                    'paid_amount' => $order->bill->original_amount - $order->bill->amount,
+                    'remaining_amount' => $order->bill->amount
+                ]
+            ];
+        }
 
         $formatted = [
             'id' => $order->id,
@@ -405,6 +371,7 @@ public function assignDeliveryPerson(Request $request)
                 'totalPriceWithDelivery' => $totalPriceWithDelivery,
                 'deliveryPrice' => $deliveryPrice,
                 'orderPrice' => $orderPrice,
+                'bill_info' => $billInfo, 
             ],
             'delivery_info' => $order->delivery ? [
                 'status' => $order->delivery->status,
@@ -412,7 +379,7 @@ public function assignDeliveryPerson(Request $request)
                 'acceptance_status' => $order->delivery->acceptance_status,
                 'rejection_reason' => $order->delivery->rejection_reason,
                 'notes' => $order->delivery->notes,
-                'delivery_person_id' => $order->delivery->deliveryPerson->id ,
+                'delivery_person_id' => $order->delivery->deliveryPerson->id,
                 'delivery_person' => $order->delivery ? [
                     'name' => $order->delivery->deliveryPerson->user->name,
                     'phone' => $order->delivery->deliveryPerson->user->phone
@@ -465,6 +432,7 @@ public function assignDeliveryPerson(Request $request)
         ], 500);
     }
 }
+
      public function getBranchOrderStatistics()
 {
    $manager = auth()->user();
