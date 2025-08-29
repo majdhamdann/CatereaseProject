@@ -28,6 +28,7 @@ class RegisterUserRequest extends FormRequest
        // 'role_id' => 'required|exists:roles,id',
         'phone' => 'required|numeric',
         'gender' => 'required|in:f,m',
+        'device_token' => 'nullable|string',
     ];
 }
 }

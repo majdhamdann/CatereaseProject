@@ -14,7 +14,7 @@ class UserAuthService
 {
     public function registerUser(array $data)
 {
-    
+
     $user = User::create([
         'name' => $data['name'],
         'email' => $data['email'],
@@ -23,6 +23,7 @@ class UserAuthService
         'phone' => $data['phone'],
         'gender' => $data['gender'],
         'verified' => false,
+        'device_token' => $data['device_token'] ?? null,
     ]);
 
     $otp = rand(100000, 999999);
@@ -40,12 +41,16 @@ class UserAuthService
     return $user;
 }
 
-     public function login(array $credentials)
+    public function login(array $credentials)
     {
         $user = User::where('email', $credentials['email'])->first();
 
          if (!$user || !Hash::check($credentials['password'], $user->password)) {
            throw new AuthenticationException('Invalid credentials.');
+        }
+        if (!empty($credentials['device_token'])) {
+            $user->device_token = $credentials['device_token'];
+            $user->save();
         }
 
         $token = $user->createToken($user->name . '-AuthToken')->plainTextToken;
@@ -55,6 +60,7 @@ class UserAuthService
           'user' => $user,
         ];
     }
+
     public function verify($userId, $otp)
     {
         $otpRecord = Otp::where('user_id', $userId)

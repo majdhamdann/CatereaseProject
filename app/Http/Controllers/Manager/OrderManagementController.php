@@ -53,8 +53,8 @@ class OrderManagementController extends Controller
         'orders' => $orders
     ]);
     }
-    
-    
+
+
     public function approve($id)
 {
 

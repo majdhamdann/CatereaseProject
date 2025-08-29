@@ -27,6 +27,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Bill whereOrderId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Bill whereUpdatedAt($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Bill whereUserId($value)
+ * @property string $status
+ * @method static \Illuminate\Database\Eloquent\Builder|Bill whereStatus($value)
  * @mixin \Eloquent
  */
 class Bill extends Model

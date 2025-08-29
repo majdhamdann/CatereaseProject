@@ -105,6 +105,7 @@ Route::prefix('bill')->middleware('auth:sanctum')->group(function () {
 
 
 });
+Route::post('send-notification', [DeliveryController::class, 'sendNotification']);
 
 
 Route::prefix('payment')->middleware('auth:sanctum')->group(function () {

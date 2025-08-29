@@ -712,6 +712,15 @@ class OrderController extends Controller
             $order->status = 'waiting';
             $order->save();
 
+            $branch = $order->branch()->with('manager')->first();
+            if ($branch && $branch->manager && $branch->manager->device_token) {
+                $notification_data = (object)[
+                    'title' => 'New Order Submitted',
+                    'body'  => 'An order has been submitted and is waiting for approval.'
+                ];
+                $this->unicast($notification_data, $branch->manager->device_token);
+            }
+
             DB::commit();
 
             return response()->json([

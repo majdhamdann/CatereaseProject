@@ -62,6 +62,8 @@ use Illuminate\Database\Eloquent\Model;
  * @property-read int|null $delivery_areas_count
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeliveryPerson> $deliveryPeople
  * @property-read int|null $delivery_people_count
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Feedback> $feedbacks
+ * @property-read int|null $feedbacks_count
  * @mixin \Eloquent
  */
 class Branch extends Model

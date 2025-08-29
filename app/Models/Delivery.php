@@ -36,6 +36,10 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Delivery whereUpdatedAt($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\DeliveryTracking> $trackings
  * @property-read int|null $trackings_count
+ * @property int|null $acceptance_status
+ * @property string|null $rejection_reason
+ * @method static \Illuminate\Database\Eloquent\Builder|Delivery whereAcceptanceStatus($value)
+ * @method static \Illuminate\Database\Eloquent\Builder|Delivery whereRejectionReason($value)
  * @mixin \Eloquent
  */
 class Delivery extends Model

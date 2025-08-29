@@ -67,6 +67,8 @@ use Illuminate\Contracts\Auth\MustVerifyEmail;
  * @method static \Illuminate\Database\Eloquent\Builder|User whereStatus($value)
  * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Coupon> $coupons
  * @property-read int|null $coupons_count
+ * @property string|null $device_token
+ * @method static \Illuminate\Database\Eloquent\Builder|User whereDeviceToken($value)
  * @mixin \Eloquent
  */
 class User extends Authenticatable implements MustVerifyEmail
@@ -83,8 +85,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'gender',
         'email',
         'password',
-        'status'
-     ];
+        'status',
+        'device_token'
+    ];
 
     protected $hidden = [
         'password',

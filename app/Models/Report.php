@@ -25,6 +25,8 @@ use Illuminate\Database\Eloquent\Model;
  * @method static \Illuminate\Database\Eloquent\Builder|Report whereManagerId($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Report whereSubject($value)
  * @method static \Illuminate\Database\Eloquent\Builder|Report whereUpdatedAt($value)
+ * @property string|null $status
+ * @method static \Illuminate\Database\Eloquent\Builder|Report whereStatus($value)
  * @mixin \Eloquent
  */
 class Report extends Model
