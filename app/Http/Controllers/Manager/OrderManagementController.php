@@ -301,7 +301,12 @@ public function assignDeliveryPerson(Request $request)
         }
 
         DB::commit();
-
+         if ($deliveryPerson->user && $deliveryPerson->user->device_token) {
+             $this->unicast((object)[
+               'title' => 'New Delivery Assigned',
+               'body'  => "You have been assigned to deliver order #{$order->id}. Please check your delivery app."
+            ], $deliveryPerson->user->device_token);
+         }
         return response()->json([
             'status' => true,
             'message' => $message,
@@ -533,7 +538,7 @@ public function assignDeliveryPerson(Request $request)
         ], 403);
     }
 
-    $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled'];
+    $statuses = ['pending', 'confirmed', 'preparing', 'delivered', 'cancelled','waiting'];
 
     $ordersByStatus = [];
 
