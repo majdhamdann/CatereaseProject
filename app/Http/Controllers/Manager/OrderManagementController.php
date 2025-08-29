@@ -75,6 +75,7 @@ class OrderManagementController extends Controller
         'user_id' => $order->user_id,
         'amount' => $order->total_price,
         'issued_at' => now(),
+        'status' => 'unpaid',
     ]);
             // إرسال إشعار للزبون
             
@@ -86,7 +87,11 @@ class OrderManagementController extends Controller
 }
 
 
-    return response()->json(['message' => 'Order approved successfully']);
+    return response()->json(
+        [
+            'message' => 'Order approved successfully',
+           'bill' => $bill
+    ]);
     }
 
     public function reject(Request $request, $id)
