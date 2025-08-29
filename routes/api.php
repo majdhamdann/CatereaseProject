@@ -112,15 +112,15 @@ Route::post('send-notification', [DeliveryController::class, 'sendNotification']
 Route::prefix('payment')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/intent', [PaymentController::class, 'createIntent']);
-    Route::post('/bills/{billId}/pay', [PaymentController::class, 'makePayment']);
+    Route::post('/bills/{billId}/pay', [PaymentController::class, 'payBill']);
 
 
 });
 Route::prefix('feedback')->middleware('auth:sanctum')->group(function () {
 
     Route::post('/', [FeedbackController::class, 'store']);
-    Route::get('/my', [FeedbackController::class, 'myFeedbacks']);
-    Route::get('/summary', [FeedbackController::class, 'summary']);
+
+
 
 
 });
