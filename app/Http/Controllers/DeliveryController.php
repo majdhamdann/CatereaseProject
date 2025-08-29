@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Delivery;
 use App\Models\Order;
+use App\Traits\FirebaseNotificationTrait;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\User;
@@ -12,36 +13,8 @@ use Illuminate\Support\Facades\DB;
 class DeliveryController extends Controller
 {
 
-    use \App\Traits\FirebaseNotificationTrait;
 
-    public function sendNotification(Request $request)
-    {
-        try {
-            $request->validate([
-                'deviceToken' => 'required|string',
-                'title'       => 'required|string',
-                'body'        => 'required|string',
-            ]);
-
-            $notification_data = (object) [
-                'title' => $request->title,
-                'body'  => $request->body,
-            ];
-
-            $response = $this->unicast($notification_data, $request->deviceToken);
-
-            return response()->json([
-                'status'   => true,
-                'message'  => 'Notification sent successfully',
-                'response' => $response,
-            ]);
-        } catch (\Exception $e) {
-            return response()->json([
-                'status'  => false,
-                'message' => $e->getMessage(),
-            ], 400);
-        }
-    }
+    use FirebaseNotificationTrait;
 
     public function assignedOrders()
     {
@@ -298,6 +271,20 @@ class DeliveryController extends Controller
 
             $delivery->status = $request->status;
             $delivery->save();
+
+            $customer = $delivery->order->user;
+            if ($customer && $customer->device_token) {
+                $notification_data = (object)[
+                    'title' => 'Order Status Update',
+                    'body'  => $request->status === 'on_the_way'
+                        ? 'Your order is now on the way'
+                        : ($request->status === 'cancelled'
+                            ? 'Your order has been cancelled '
+                            : 'Your delivery has failed')
+                ];
+
+                $this->unicast($notification_data, $customer->device_token);
+            }
 
             DB::commit();
 
