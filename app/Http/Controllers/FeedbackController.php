@@ -13,7 +13,7 @@ class FeedbackController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'target_type' => 'required|in:branch,package,food_item,delivery_person,service',
+            'target_type' => 'required|in:restaurant,branch,package,food_item,delivery_person,service',
             'target_id'   => 'required|integer',
             'type'        => 'required|in:rating,complaint',
             'score'       => 'nullable|numeric|min:1|max:5',
