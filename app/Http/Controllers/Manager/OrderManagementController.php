@@ -342,6 +342,9 @@ public function show($id)
 
         $formatted = [
             'id' => $order->id,
+            'prepayment_paid' => $order->prepayment_paid,
+            'prepayment_paid_at' => $order->prepayment_paid_at,
+            'final_prepayment_paid' => $order->final_prepayment_paid,
             'customer' => [
                 'name' => $order->user->name,
                 'phone' => $order->user->phone ?? null,
@@ -390,6 +393,8 @@ public function show($id)
                     'package_id' => $detail->package->id,
                     'package_name' => $detail->package->name ?? null,
                     'package_photo' => $detail->package->photo ?? null,
+                    'prepayment_required' => $detail->package->prepayment_required ,
+                    'prepayment_amount' => $detail->package->prepayment_amount ,
                     'quantity' => $detail->quantity,
                     'categories' => $detail->package->categories->map(function ($categories) {
                         return [
