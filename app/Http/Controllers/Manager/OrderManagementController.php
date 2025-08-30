@@ -231,7 +231,7 @@ public function assignDeliveryPerson(Request $request)
         $deliveryPerson->update(['is_available' => false]);
 
         $order->update([
-             'status' => 'preparing',
+           //  'status' => 'preparing',
           //  'delivery_id' => $delivery->id,
             'updated_at' => now()
         ]);
@@ -611,7 +611,7 @@ public function show($id)
             $order->prepayment_paid = true;
             $order->prepayment_paid_at = now();
         }
-
+        $order->status = 'preparing';
         $bill->save();
         $order->save();
 
