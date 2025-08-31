@@ -31,16 +31,32 @@ class ReportController extends Controller
 
     return response()->json(['message' => 'Report created successfully', 'report' => $report]);
 }
+public function index1(Request $request)
+{
+    $user = auth()->user(); 
+
+   $restaurantId = $user->restaurant->id;
+   $query = Report::where('branch_id', $restaurantId)->with(['branch']);
+   
+   if ($request->has('date')) {
+        $query->whereDate('created_at', $request->date);
+    }
+
+    $reports = $query->get();
+
+    return response()->json($reports);
+}
 public function index(Request $request)
 {
     $user = auth()->user(); 
 
-    // $query = Report::whereIn('branch_id', $user->restaurant->pluck('id'))
-    //     ->with(['branch']);
-   $restaurantId = $user->restaurant->id;
-$query = Report::where('branch_id', $restaurantId)->with(['branch']);
+    // الحصول على معرفات الفروع التابعة للمطعم
+    $branchIds = $user->restaurant->branches->pluck('id');
+    
+    // البحث في التقارير حسب الفروع وليس المطعم مباشرة
+    $query = Report::whereIn('branch_id', $branchIds)->with(['branch']);
    
-   if ($request->has('date')) {
+    if ($request->has('date')) {
         $query->whereDate('created_at', $request->date);
     }
 
