@@ -340,7 +340,7 @@ public function store(Request $request)
     DB::beginTransaction();
 
     try {
-        $package->update($$validated);
+        $package->update($validated);
 
         // Update Items
         if (isset($validated['items'])) {
