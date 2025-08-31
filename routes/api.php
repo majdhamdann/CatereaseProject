@@ -273,6 +273,7 @@ Route::middleware(['auth:sanctum', 'is_admin'])->group(function () {
      Route::get('complaints/{id}',[ ComplaintController::class,'show']);
      Route::post('/update-staus-compalant/{id}', [ComplaintController::class, 'updateStatusfeedback']);
      Route::delete('complaints/{id}',[ ComplaintController::class,'destroy']);
+    Route::put('/order/admin/{id}/update-status', [ReportController::class, 'updateStatus']);
 
      Route::get('users/all/Owner', [UserManagementController::class,'getallOwner']);
 

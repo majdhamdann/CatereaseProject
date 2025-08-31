@@ -267,7 +267,7 @@ class BranchController extends Controller
     }
 
     
-public function show($id)
+public function show1($id)
 {
     $branch = Branch::with([
         'restaurant',
@@ -277,9 +277,30 @@ public function show($id)
         'workingDays',
         'branchServiceTypes.serviceType',
         'deliveryAreas.city',
-         'deliveryAreas.district', 
+        'deliveryAreas.district', 
         
     ])->findOrFail($id);
+
+    return response()->json([
+        'success' => true,
+        'branch' => $branch
+    ]);
+}
+public function show($id)
+{
+    $branch = Branch::findOrFail($id);
+
+    $branch->load([
+        'restaurant',
+        'manager',
+        'city',
+        'categories',
+        'workingDays',
+        'branchServiceTypes.serviceType',
+        'deliveryAreas' => function($query) {
+            $query->with(['city', 'district']);
+        }
+    ]);
 
     return response()->json([
         'success' => true,
