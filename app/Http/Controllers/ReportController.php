@@ -35,9 +35,10 @@ public function index(Request $request)
 {
     $user = auth()->user(); 
 
-    $query = Report::whereIn('branch_id', $user->restaurant->pluck('id'))
-        ->with(['branch']);
-
+    // $query = Report::whereIn('branch_id', $user->restaurant->pluck('id'))
+    //     ->with(['branch']);
+   $restaurantId = $user->restaurant->id;
+$query = Report::where('branch_id', $restaurantId)->with(['branch']);
    
    if ($request->has('date')) {
         $query->whereDate('created_at', $request->date);
