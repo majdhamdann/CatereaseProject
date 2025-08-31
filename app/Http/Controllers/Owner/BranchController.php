@@ -517,7 +517,7 @@ public function getOwnerBranches()
             return [
                 'id' => $branch->id,
                 'name' => $branch->location_note ?? $branch->description ?? 'بدون اسم',
-                'image' => $branch->photo, 
+                'image' => $branch->restaurant->photo, 
                 'ownerName' => $branch->restaurant->owner->name ?? 'غير معروف',
                 'Manager' => $branch->manager->name ?? 'غير معروف',
                 'city' => $branch->city->name ?? 'غير معروفة'
